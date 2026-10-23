@@ -20,11 +20,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-The fonts are not covered by this license:
-- Outfit (launcher/app/src/main/res/font/outfit*.ttf): copyright The Outfit Project Authors,
-  SIL Open Font License 1.1, see launcher/FONT-LICENSE-OFL.txt.
-- Readex Pro (launcher/app/src/main/res/font/readex_pro.ttf): copyright The Readex Pro Project Authors,
-  SIL Open Font License 1.1, see launcher/FONT-LICENSE-READEXPRO-OFL.txt.

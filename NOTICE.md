@@ -6,6 +6,8 @@ HomeLab Launcher is a fork of the `tvhome` launcher in [Gathin23/cleanyourtv](ht
 
 ## Fonts
 
+The fonts are not covered by the MIT License in [LICENSE](LICENSE). Outfit is copyright The Outfit Project Authors and Readex Pro is copyright The Readex Pro Project Authors, both under the SIL Open Font License 1.1.
+
 | Font | Files | License | Source |
 |---|---|---|---|
 | Outfit | `launcher/app/src/main/res/font/outfit*.ttf` | SIL OFL 1.1 (`launcher/FONT-LICENSE-OFL.txt`) | Bundled by upstream |
