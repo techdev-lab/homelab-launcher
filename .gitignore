@@ -1,0 +1,27 @@
+# Gradle and Android build output
+launcher/.gradle/
+launcher/build/
+launcher/app/build/
+launcher/local.properties
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Local-only agent files
+CLAUDE.md
+AGENTS.md
+opencode.json
+
+# Secrets and device data
+*.keystore
+*.jks
+adbkey
+adbkey.pub
+*.conf
+.env

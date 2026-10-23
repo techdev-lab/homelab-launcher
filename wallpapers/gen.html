@@ -1,0 +1,183 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script>
+const W = 1920, H = 1080, c = document.getElementById('c'), g = c.getContext('2d');
+const scene = new URLSearchParams(location.search).get('s') || '1';
+let seed = 1000 + Number(scene) * 7919;
+const R = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const rr = (a, b) => a + R() * (b - a);
+function bg(stops, x0 = 0, y0 = 0, x1 = 0, y1 = H) {
+  const gr = g.createLinearGradient(x0, y0, x1, y1);
+  stops.forEach(([o, col]) => gr.addColorStop(o, col));
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+}
+function glow(x, y, r, col, a) {
+  const gr = g.createRadialGradient(x, y, 0, x, y, r);
+  gr.addColorStop(0, col.replace('A', a)); gr.addColorStop(1, col.replace('A', 0));
+  g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+}
+function vignette(a = 0.65) {
+  const gr = g.createRadialGradient(W / 2, H / 2, H * 0.3, W / 2, H / 2, H * 1.05);
+  gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, `rgba(0,0,0,${a})`);
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+}
+function grain(n = 60000, a = 0.035) {
+  for (let i = 0; i < n; i++) { g.fillStyle = `rgba(255,255,255,${R() * a})`; g.fillRect(R() * W, R() * H, 1, 1); }
+}
+
+// 1 · Server racks at night: a row of racks, status LEDs, floor reflection
+function racks() {
+  bg([[0, '#05070d'], [0.6, '#0a1222'], [1, '#03040a']]);
+  glow(W * 0.5, H * 0.35, 900, 'rgba(40,90,180,A)', 0.22);
+  const n = 7, rw = 190, gap = 26, x0 = (W - (n * rw + (n - 1) * gap)) / 2, top = 170, bot = 820;
+  for (let i = 0; i < n; i++) {
+    const x = x0 + i * (rw + gap);
+    const gr = g.createLinearGradient(x, 0, x + rw, 0);
+    gr.addColorStop(0, '#0c1424'); gr.addColorStop(0.5, '#141f35'); gr.addColorStop(1, '#0a111f');
+    g.fillStyle = gr; g.fillRect(x, top, rw, bot - top);
+    g.strokeStyle = 'rgba(120,160,230,0.18)'; g.strokeRect(x + 0.5, top + 0.5, rw - 1, bot - top - 1);
+    for (let y = top + 18; y < bot - 20; y += 22) {
+      g.fillStyle = 'rgba(255,255,255,0.035)'; g.fillRect(x + 12, y, rw - 24, 14);
+      const leds = 2 + Math.floor(R() * 4);
+      for (let k = 0; k < leds; k++) {
+        const p = R(), col = p < 0.62 ? [80, 230, 150] : p < 0.85 ? [90, 170, 255] : [255, 180, 70];
+        const lx = x + 20 + k * 11, ly = y + 7;
+        g.fillStyle = `rgba(${col},${rr(0.55, 1)})`; g.beginPath(); g.arc(lx, ly, 2.2, 0, 7); g.fill();
+        glow(lx, ly, 10, `rgba(${col},A)`, 0.25);
+      }
+    }
+  }
+  // floor reflection
+  g.save(); g.globalAlpha = 0.18; g.translate(0, bot * 2); g.scale(1, -1);
+  g.drawImage(c, 0, top, W, bot - top, 0, top, W, bot - top); g.restore();
+  bg([[0, 'rgba(3,4,10,0)'], [0.75, 'rgba(3,4,10,0)'], [1, 'rgba(3,4,10,0.9)']]);
+  vignette(0.7); grain();
+}
+
+// 2 · Cluster constellation: three bright nodes (the Proxmox trio) inside a field of linked services
+function constellation() {
+  bg([[0, '#020611'], [1, '#05101c']]);
+  glow(W * 0.42, H * 0.42, 1000, 'rgba(20,120,140,A)', 0.18);
+  const pts = []; for (let i = 0; i < 170; i++) pts.push([rr(60, W - 60), rr(60, H - 60), rr(0.8, 2.2)]);
+  for (let i = 0; i < pts.length; i++) for (let j = i + 1; j < pts.length; j++) {
+    const d = Math.hypot(pts[i][0] - pts[j][0], pts[i][1] - pts[j][1]);
+    if (d < 150) { g.strokeStyle = `rgba(110,210,220,${0.16 * (1 - d / 150)})`; g.lineWidth = 1;
+      g.beginPath(); g.moveTo(pts[i][0], pts[i][1]); g.lineTo(pts[j][0], pts[j][1]); g.stroke(); }
+  }
+  pts.forEach(([x, y, r]) => { g.fillStyle = 'rgba(190,240,245,0.75)'; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); });
+  const hubs = [[W * 0.36, H * 0.40], [W * 0.50, H * 0.30], [W * 0.56, H * 0.52]];
+  g.lineWidth = 2;
+  for (let i = 0; i < 3; i++) for (let j = i + 1; j < 3; j++) {
+    g.strokeStyle = 'rgba(120,240,210,0.55)'; g.beginPath(); g.moveTo(...hubs[i]); g.lineTo(...hubs[j]); g.stroke();
+  }
+  hubs.forEach(([x, y]) => { glow(x, y, 120, 'rgba(90,240,200,A)', 0.45);
+    g.fillStyle = '#d9fff4'; g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(160,255,225,0.6)'; g.beginPath(); g.arc(x, y, 18, 0, 7); g.stroke(); });
+  vignette(0.6); grain();
+}
+
+// 3 · Terminal: faint lines of compose files and shell, tilted into depth
+function terminal() {
+  bg([[0, '#06090a'], [1, '#020403']]);
+  glow(W * 0.45, H * 0.45, 900, 'rgba(60,200,120,A)', 0.12);
+  const lines = ['services:', '  jellyfin:', '    image: jellyfin/jellyfin:10.10.7', '    restart: unless-stopped',
+    '    volumes: [ /srv/media:/media:ro ]', '  restic:', '    image: restic/restic:0.17.3',
+    '$ pvecm status', 'Quorate: Yes   Nodes: 3', '$ docker compose up -d', '✔ Container jellyfin  Started',
+    '$ restic check --read-data-subset=5%', 'no errors were found', '$ zpool status tank', 'state: ONLINE',
+    'git commit -m "pin images by digest"', '$ systemctl status caddy', 'active (running)', '# backup verified ✓'];
+  g.save(); g.translate(W * 0.5, H * 0.52); g.transform(1, 0, -0.18, 0.86, 0, 0); g.translate(-W * 0.5, -H * 0.52);
+  g.font = '500 22px Consolas, "Cascadia Mono", monospace';
+  for (let row = 0; row < 44; row++) {
+    const y = 40 + row * 26, x = 160 + (row % 5) * 34;
+    const t = lines[(row * 7 + 3) % lines.length], fade = 0.05 + 0.32 * Math.sin(Math.PI * row / 44);
+    g.fillStyle = t.startsWith('$') ? `rgba(255,196,90,${fade})` : `rgba(110,230,150,${fade})`;
+    g.fillText(t, x, y); g.fillText(lines[(row * 3 + 11) % lines.length], x + 900, y);
+  }
+  g.restore();
+  g.fillStyle = 'rgba(120,255,160,0.85)'; g.fillRect(W * 0.46, H * 0.47, 14, 26);
+  vignette(0.75); grain();
+}
+
+// 4 · Circuit board: traces and gold vias on deep green (the theme's first colours)
+function circuit() {
+  bg([[0, '#03100a'], [1, '#020805']]);
+  glow(W * 0.5, H * 0.45, 950, 'rgba(40,160,90,A)', 0.14);
+  const step = 32;
+  for (let k = 0; k < 260; k++) {
+    let x = Math.round(rr(0, W) / step) * step, y = Math.round(rr(0, H) / step) * step;
+    const len = 4 + Math.floor(R() * 14), a = rr(0.12, 0.45);
+    g.strokeStyle = `rgba(220,184,111,${a})`; g.lineWidth = R() < 0.2 ? 3 : 1.5; g.beginPath(); g.moveTo(x, y);
+    let dir = Math.floor(R() * 4);
+    for (let s = 0; s < len; s++) {
+      if (R() < 0.3) dir = (dir + (R() < 0.5 ? 1 : 3)) % 4;
+      const d = [[1, 0], [0, 1], [-1, 0], [0, -1]][dir], diag = R() < 0.25;
+      x += step * (d[0] + (diag ? d[1] : 0)); y += step * (d[1] + (diag ? d[0] : 0)); g.lineTo(x, y);
+    }
+    g.stroke();
+    g.fillStyle = `rgba(255,220,150,${a + 0.2})`; g.beginPath(); g.arc(x, y, 4, 0, 7); g.fill();
+    g.strokeStyle = `rgba(255,220,150,${a})`; g.beginPath(); g.arc(x, y, 8, 0, 7); g.stroke();
+  }
+  // the chip
+  const cx = W * 0.5, cy = H * 0.42;
+  glow(cx, cy, 260, 'rgba(220,184,111,A)', 0.22);
+  g.fillStyle = '#0b1a12'; g.fillRect(cx - 120, cy - 120, 240, 240);
+  g.strokeStyle = 'rgba(220,184,111,0.7)'; g.lineWidth = 2; g.strokeRect(cx - 120, cy - 120, 240, 240);
+  for (let i = -100; i <= 100; i += 20) [[i, -140, i, -120], [i, 120, i, 140], [-140, i, -120, i], [120, i, 140, i]]
+    .forEach(([a1, b1, a2, b2]) => { g.beginPath(); g.moveTo(cx + a1, cy + b1); g.lineTo(cx + a2, cy + b2); g.stroke(); });
+  vignette(0.7); grain();
+}
+
+// 5 · Data centre aisle: racks on both sides, cold-aisle blue, vanishing point
+function aisle() {
+  bg([[0, '#03060c'], [1, '#010205']]);
+  const vx = W * 0.5, vy = H * 0.42;
+  glow(vx, vy, 700, 'rgba(120,180,255,A)', 0.35);
+  for (const side of [-1, 1]) {
+    for (let i = 0; i < 16; i++) {
+      const t0 = i / 16, t1 = (i + 0.85) / 16, f = t => 1 - Math.pow(t, 0.55);
+      const xA = vx + side * (W * 0.62) * f(t0), xB = vx + side * (W * 0.62) * f(t1);
+      const yTa = vy - (H * 0.62) * f(t0), yTb = vy - (H * 0.62) * f(t1), yBa = vy + (H * 0.55) * f(t0), yBb = vy + (H * 0.55) * f(t1);
+      g.fillStyle = `rgba(16,26,46,${0.95 - t0 * 0.5})`;
+      g.beginPath(); g.moveTo(xA, yTa); g.lineTo(xB, yTb); g.lineTo(xB, yBb); g.lineTo(xA, yBa); g.closePath(); g.fill();
+      g.strokeStyle = `rgba(140,190,255,${0.22 - t0 * 0.12})`; g.stroke();
+      for (let k = 0; k < 9; k++) {
+        const u = (k + 1) / 10, lx = xA + (xB - xA) * 0.4, ly = yTa + (yBa - yTa) * u;
+        if (R() < 0.7) { const col = R() < 0.8 ? '120,200,255' : '90,230,150';
+          g.fillStyle = `rgba(${col},${0.8 - t0 * 0.6})`; g.fillRect(lx, ly, Math.max(1, 3 * f(t0)), Math.max(1, 2 * f(t0))); }
+      }
+    }
+  }
+  // floor tiles
+  g.strokeStyle = 'rgba(140,190,255,0.07)';
+  for (let i = -12; i <= 12; i++) { g.beginPath(); g.moveTo(vx, vy); g.lineTo(vx + i * 160, H); g.stroke(); }
+  vignette(0.6); grain();
+}
+
+// 6 · Eight-point star (khatam) drawn as circuit lines: Arabic geometry meets the lab
+function khatam() {
+  bg([[0, '#0b0a08'], [1, '#050403']]);
+  glow(W * 0.5, H * 0.45, 900, 'rgba(220,184,111,A)', 0.12);
+  const s = 150;
+  g.lineWidth = 1.2;
+  for (let y = -s; y < H + s; y += s) for (let x = -s; x < W + s; x += s) {
+    const cx = x + ((y / s) % 2 ? s / 2 : 0), cy = y, d = Math.hypot(cx - W * 0.5, cy - H * 0.45) / 1100;
+    const a = Math.max(0.05, 0.42 - d * 0.4);
+    g.strokeStyle = `rgba(220,184,111,${a})`;
+    for (const rot of [0, Math.PI / 4]) {
+      g.beginPath();
+      for (let k = 0; k < 4; k++) { const ang = rot + k * Math.PI / 2;
+        const px = cx + Math.cos(ang) * s * 0.36, py = cy + Math.sin(ang) * s * 0.36;
+        k ? g.lineTo(px, py) : g.moveTo(px, py); }
+      g.closePath(); g.stroke();
+    }
+    g.fillStyle = `rgba(255,225,160,${a + 0.15})`; g.beginPath(); g.arc(cx, cy, 2.5, 0, 7); g.fill();
+    if (R() < 0.35) { g.strokeStyle = `rgba(120,220,170,${a})`; g.beginPath(); g.moveTo(cx, cy + s * 0.36); g.lineTo(cx, cy + s * 0.64); g.stroke(); }
+  }
+  vignette(0.72); grain();
+}
+
+({ '1': racks, '2': constellation, '3': terminal, '4': circuit, '5': aisle, '6': khatam })[scene]();
+document.title = 'done';
+</script></body></html>

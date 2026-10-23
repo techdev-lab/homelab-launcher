@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- tvhome Arabic Theme, option C "tinted glass" (chosen 2026-10-21): a neutral near-black ground so the
+     ambient glow keeps the focused app's own colour, and glass cards and pills that take a touch of that colour in
+     code (MainActivity.tintGlass). Focus is warm white. Gold and green stay as small accents only.
+     Contrast on theme_ground: sand 16.9:1, dim 9.6:1, red 6.1:1; on_focus on focus 16.9:1. -->
+<resources>
+    <color name="theme_ground">#FF0B0B0C</color>
+    <color name="theme_surface_100">#FF1C1C1E</color>
+    <color name="theme_surface_200">#FF242426</color>
+    <color name="theme_surface_300">#FF2E2E31</color>
+    <color name="theme_sand">#FFF2EEE6</color>
+    <color name="theme_dim">#FFC3B8A2</color>
+    <color name="theme_clock">#FFFFFFFF</color>
+    <color name="theme_focus">#FFF2EEE6</color>
+    <color name="theme_on_focus">#FF111111</color>
+    <color name="theme_gold">#FFDCB86F</color>
+    <color name="theme_gold_soft">#FFFFE9B8</color>
+    <color name="theme_green">#FF57D294</color>
+    <color name="theme_red">#FFEE6A50</color>
+    <color name="theme_hairline">#24FFFFFF</color>
+    <color name="theme_pill_fill">#1AFFFFFF</color>
+</resources>

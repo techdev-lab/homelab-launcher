@@ -1,0 +1,207 @@
+package com.gathin.tvhome;
+
+import android.util.Log;
+import android.util.Xml;
+
+import org.json.JSONArray;
+import org.json.JSONObject;
+import org.xmlpull.v1.XmlPullParser;
+
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Locale;
+
+import javax.net.ssl.HttpsURLConnection;
+
+/**
+ * Online build only: matches from ESPN's public scoreboard JSON, headlines from the RSS/Atom feeds in
+ * config.json and the current weather from Open-Meteo. HTTPS only, no redirects followed, short timeouts, capped sizes, plain parsers: no WebView, no
+ * SDK, no proxy. Called off the main thread; any failure returns an empty list so the card simply hides.
+ *
+ * ESPN's endpoint is public but undocumented: if it changes, matches disappear and nothing else breaks.
+ */
+final class Feeds {
+    static final boolean AVAILABLE = true;
+
+    private static final String TAG = "TvHome.Feeds";
+    private static final String ESPN = "https://site.api.espn.com/apis/site/v2/sports/soccer/";
+    private static final String OPEN_METEO = "https://api.open-meteo.com/v1/forecast";
+    private static final int TIMEOUT_MS = 8000;
+    private static final int MAX_BYTES = 512 * 1024;
+    private static final int MAX_HEADLINES_PER_FEED = 5;
+
+    private Feeds() {
+    }
+
+    static List<Interests.Match> matches(Interests.Settings s) {
+        List<Interests.Match> out = new ArrayList<>();
+        long now = System.currentTimeMillis();
+        for (String league : s.leaguesToFetch()) {
+            if (!Interests.validLeague(league)) continue;
+            // The plain scoreboard is only the current matchday: once it has finished the card went empty for
+            // the rest of the week. Walk forward one day at a time until there is a match to show.
+            List<Interests.Match> got = new ArrayList<>();
+            for (int day = -1; day <= Interests.LOOKAHEAD_DAYS; day++) {
+                String url = ESPN + league + "/scoreboard" + (day < 0 ? "" : "?dates=" + Interests.espnDay(now, day));
+                try {
+                    got.addAll(scoreboard(get(url), league));
+                } catch (Exception e) {
+                    Log.w(TAG, "matches " + league + " " + (day < 0 ? "now" : "+" + day + "d") + ": " + e);
+                    break;
+                }
+                if (Interests.pickMatch(got, s.sportsTeams, now) != null) break;
+            }
+            out.addAll(got);
+        }
+        return out;
+    }
+
+    private static List<Interests.Match> scoreboard(byte[] body, String league) throws Exception {
+        List<Interests.Match> out = new ArrayList<>();
+        JSONObject root = new JSONObject(new String(body, StandardCharsets.UTF_8));
+        JSONArray events = root.optJSONArray("events");
+        String leagueName = league;
+        JSONArray leagues = root.optJSONArray("leagues");
+        if (leagues != null && leagues.length() > 0) {
+            leagueName = leagues.optJSONObject(0).optString("name", league);
+        }
+        for (int i = 0; events != null && i < events.length(); i++) {
+            Interests.Match m = match(events.optJSONObject(i), leagueName, league);
+            if (m != null) out.add(m);
+        }
+        return out;
+    }
+
+    private static Interests.Match match(JSONObject ev, String league, String code) {
+        if (ev == null) return null;
+        JSONObject comp = ev.optJSONArray("competitions") != null
+                ? ev.optJSONArray("competitions").optJSONObject(0) : null;
+        JSONArray sides = comp != null ? comp.optJSONArray("competitors") : null;
+        if (sides == null || sides.length() != 2) return null;
+        String home = "", away = "", hs = "", as = "", homeId = "", awayId = "";
+        for (int i = 0; i < 2; i++) {
+            JSONObject c = sides.optJSONObject(i);
+            if (c == null) return null;
+            JSONObject team = c.optJSONObject("team");
+            String name = team != null ? team.optString("shortDisplayName", team.optString("displayName", "")) : "";
+            String id = team != null ? team.optString("id", "") : "";
+            if ("home".equals(c.optString("homeAway"))) {
+                home = name;
+                homeId = id;
+                hs = c.optString("score", "");
+            } else {
+                away = name;
+                awayId = id;
+                as = c.optString("score", "");
+            }
+        }
+        JSONObject status = ev.optJSONObject("status");
+        JSONObject type = status != null ? status.optJSONObject("type") : null;
+        String state = type != null ? type.optString("state", "") : "";
+        String clock = status != null && Interests.Match.LIVE.equals(state) ? status.optString("displayClock", "") : "";
+        long start;
+        try {
+            // ESPN writes "2026-10-22T18:00Z" without seconds, which Instant.parse rejects.
+            String date = ev.optString("date", "");
+            if (date.length() == 17 && date.endsWith("Z")) date = date.substring(0, 16) + ":00Z";
+            start = Instant.parse(date).toEpochMilli();
+        } catch (Exception e) {
+            return null;
+        }
+        if (home.isEmpty() || away.isEmpty()) return null;
+        return new Interests.Match(league, code, homeId, awayId, home, away, hs, as, state, clock, start);
+    }
+
+    static List<Interests.Headline> headlines(List<String> feeds) {
+        List<Interests.Headline> out = new ArrayList<>();
+        for (String url : feeds) {
+            if (!Interests.validFeed(url)) continue;
+            try {
+                out.addAll(rss(get(url), host(url)));
+            } catch (Exception e) {
+                Log.w(TAG, "news " + host(url) + ": " + e);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * Current temperature and WMO weather code from Open-Meteo (free, no key) for the prayer place; null on any
+     * failure so the card hides. Coordinates go out at 2 decimals (about 1 km), enough for a city's weather.
+     */
+    static Interests.Weather weather(double lat, double lng) {
+        if (!Interests.validPlace(lat, lng)) return null;
+        String url = String.format(Locale.ROOT, "%s?latitude=%.2f&longitude=%.2f"
+                + "&current=temperature_2m,weather_code&temperature_unit=celsius", OPEN_METEO, lat, lng);
+        try {
+            JSONObject cur = new JSONObject(new String(get(url), StandardCharsets.UTF_8)).optJSONObject("current");
+            if (cur == null) return null;
+            double t = cur.optDouble("temperature_2m", Double.NaN);
+            if (Double.isNaN(t) || t < -90 || t > 70) return null;
+            return new Interests.Weather(t, cur.optInt("weather_code", -1));
+        } catch (Exception e) {
+            Log.w(TAG, "weather: " + e);
+            return null;
+        }
+    }
+
+    /** RSS {@code <item><title>} or Atom {@code <entry><title>}, the first few of each feed. */
+    private static List<Interests.Headline> rss(byte[] body, String source) throws Exception {
+        XmlPullParser p = Xml.newPullParser();
+        p.setFeature(XmlPullParser.FEATURE_PROCESS_NAMESPACES, false);
+        p.setInput(new java.io.ByteArrayInputStream(body), null);
+        List<Interests.Headline> out = new ArrayList<>();
+        boolean inItem = false;
+        for (int ev = p.getEventType(); ev != XmlPullParser.END_DOCUMENT && out.size() < MAX_HEADLINES_PER_FEED;
+             ev = p.next()) {
+            if (ev == XmlPullParser.START_TAG) {
+                String n = p.getName();
+                if ("item".equals(n) || "entry".equals(n)) inItem = true;
+                else if (inItem && "title".equals(n)) {
+                    String t = p.nextText().replaceAll("\\s+", " ").trim();
+                    if (!t.isEmpty()) out.add(new Interests.Headline(t, source));
+                    inItem = false;
+                }
+            }
+        }
+        return out.isEmpty() ? Collections.emptyList() : out;
+    }
+
+    private static String host(String url) {
+        try {
+            return new URL(url).getHost().replaceFirst("^(www|feeds)\\.", "");
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    private static byte[] get(String url) throws IOException {
+        HttpsURLConnection c = (HttpsURLConnection) new URL(url).openConnection();
+        c.setInstanceFollowRedirects(false);
+        c.setConnectTimeout(TIMEOUT_MS);
+        c.setReadTimeout(TIMEOUT_MS);
+        c.setRequestProperty("User-Agent", "tvhome");
+        try {
+            int code = c.getResponseCode();
+            if (code != 200) throw new IOException("HTTP " + code);
+            try (InputStream in = c.getInputStream()) {
+                ByteArrayOutputStream buf = new ByteArrayOutputStream();
+                byte[] chunk = new byte[8192];
+                for (int r; (r = in.read(chunk)) > 0; ) {
+                    if (buf.size() + r > MAX_BYTES) throw new IOException("larger than " + MAX_BYTES);
+                    buf.write(chunk, 0, r);
+                }
+                return buf.toByteArray();
+            }
+        } finally {
+            c.disconnect();
+        }
+    }
+}

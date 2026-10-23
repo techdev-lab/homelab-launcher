@@ -1,0 +1,62 @@
+name: Bug report
+description: Something does not work as described
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Do not paste IP addresses, Wi-Fi names, pairing codes or ADB keys. Replace them with placeholders.
+        If the TV is stuck in a boot loop, read the rescue steps in `docs/INSTALL.md` first.
+  - type: input
+    id: version
+    attributes:
+      label: App version
+      description: The versionName shown in the build, for example 2.5.5 or 2.5.5-online.
+    validations:
+      required: true
+  - type: dropdown
+    id: build
+    attributes:
+      label: Build
+      options:
+        - online
+        - offline
+        - built from source
+    validations:
+      required: true
+  - type: input
+    id: device
+    attributes:
+      label: Device and Android version
+      description: For example Chromecast with Google TV 4K, Android 14.
+    validations:
+      required: true
+  - type: textarea
+    id: happened
+    attributes:
+      label: What happened
+      description: What you saw, and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. ...
+        2. ...
+    validations:
+      required: true
+  - type: textarea
+    id: output
+    attributes:
+      label: Relevant output
+      description: Optional. Logs or command output, with personal details removed.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before sending
+      options:
+        - label: I removed IP addresses, Wi-Fi names, pairing codes and keys from this report.
+          required: true

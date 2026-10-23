@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  # Cancel superseded runs on pull requests only. On main a cancelled run would turn the README badge red.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  hygiene:
+    name: Repository hygiene
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Unit tests for the hygiene script
+        run: python3 -m unittest discover -s scripts/ci
+      - name: Language and forbidden-file checks
+        run: python3 scripts/ci/check_hygiene.py
+
+  build:
+    name: Build and test (Android)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: launcher
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-java@v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+      # Also validates the checksum of gradle-wrapper.jar (validate-wrappers defaults to true).
+      - uses: gradle/actions/setup-gradle@v6.4.0
+      - name: Make the wrapper executable
+        run: chmod +x gradlew
+      - name: Unit tests, both flavors
+        run: ./gradlew testOfflineReleaseUnitTest testOnlineReleaseUnitTest
+      - name: Lint, online flavor
+        run: ./gradlew lintOnlineRelease
+      - name: Assemble both flavors
+        run: ./gradlew assembleOfflineRelease assembleOnlineRelease
+      - uses: actions/upload-artifact@v7.0.2
+        with:
+          name: apk-${{ github.sha }}
+          path: launcher/app/build/outputs/apk/*/release/*.apk
+          retention-days: 14
+          if-no-files-found: error
+
+  scripts:
+    name: Script tests (fake TV)
+    runs-on: windows-2022
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Run the fake-TV tests
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/tests/run-tests.ps1

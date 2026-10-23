@@ -1,0 +1,48 @@
+{
+  "dock_apps": [
+    "com.google.android.youtube.tv",
+    "com.netflix.ninja",
+    "net.mbc.shahidTV",
+    "org.jellyfin.androidtv"
+  ],
+  "hidden_apps": [],
+  "live_tv_package": "",
+  "vpn_app": "",
+  "background_color": "#0B0B0C",
+  "columns": 4,
+  "fill_dock": true,
+  "module_cards": true,
+  "animations": true,
+  "reduced_motion": false,
+  "sky_intensity": 0,
+  "shamsi_date": false,
+  "festival": "",
+  "language": "system",
+  "hijri_date": true,
+  "prayer_city": "دبي",
+  "prayer_city_en": "Dubai",
+  "prayer_lat": 25.2048,
+  "prayer_lng": 55.2708,
+  "weather": true,
+  "sports_leagues": [
+    "afc.champions"
+  ],
+  "sports_cards": [
+    [
+      "afc.champions",
+      "global.gulf_cup"
+    ],
+    [
+      "uefa.champions",
+      "eng.1",
+      "esp.1",
+      "ita.1",
+      "ger.1"
+    ]
+  ],
+  "sports_teams": [],
+  "news_feeds": [],
+  "news_feeds_en": [],
+  "wallpaper_mode": "rotate",
+  "wallpaper_interval_min": 5
+}

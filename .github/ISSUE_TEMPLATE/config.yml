@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Report a security issue
+    url: https://github.com/techdev-lab/homelab-launcher/security/advisories/new
+    about: Use private vulnerability reporting. Do not open a public issue.
+  - name: Installation help
+    url: https://github.com/techdev-lab/homelab-launcher/blob/main/docs/INSTALL.md
+    about: Read the install guide first, including the rescue steps.
