@@ -13,11 +13,6 @@ launcher/local.properties
 *.iml
 .vscode/
 
-# Local-only agent files
-CLAUDE.md
-AGENTS.md
-opencode.json
-
 # Secrets and device data
 *.keystore
 *.jks
