@@ -1,6 +1,6 @@
 # How it was built (and what went wrong)
 
-Three days, two Chromecasts with Google TV 4K, one boot loop. Written down so the next person skips the painful parts.
+Four days, two Chromecasts with Google TV 4K, one boot loop. Written down so the next person skips the painful parts.
 
 ## Day 1: clean up, then a launcher
 
@@ -34,6 +34,18 @@ Three days, two Chromecasts with Google TV 4K, one boot loop. Written down so th
   - a **gliding clock screensaver** with the Hijri date and the next prayer, instead of Google's;
   - a **one-shot kit script** to apply all of it to another TV, with a backup and a rollback.
 
+## Day 4: publishing, and testing the published copy
+
+The project went to GitHub, and then the **published** copy was tested the way a stranger would use it: a fresh clone, a build, an install on a real Chromecast. That found what the working folder never showed:
+
+- **The apply script refused a correct TV.** It asked whether `launcherx` and `setupwraith` were enabled for any user, and this TV has a second user profile where `launcherx` is still enabled. Fixed: it now checks user 0 only.
+- **The same script stopped at its backup step on Windows PowerShell 5.1**, because adb writes progress to stderr and PowerShell treated that as an error. Fixed.
+- **Four Arabic strings were missing** (the quick-settings labels), so an Arabic TV would have shown English there. Fixed, and a test now fails when an English string has no Arabic version.
+- **The README said things that were not true:** it offered a download that did not exist, and it said "no location permission" while the manifest declares one so that Android lets the app read the Wi-Fi name. Both now say what is true.
+- **GitHub did not recognise the license as MIT**, because a font note had been appended to the license text. The note moved to `NOTICE.md`.
+- **The first commits carried a placeholder author**, because the Git identity was not set. The history was rebuilt as one clean commit before publishing.
+- **The TV's `config.json` had drifted from its saved profile** (news switched on, one football card instead of two). Not a code bug: the kit script puts the profile back, with a backup first.
+
 ## Lessons
 
 1. Read before you run, pin what you run, and keep private keys out of synced folders.
@@ -44,3 +56,6 @@ Three days, two Chromecasts with Google TV 4K, one boot loop. Written down so th
 6. Test remote features with the real remote.
 7. One change at a time, a test after each, and a rollback written before the change.
 8. The factory reset button is your friend: know it before you need it.
+9. Test the published copy from a fresh clone, not the folder you wrote it in.
+10. A safety check must ask exactly the right question: "disabled for the user that matters", not "disabled somewhere".
+11. Write only what you verified. A promise in the README (a download, "no location permission") is a claim to test.

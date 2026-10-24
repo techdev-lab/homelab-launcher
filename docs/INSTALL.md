@@ -63,6 +63,12 @@ adb shell am force-stop com.gathin.tvhome
 
 Press HOME, then open tvhome again to see the result.
 
+The launcher follows the TV's language. To show it in Arabic on a TV whose system language is English, without changing the TV language for every app, give the launcher its own language (Android 13 and later; `adb shell cmd locale help` also explains how to clear it):
+
+```bash
+adb shell cmd locale set-app-locales com.gathin.tvhome --locales ar
+```
+
 Optional, to show the Wi-Fi network name in the Wi-Fi pill: Android 10 and later only hand the name to an app that holds the location permission, and nothing in this guide grants it for you. Without it the pill still works and just does not show the name. The app never asks for your location; this permission is declared only for the name (see [SECURITY.md](../SECURITY.md)).
 
 ```bash
@@ -125,13 +131,18 @@ kit/
   wallpapers/*.jpg
 ```
 
+Run it from the kit folder, with the TV address set (the connect port from Wireless debugging):
+
 ```powershell
+$env:AL_TV = "<TV-IP>:<PORT>"
 .\Apply-TvhomeKit.ps1 -Alias livingroom                                          # dry run
 .\Apply-TvhomeKit.ps1 -Alias livingroom -Execute -ConfirmText "CONFIRM KIT livingroom"
 .\Apply-TvhomeKit.ps1 -Alias livingroom -Rollback -ConfirmText "CONFIRM ROLLBACK livingroom"
 ```
 
-It refuses to run unless `launcherx` and `setupwraith` are both disabled, because reinstalling the only Home app while the setup wizard can take over is exactly how a boot loop starts.
+The backup goes to `%USERPROFILE%\.homelab-launcher\state\`; the rollback puts back the previous APK, config, screensaver and accessibility setting. The script also sets the screensaver to tvhome's own clock, so note your old value first if you want it back.
+
+It refuses to run unless `launcherx` and `setupwraith` are both disabled for user 0, because reinstalling the only Home app while the setup wizard can take over is exactly how a boot loop starts.
 
 ## Optional: a quieter TV
 
