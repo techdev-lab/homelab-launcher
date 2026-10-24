@@ -2,10 +2,13 @@ package com.gathin.tvhome;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -55,6 +58,32 @@ public class ResourcesTest {
     @Test
     public void hijriDays() throws Exception {
         check("hijri_days", 7);
+    }
+
+    /** The names of the plain strings in a folder; strings marked translatable="false" are skipped on request. */
+    private static Set<String> stringNames(String folder, boolean translatableOnly) throws Exception {
+        File f = new File("src/main/res/" + folder + "/strings.xml");
+        Document doc = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(f);
+        NodeList strings = doc.getElementsByTagName("string");
+        Set<String> out = new TreeSet<>();
+        for (int i = 0; i < strings.getLength(); i++) {
+            Element s = (Element) strings.item(i);
+            if (translatableOnly && "false".equals(s.getAttribute("translatable"))) continue;
+            out.add(s.getAttribute("name"));
+        }
+        return out;
+    }
+
+    @Test
+    public void everyTranslatableStringHasAnArabicVersion() throws Exception {
+        Set<String> missing = new TreeSet<>(stringNames("values", true));
+        missing.removeAll(stringNames("values-ar", false));
+        assertTrue("values-ar is missing: " + missing, missing.isEmpty());
+    }
+
+    @Test
+    public void missingStringIsCaught() throws Exception {
+        assertFalse(stringNames("values-ar", false).contains("no_such_string"));
     }
 
     @Test

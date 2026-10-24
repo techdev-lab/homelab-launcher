@@ -55,6 +55,10 @@
     <string name="follow_theme">اتّباع السمة (إعادة ضبط الخيارات)</string>
     <string name="follow_theme_hint">استخدم تخطيط السمة الحالية وحركتها أو القيم المضمّنة. تطبيق سمة أو إعادة ضبطها يمحو خيارات التلفاز أيضًا.</string>
     <string name="tv_settings">إعدادات نظام التلفاز</string>
+    <string name="quick_picture">الشاشة</string>
+    <string name="quick_network">الشبكة</string>
+    <string name="quick_apps">التطبيقات</string>
+    <string name="quick_apps_hint">إعادة التفعيل</string>
     <string name="on">تشغيل</string>
     <string name="off">إيقاف</string>
     <string name="enable">تفعيل</string>
