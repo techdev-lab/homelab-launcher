@@ -63,7 +63,7 @@ adb shell am force-stop com.gathin.tvhome
 
 Press HOME, then open tvhome again to see the result.
 
-The launcher follows the TV's language. To show it in Arabic on a TV whose system language is English, without changing the TV language for every app, give the launcher its own language (Android 13 and later; `adb shell cmd locale help` also explains how to clear it):
+The launcher and its screensaver follow the TV's language. To show them in Arabic on a TV whose system language is English, without changing the TV language for every app, set `"language": "ar"` in `config.json` (works on every Android version), or give the launcher its own Android language (Android 13 and later; `adb shell cmd locale help` also explains how to clear it):
 
 ```bash
 adb shell cmd locale set-app-locales com.gathin.tvhome --locales ar
@@ -109,7 +109,7 @@ adb shell settings put secure screensaver_components com.gathin.tvhome/.ClockDre
 
 Order matters: set the accessibility service **after** any `force-stop` (a force-stop afterwards clears it), and again after every reinstall of tvhome. Test the YouTube button with the real remote; keys sent with `adb shell input` do not pass through the service.
 
-The screensaver follows the TV's system language. Your old screensaver value can be read first with `adb shell settings get secure screensaver_components` if you want to go back to it.
+The screensaver uses the same language as the home screen (see step 4). Your old screensaver value can be read first with `adb shell settings get secure screensaver_components` if you want to go back to it.
 
 ## 7. Finish
 

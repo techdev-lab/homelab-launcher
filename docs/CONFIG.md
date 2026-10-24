@@ -19,7 +19,7 @@ Start from `config/config.example.json` or a city in `config/examples/`.
 
 | Key | Values | Notes |
 |---|---|---|
-| `language` | `system` (default), `ar`, `en` | `system` follows the TV. Arabic is right to left, with Arabic app, league and team names where known (`launcher/app/src/main/assets/names_ar.json`). The screensaver always follows the TV's system language. |
+| `language` | `system` (default), `ar`, `en` | `system` follows the TV. Arabic is right to left, with Arabic app, league and team names where known (`launcher/app/src/main/assets/names_ar.json`). The screensaver uses the same language as the home screen: this key first, then the launcher's own Android language (see [INSTALL.md](INSTALL.md), step 4), then the TV's. |
 | `hijri_date` | `true` / `false` | Umm al-Qura calendar, computed on the TV. |
 
 ## Prayer times and weather

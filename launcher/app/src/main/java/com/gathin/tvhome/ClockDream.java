@@ -2,20 +2,27 @@ package com.gathin.tvhome;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
+import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Handler;
 import android.os.Looper;
 import android.service.dreams.DreamService;
+import android.text.format.DateFormat;
 import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.PathInterpolator;
 import android.widget.LinearLayout;
+import android.widget.TextClock;
 import android.widget.TextView;
 
+import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.TimeZone;
 
@@ -46,6 +53,9 @@ public class ClockDream extends DreamService {
     private Interests.Settings settings = Interests.Settings.NONE;
     private boolean arabic;
     private float density;
+    /** The layout's TextClocks and their own patterns {12 hour, 24 hour}, see formatClocks. */
+    private final List<TextClock> clocks = new ArrayList<>();
+    private final List<CharSequence[]> clockPatterns = new ArrayList<>();
 
     private final Runnable glide = new Runnable() {
         @Override
@@ -73,6 +83,12 @@ public class ClockDream extends DreamService {
         }
     };
 
+    /** The home screen's language, not the TV's: Android starts a dream with the system language only. */
+    @Override
+    protected void attachBaseContext(Context base) {
+        super.attachBaseContext(Language.wrap(base));
+    }
+
     @Override
     public void onAttachedToWindow() {
         super.onAttachedToWindow();
@@ -89,6 +105,8 @@ public class ClockDream extends DreamService {
         }
 
         content = findViewById(R.id.dreamContent);
+        collectClocks(content);
+        formatClocks();
         parentView = (View) content.getParent();
         View ambient = findViewById(R.id.dreamAmbient);
         glow = new GradientDrawable();
@@ -182,7 +200,37 @@ public class ClockDream extends DreamService {
         if (minuteLine != null) minuteLine.animate().cancel();
     }
 
+    private void collectClocks(View v) {
+        if (v instanceof TextClock) {
+            TextClock c = (TextClock) v;
+            clocks.add(c);
+            clockPatterns.add(new CharSequence[]{c.getFormat12Hour(), c.getFormat24Hour()});
+        } else if (v instanceof ViewGroup) {
+            ViewGroup g = (ViewGroup) v;
+            for (int i = 0; i < g.getChildCount(); i++) collectClocks(g.getChildAt(i));
+        }
+    }
+
+    /**
+     * The clock, the am/pm mark and the date, formatted here in the dream's language. A TextClock formats with the
+     * process default locale each time it ticks, and Android puts the TV's language back there, which left the date
+     * in English on an Arabic screen. The finished text goes back into the clock as a quoted literal, so it cannot
+     * change until the next call (every minute).
+     */
+    private void formatClocks() {
+        Locale.setDefault(getResources().getConfiguration().getLocales().get(0));
+        boolean is24 = DateFormat.is24HourFormat(this);
+        Calendar now = Calendar.getInstance();
+        for (int i = 0; i < clocks.size(); i++) {
+            CharSequence pattern = clockPatterns.get(i)[is24 ? 1 : 0];
+            String text = pattern == null || pattern.length() == 0 ? "" : DateFormat.format(pattern, now).toString();
+            clocks.get(i).setFormat12Hour(Language.quote(text));
+            clocks.get(i).setFormat24Hour(Language.quote(text));
+        }
+    }
+
     private void updateTexts() {
+        formatClocks();
         hijriLine.setText(Hijri.format(this, Hijri.today(), arabic));
         String p = nextPrayer();
         prayerLine.setText(p);

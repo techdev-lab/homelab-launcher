@@ -3,6 +3,7 @@
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
 ## Unreleased
+- The screensaver now follows the home screen's language: `config.json` `language` first, then the launcher's own Android language (`cmd locale set-app-locales`), then the TV's. Before, an Arabic home screen still got an English screensaver, because Android starts a screensaver with the TV's system language only. New `Language` class and `LanguageTest`.
 - Arabic labels for the quick-settings panel (Display, Network, Apps and its hint), which showed in English on an Arabic TV. `ResourcesTest` now fails when a translatable English string has no Arabic version.
 - `scripts/Apply-TvhomeKit.ps1`: the "launcherx and setupwraith disabled" checks now look at user 0 only (a TV with a second user profile was refused by mistake), and the config backup no longer aborts under Windows PowerShell 5.1.
 - Docs: `INSTALL.md` explains how to give the launcher its own language (Arabic on an English TV) and how to run the kit script; `JOURNEY.md` has a Day 4 with the errors found by testing the published copy and how they were fixed.
