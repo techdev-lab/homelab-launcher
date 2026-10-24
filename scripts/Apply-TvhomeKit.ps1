@@ -72,8 +72,8 @@ if ($Rollback) {
     say "  install -r base.apk (sha256 $($before['apk_sha256'].Substring(0,12))...), config.json back,"
     say "  screensaver_components=$($before['screensaver_components']), accessibility=$($before['enabled_accessibility_services'])"
     if ($ConfirmText -cne "CONFIRM ROLLBACK $Alias") { say "`nDry run. Add -ConfirmText 'CONFIRM ROLLBACK $Alias' to run it."; return }
-    check ((sh "pm list packages -e $Launcherx") -notmatch 'launcherx') 'launcherx still disabled (Home stays tvhome)'
-    check ((sh "pm list packages -e $Setup") -notmatch 'setupwraith') 'setupwraith still disabled'
+    check ((sh "pm list packages --user 0 -e $Launcherx") -notmatch 'launcherx') 'launcherx still disabled (Home stays tvhome)'
+    check ((sh "pm list packages --user 0 -e $Setup") -notmatch 'setupwraith') 'setupwraith still disabled'
     if (-not $ok) { throw 'Refused: the safe install -r needs both stock Home packages disabled.' }
     & $Adb -s $env:AL_TV install -r (Join-Path $last.FullName 'base.apk')
     $oldCfg = Join-Path $last.FullName 'config.json'
@@ -93,8 +93,8 @@ say "== 1. checks (read-only) on $($env:AL_TV), alias $Alias"
 check (Test-Link) 'adb link up'
 check ($Codenames -contains (sh 'getprop ro.product.device').Trim()) "Chromecast with Google TV ($($Codenames -join ' / '))"
 check ((sh "pm list packages $Tvhome") -match [regex]::Escape("package:$Tvhome")) 'tvhome installed'
-check ((sh "pm list packages -e $Launcherx") -notmatch 'launcherx') 'launcherx disabled (else use Set-TvhomeAsHome.ps1 first)'
-check ((sh "pm list packages -e $Setup") -notmatch 'setupwraith') 'setupwraith disabled (else use Set-TvhomeAsHome.ps1 first)'
+check ((sh "pm list packages --user 0 -e $Launcherx") -notmatch 'launcherx') 'launcherx disabled (else use Set-TvhomeAsHome.ps1 first)'
+check ((sh "pm list packages --user 0 -e $Setup") -notmatch 'setupwraith') 'setupwraith disabled (else use Set-TvhomeAsHome.ps1 first)'
 check ((sh 'cmd role get-role-holders android.app.role.HOME').Trim() -eq $Tvhome) 'Home role is tvhome'
 check (Test-Path $Apk) "APK in kit: $Apk"
 check ($ApkSha256 -match '^[0-9A-F]{64}$') 'APK SHA-256 known (-ApkSha256 or apk\SHA256SUMS.txt)'
@@ -133,7 +133,7 @@ $bk = Join-Path $StateDir ("backup_kit_{0}_{1}" -f $Alias, (Get-Date -Format 'yy
 New-Item -ItemType Directory -Force $bk | Out-Null
 say "`n== 2. backup -> $bk"
 & $Adb -s $env:AL_TV pull $apkPath (Join-Path $bk 'base.apk') | Out-Null
-& $Adb -s $env:AL_TV pull "$Files/config.json" (Join-Path $bk 'config.json') 2>$null | Out-Null
+& $Adb -s $env:AL_TV pull "$Files/config.json" (Join-Path $bk 'config.json') | Out-Null
 $now.GetEnumerator() | ForEach-Object { "$($_.Key)=$($_.Value)" } | Set-Content (Join-Path $bk 'before.txt') -Encoding ascii
 if (-not (Test-Path (Join-Path $bk 'base.apk'))) { throw 'Backup of base.apk failed: nothing changed.' }
 

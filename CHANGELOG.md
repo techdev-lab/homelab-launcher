@@ -2,6 +2,10 @@
 
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
+## Unreleased
+- Arabic labels for the quick-settings panel (Display, Network, Apps and its hint), which showed in English on an Arabic TV. `ResourcesTest` now fails when a translatable English string has no Arabic version.
+- `scripts/Apply-TvhomeKit.ps1`: the "launcherx and setupwraith disabled" checks now look at user 0 only (a TV with a second user profile was refused by mistake), and the config backup no longer aborts under Windows PowerShell 5.1.
+
 ## 2.5.5 (2026-10-22)
 - All user-facing text moved out of the Java code into resources: prayer names, Hijri months and weekdays, "Prayer times", "LIVE", "News" and the "in" phrasing now live in `res/values/strings.xml` and `res/values-ar/strings.xml`. The code itself is English only.
 - `ResourcesTest` checks that both languages have complete name lists. No visible change.
