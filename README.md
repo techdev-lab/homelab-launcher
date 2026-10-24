@@ -42,7 +42,7 @@ It is written for Muslim and Arabic-speaking households first, but it is not tie
 
 | | |
 |---|---|
-| **Arabic and English, end to end** | Follows the TV's language. On an Arabic TV the whole screen is Arabic, right to left, including app names, league names and 114 team names. On an English TV it is fully English. |
+| **Arabic and English, end to end** | Follows the TV's language, or its own (`language` in the config, or Android's per-app language). In Arabic the whole screen is Arabic, right to left, including app names, league names and 114 team names, and the screensaver follows the same language. In English it is fully English. |
 | **Prayer times, offline** | Umm al-Qura method, computed on the TV from the coordinates you set. No network and no location lookup: the city is typed into the config. Checked against an independent source to within 2 minutes. |
 | **Hijri date** | Umm al-Qura calendar from the platform's ICU, next to the Gregorian date. |
 | **Football cards** | One card per league group, side by side, e.g. the Saudi Pro League and "the big European leagues". A live match first, otherwise the next kick-off within 7 days. |
@@ -155,7 +155,7 @@ MIT License, see [LICENSE](LICENSE).
 
 | | |
 |---|---|
-| **عربي وإنجليزي بالكامل** | يتبع لغة التلفزيون. الجهاز عربي = الشاشة كلها عربي من اليمين لليسار، حتى أسماء التطبيقات (يوتيوب، شاهد، جيليفين…) والدوريات و114 فريقاً. الجهاز إنجليزي = كلها إنجليزي. |
+| **عربي وإنجليزي بالكامل** | يتبع لغة التلفزيون، أو لغته الخاصة (مفتاح `language` في الإعدادات، أو لغة التطبيق في أندرويد). بالعربي الشاشة كلها عربي من اليمين لليسار، حتى أسماء التطبيقات (يوتيوب، شاهد، جيليفين…) والدوريات و114 فريقاً، وشاشة التوقف تتبع نفس اللغة. بالإنجليزي كلها إنجليزي. |
 | **مواقيت الصلاة بدون إنترنت** | بطريقة أم القرى، تنحسب على الجهاز من إحداثيات مدينتك. بدون تحديد موقع: تكتب المدينة في الإعدادات. فرقها عن مصدر مستقل أقل من دقيقتين. |
 | **التاريخ الهجري** | تقويم أم القرى، جنب الميلادي. |
 | **بطاقات الكورة** | بطاقة لكل مجموعة دوريات جنب بعض، مثلاً: الدوري السعودي، والدوريات الأوروبية الكبرى. المباشر أولاً، وإلا أقرب مباراة خلال 7 أيام. |
