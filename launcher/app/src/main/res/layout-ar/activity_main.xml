@@ -218,7 +218,7 @@
         </RelativeLayout>
 
         <!-- Interests strip: prayer times (computed offline) and, in the online build, a match and a headline.
-             Display only, never focusable, so the remote's path from the header to the grid is unchanged.
+             Its cards take focus between the header and the dock (MainActivity.makeCardFocusable).
              Cards are added in code (MainActivity.updateInterests). -->
         <LinearLayout
             android:id="@+id/interests"
@@ -228,8 +228,7 @@
             android:orientation="horizontal"
             android:gravity="right"
             android:focusable="false"
-            android:descendantFocusability="blocksDescendants"
-            android:importantForAccessibility="no"
+            android:descendantFocusability="afterDescendants"
             android:visibility="gone" />
 
         <!-- The wrapper clips at the grid's edge; the grid itself must not clip so scaled tiles can overflow their cells. -->
