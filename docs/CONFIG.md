@@ -76,13 +76,24 @@ Not available from this source (checked): the Egyptian, UAE, Qatari, Moroccan, K
 
 | Key | Values | Notes |
 |---|---|---|
-| `wallpaper_mode` | `serene`, `homelab`, `rotate`, `fixed`, `plain` | `serene` and `homelab` rotate the sets built into the APK. `rotate` uses every picture you pushed to `files/wallpapers/`, `fixed` the single `files/wallpaper.jpg`. Without a config.json a fresh install shows `serene`. A choice made on the TV (*Launcher settings > Wallpapers*) wins until the next theme push or *Follow theme*. |
+| `wallpaper_mode` | `serene`, `homelab`, `kids`, `rotate`, `fixed`, `plain` | `serene`, `homelab` and `kids` rotate the sets built into the APK; `plain` shows `background_color`. `rotate` uses every picture you pushed to `files/wallpapers/`, `fixed` the single `files/wallpaper.jpg`. Without a config.json a fresh install shows `serene`. A choice made on the TV (*Launcher settings > Wallpapers*) wins until the next theme push or *Follow theme*. |
 | `wallpaper_interval_min` | `1` to `240` (default 5) | Minutes per picture in `rotate`. |
 | `background_color` | `"#0B0B0C"` | Behind everything. |
 | `animations`, `reduced_motion` | `true` / `false` | Turn effects down on slow TVs. |
 | `module_cards` | `true` | Allow app cards. |
 | `sky_intensity` | `0` to `100` | Optional time-of-day sky behind the screen; 0 hides it. |
 | `shamsi_date`, `festival` | | Inherited from the upstream launcher; off in the examples. |
+
+## Choices made on the TV
+
+*Launcher settings* (hold OK on the Settings button) saves these on the TV. They win over `config.json`:
+
+| Setting | Overrides | Cleared by |
+|---|---|---|
+| Language (TV language, Arabic, English) | `language` | choosing *TV language* |
+| Apps per row, wallpapers and plain colour, motion | `columns`, `wallpaper_mode`, `background_color`, `animations`, `advanced_effects` | a new theme push, or *Follow theme* |
+| Cards: prayer times, weather, football, my clubs | a card that is off never shows, whatever the config says | switching it on again |
+| Favourite clubs | `favorite_teams` | *Clear* on the clubs screen |
 
 ## Wallpapers
 
@@ -92,6 +103,7 @@ Two generated sets, no photos and no third-party images. Both are copied into th
 | Folder | Pictures | Made by | For |
 |---|---|---|---|
 | `wallpapers/homelab/` | 6 | `wallpapers/gen.html` (open in a browser, export) | A home-lab look: racks, terminals, circuits. |
+| `wallpapers/kids/` | 6 | `wallpapers/gen-kids.html` (open in a browser, `?s=1` to `?s=6`, export) | A children's TV: a rocket in space, under the sea, a rainbow castle, dinosaurs, balloons, a night garden. |
 | `wallpapers/serene/` | 10 | `wallpapers/gen-serene.py` (Python, Pillow and numpy) | Any TV: dusk, ridges, still water, dunes, ribbons, circles, night stars, aurora, sea at dawn, a faint geometric lattice. Nothing that points to a household. (Called "general" in 2.6.0.) |
 
 To use your own pictures instead, push them to `files/wallpapers/` and set `"wallpaper_mode": "rotate"`.
