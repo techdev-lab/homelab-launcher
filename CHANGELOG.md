@@ -9,6 +9,7 @@ All builds keep `versionCode 4` so any of them can replace another with `adb ins
 - **New font: IBM Plex Sans Arabic** for the cards, the Arabic header (clock, date, greeting, Hijri date) and the screensaver, Arabic and Latin from one family. Picked by rendering the same cards in seven OFL fonts (Readex Pro, IBM Plex Sans Arabic, Noto Kufi Arabic, Noto Sans Arabic, Tajawal, Cairo, Almarai): it is the narrowest at the same size, so all five prayer times fit a fifth of the screen. Readex Pro is removed. The English header keeps Outfit.
 - **Removed: Module cards and Move mode.** Nothing in the world declares a module card, so the menu only ever said "No module cards installed"; Move mode (hold OK on a tile) never worked with the physical remote. Holding OK on the Settings button now opens Launcher settings directly. An order saved by Move mode is cleared once, so the dock follows `dock_apps` again. `module_cards` in an old config.json is ignored. The app label cleaner moved to `Labels` with its tests.
 - Fixes from the review of 2.6 to 2.8.1: the release workflow's actions are pinned to commit SHAs; the card switches no longer change the shared empty settings object.
+- `scripts/Set-TvhomeAsHome.ps1` no longer refuses a TV without a pushed `wallpapers` folder (the built-in sets need none since 2.7), and reads saved networks listed as `* ID: n SSID:` (some Android 14 builds). New fake-TV scenario; 10/10 pass.
 - 2.8.1 was merged but never published as its own release; its fixes ship in 2.9.0.
 
 ## 2.8.1 (2026-10-28, not released separately)

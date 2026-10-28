@@ -1,7 +1,8 @@
 """A fake adb that imitates one Google TV, for testing Set-TvhomeAsHome.ps1 without a device.
 State lives in the JSON file named by FAKE_STATE; every call is appended to the log named by FAKE_LOG.
 FAKE_MODE: normal | sethome_ignored (set-home-activity has no effect) | setup_owns_wifi | owner_unknown
-(the network in use has no cname line, as seen on a real Chromecast) | bind_fails
+(the network in use has no cname line, as seen on a real Chromecast) | bind_fails | builtin_walls (no pushed
+wallpapers folder, and saved networks listed as "* ID: n SSID:" as on some Android 14 builds)
 """
 import json, os, sys
 
@@ -59,15 +60,18 @@ if c.startswith("pm list packages -e"):
 elif c.startswith("pm list packages"):
     out("package:" + TV); out("package:" + LX)
 elif c.startswith("ls /sdcard/Android/data/com.gathin.tvhome/files"):
-    out(c.split()[1] if st["files"] else "ls: No such file or directory")
+    walls = c.split()[1].endswith("/wallpapers")
+    present = st["files"] and not (walls and mode == "builtin_walls")
+    out(c.split()[1] if present else "ls: No such file or directory")
 elif c.startswith("dumpsys wifi |") and "Supplicant" in c:
     out("mWifiInfo SSID: HomeNet, Supplicant state: COMPLETED, RSSI: -47")
 elif c.startswith("dumpsys wifi"):
     owner_cur = SW if mode == "setup_owns_wifi" else "android.uid.system:1000"
     out('mWifiInfo SSID: HomeNet, BSSID: x, MAC: y, Supplicant state: COMPLETED')
-    out('ID: 0 SSID: "OldNet" PROVIDER-NAME: null BSSID: null')
+    star = "* " if mode == "builtin_walls" else ""
+    out(star + 'ID: 0 SSID: "OldNet" PROVIDER-NAME: null BSSID: null')
     out(' cuid=10059 cname=' + SW + ' luid=10059')
-    out('ID: 2 SSID: "HomeNet" PROVIDER-NAME: null BSSID: null')
+    out(star + 'ID: 2 SSID: "HomeNet" PROVIDER-NAME: null BSSID: null')
     if mode != "owner_unknown":
         out(' cuid=1000 cname=' + owner_cur + ' luid=1000')
     out('mPerId={0=ID: 0 SSID: "OldNet" cname=' + SW)
