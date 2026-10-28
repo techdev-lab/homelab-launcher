@@ -1364,12 +1364,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private View clubCard(List<Interests.Match> clubs, boolean ar) {
         int i = Math.floorMod(clubIndex, clubs.size());
         Interests.Match m = clubs.get(i);
-        String count = clubs.size() > 1 ? "  ·  " + (i + 1) + "/" + clubs.size() : "";
+        // The position goes first: a long league name is cut at the end, never the "3/8" a viewer looks for.
+        String count = clubs.size() > 1 ? (i + 1) + "/" + clubs.size() + "  ·  " : "";
         LinearLayout c = (LinearLayout) matchCard(m, ar);
         // matchCard's second line is the league; add the position so a viewer knows more clubs follow.
         if (!count.isEmpty() && c.getChildCount() > 1 && c.getChildAt(1) instanceof TextView) {
             TextView league = (TextView) c.getChildAt(1);
-            league.setText(league.getText() + count);
+            league.setText(count + league.getText());
         }
         // OK on the club card skips to the next club, and the 5-second timer starts again from there.
         c.setOnClickListener(v -> {
@@ -1408,7 +1409,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private View weatherCard(Interests.Weather w, boolean ar) {
         String city = interestsCfg.city(ar);
-        String meta = getString(R.string.weather) + (city.isEmpty() ? "" : " · " + city);
         String label;
         switch (Interests.sky(w.code)) {
             case Interests.SKY_CLEAR: label = getString(R.string.weather_clear); break;
@@ -1421,7 +1421,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             case Interests.SKY_STORM: label = getString(R.string.weather_storm); break;
             default: label = ""; break;
         }
-        return card(meta, false, label, w.temperature(), WEATHER_WEIGHT);
+        // The city on its own line: beside "Weather" it was cut in this narrow card ("Weather · Al-A...").
+        return card(getString(R.string.weather), false, city.isEmpty() ? null : city, label, w.temperature(),
+                WEATHER_WEIGHT);
     }
 
     private View newsCard(Interests.Headline h, boolean ar) {
