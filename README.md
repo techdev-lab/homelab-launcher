@@ -62,7 +62,7 @@ Full history: [CHANGELOG.md](CHANGELOG.md).
 
 | File | What it is |
 |---|---|
-| `HomeLab-Launcher-<version>.apk` | **The one most people want.** Everything: prayer times, Hijri date, weather, football cards, favourite clubs, both wallpaper sets. |
+| `HomeLab-Launcher-<version>.apk` | **The one most people want.** Everything: prayer times, Hijri date, weather, football cards, favourite clubs, all three wallpaper sets. |
 | `HomeLab-Launcher-<version>-offline.apk` | The same without any network access (no weather or football). For a TV that must stay offline. |
 | `SHA256SUMS.txt` | Checksums, to confirm the download is intact. |
 
@@ -114,7 +114,7 @@ You need a Windows, macOS or Linux computer on the same Wi-Fi as the TV, and abo
    ```
 4. [Download the APK](https://github.com/techdev-lab/homelab-launcher/releases/latest) (or [build it](#build)) and install it as a normal app, the stock home stays:
    ```bash
-   adb install HomeLab-Launcher-2.8.0.apk
+   adb install HomeLab-Launcher-<version>.apk
    ```
 5. Copy `config/config.example.json`, set your city and leagues ([docs/CONFIG.md](docs/CONFIG.md)), push it:
    ```bash
@@ -194,7 +194,7 @@ MIT License, see [LICENSE](LICENSE).
 
 موجّه للبيوت المسلمة والعربية، لكنه مو مربوط بدولة: تختار مدينتك للصلاة، ودورياتك لبطاقات الكورة. المصري يحط دوري أبطال أفريقيا، والإماراتي دوري أبطال آسيا وكأس الخليج، والسعودي دوري روشن، وهكذا.
 
-**تطبيق واحد بثلاث أشكال.** نفس ملف APK فيه ثلاث مجموعات خلفيات، تختار بينها بالريموت من *إعدادات المشغّل ← الخلفيات*، ومعها ستة ألوان سادة:
+**تطبيق واحد بثلاثة أشكال.** نفس ملف APK فيه ثلاث مجموعات خلفيات، تختار بينها بالريموت من *إعدادات المشغّل ← الخلفيات*، ومعها ستة ألوان سادة:
 
 | الشكل | لمين | الخلفيات |
 |---|---|---|
@@ -217,7 +217,7 @@ MIT License, see [LICENSE](LICENSE).
 
 | الملف | وش هو |
 |---|---|
-| `HomeLab-Launcher-<الإصدار>.apk` | **اللي يبيه أغلب الناس.** كل شي: الصلاة، الهجري، الطقس، الكورة، الأندية المفضلة، ومجموعتي الخلفيات. |
+| `HomeLab-Launcher-<الإصدار>.apk` | **اللي يبيه أغلب الناس.** كل شي: الصلاة، الهجري، الطقس، الكورة، الأندية المفضلة، وثلاث مجموعات للخلفيات. |
 | `HomeLab-Launcher-<الإصدار>-offline.apk` | نفسه بدون أي اتصال إنترنت (بدون طقس وكورة). لتلفزيون لازم يبقى بدون إنترنت. |
 | `SHA256SUMS.txt` | بصمات الملفات، تتأكد إن التنزيل سليم. |
 
@@ -270,7 +270,7 @@ MIT License, see [LICENSE](LICENSE).
    ```
 5. [نزّل ملف APK](https://github.com/techdev-lab/homelab-launcher/releases/latest) (أو ابنِه من قسم «بناء التطبيق» تحت) وثبّته كتطبيق عادي (الشاشة الأصلية تبقى):
    ```bash
-   adb install HomeLab-Launcher-2.8.0.apk
+   adb install HomeLab-Launcher-<version>.apk
    ```
 6. انسخ `config/config.example.json` أو ملف مدينة من مجلد `config/examples`، عدّل المدينة والدوريات والتطبيقات، وادفعه:
    ```bash

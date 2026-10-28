@@ -39,8 +39,8 @@ also removes `config.json` from the TV.
 2. Merge that to `main` through a pull request (the three checks must pass).
 3. Tag the merge commit and push the tag:
    ```bash
-   git tag v2.8.0 <commit>
-   git push origin v2.8.0
+   git tag v<version> <commit>
+   git push origin v<version>
    ```
 4. Watch *Actions > Release APK*. When it is green the release is public.
 
@@ -50,7 +50,7 @@ To re-run for an existing tag: *Actions > Release APK > Run workflow*, and type 
 
 ```bash
 sha256sum -c SHA256SUMS.txt
-apksigner verify --print-certs HomeLab-Launcher-2.8.0.apk
+apksigner verify --print-certs HomeLab-Launcher-<version>.apk
 ```
 
 The workflow log prints the certificate's SHA-256 for every release, so you can compare it with the one on your

@@ -3,7 +3,7 @@
 
 ### Which file?
 
-- **`HomeLab-Launcher-<version>.apk`**: the full app (prayer times, Hijri date, weather, football, favourite clubs, both wallpaper sets). Most people want this one.
+- **`HomeLab-Launcher-<version>.apk`**: the full app (prayer times, Hijri date, weather, football, favourite clubs, all three wallpaper sets and the plain colours). Most people want this one.
 - **`HomeLab-Launcher-<version>-offline.apk`**: the same without network access.
 - **`SHA256SUMS.txt`**: checksums of both.
 
