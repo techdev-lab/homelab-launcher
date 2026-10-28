@@ -2,6 +2,12 @@
 
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
+## 2.8.1 (2026-10-28)
+- Found by a second full test on the TV after the 2.8.0 release: on the English screen the club card's league line cut off the position ("5/8") and the weather card cut the city ("Weather · Al-A..."). The position now comes first ("5/8 · Premier League") and the weather card shows the city on its own line.
+- **Example configs show a wallpaper out of the box.** Every file in `config/` said `"wallpaper_mode": "rotate"`, which needs pictures pushed to the TV: someone who copied an example and skipped that step got a plain screen. They now use `"serene"` (built into the APK); `docs/INSTALL.md` says wallpapers need no pushing and shows how to use your own.
+- Wording: the download table and release notes said "both wallpaper sets"; there are three. `wallpaper_interval_min` also applies to the built-in sets (CONFIG.md). Arabic grammar fix in the README.
+- The README's install examples no longer name a version.
+
 ## 2.8.0 (2026-10-28)
 - **Launcher settings has everything a viewer needs** (hold OK on the Settings button): Language (TV language, Arabic, English: saved for the launcher and handed to Android as the app's own language), Apps per row, Wallpapers, Cards, Favourite clubs and Motion.
 - **Kids wallpapers**: six generated children's scenes (`wallpapers/kids/`, `wallpapers/gen-kids.html`), built into the APK; `wallpaper_mode` `kids`.
