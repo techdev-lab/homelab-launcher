@@ -17,7 +17,31 @@ final class Wallpapers {
     /** A file over this is skipped rather than decoded (12 MP JPEGs are still well under it). */
     static final long MAX_BYTES = 8L * 1024 * 1024;
 
+    /** wallpaper_mode values. HOMELAB and SERENE are the two sets built into the APK (assets/wallpapers/). */
+    static final String PLAIN = "plain", FIXED = "fixed", ROTATE = "rotate", HOMELAB = "homelab", SERENE = "serene";
+    static final String[] BUILT_IN = {HOMELAB, SERENE};
+
     private Wallpapers() {
+    }
+
+    static boolean builtIn(String mode) {
+        return HOMELAB.equals(mode) || SERENE.equals(mode);
+    }
+
+    static boolean known(String mode) {
+        return PLAIN.equals(mode) || FIXED.equals(mode) || ROTATE.equals(mode) || builtIn(mode);
+    }
+
+    /**
+     * The wallpaper mode in force: a choice made on the TV first, then config.json's wallpaper_mode. With no
+     * config.json and no wallpaper.jpg (a fresh install from the release APK) the Serene set shows, so the screen
+     * is never a bare colour out of the box. Unknown values fall back to what the TV had before this key existed.
+     */
+    static String mode(String chosenOnTv, String fromConfig, boolean hasConfig, boolean hasFixedPicture) {
+        if (known(chosenOnTv)) return chosenOnTv;
+        if (known(fromConfig)) return fromConfig;
+        if (!hasConfig && !hasFixedPicture) return SERENE;
+        return FIXED;
     }
 
     static List<File> list(File dir) {

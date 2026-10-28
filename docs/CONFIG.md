@@ -76,7 +76,7 @@ Not available from this source (checked): the Egyptian, UAE, Qatari, Moroccan, K
 
 | Key | Values | Notes |
 |---|---|---|
-| `wallpaper_mode` | `plain`, `fixed`, `rotate` | `fixed` uses `files/wallpaper.jpg`, `rotate` every picture in `files/wallpapers/`. |
+| `wallpaper_mode` | `serene`, `homelab`, `rotate`, `fixed`, `plain` | `serene` and `homelab` rotate the sets built into the APK. `rotate` uses every picture you pushed to `files/wallpapers/`, `fixed` the single `files/wallpaper.jpg`. Without a config.json a fresh install shows `serene`. A choice made on the TV (*Launcher settings > Wallpapers*) wins until the next theme push or *Follow theme*. |
 | `wallpaper_interval_min` | `1` to `240` (default 5) | Minutes per picture in `rotate`. |
 | `background_color` | `"#0B0B0C"` | Behind everything. |
 | `animations`, `reduced_motion` | `true` / `false` | Turn effects down on slow TVs. |
@@ -86,12 +86,13 @@ Not available from this source (checked): the Egyptian, UAE, Qatari, Moroccan, K
 
 ## Wallpapers
 
-Two generated sets, no photos and no third-party images:
+Two generated sets, no photos and no third-party images. Both are copied into the APK at build time
+(`syncWallpaperAssets` in `launcher/app/build.gradle`), so `"wallpaper_mode": "homelab"` or `"serene"` needs no push:
 
 | Folder | Pictures | Made by | For |
 |---|---|---|---|
 | `wallpapers/homelab/` | 6 | `wallpapers/gen.html` (open in a browser, export) | A home-lab look: racks, terminals, circuits. |
-| `wallpapers/general/` | 10 | `wallpapers/gen-general.py` (Python, Pillow and numpy) | Any TV: dusk, ridges, still water, dunes, ribbons, circles, night stars, aurora, sea at dawn, a faint geometric lattice. Nothing that points to a household. |
+| `wallpapers/serene/` | 10 | `wallpapers/gen-serene.py` (Python, Pillow and numpy) | Any TV: dusk, ridges, still water, dunes, ribbons, circles, night stars, aurora, sea at dawn, a faint geometric lattice. Nothing that points to a household. (Called "general" in 2.6.0.) |
 
-Push the set you want to `files/wallpapers/` and set `"wallpaper_mode": "rotate"`. `config/examples/general.json` is a
-neutral starting point for a TV you set up for someone else.
+To use your own pictures instead, push them to `files/wallpapers/` and set `"wallpaper_mode": "rotate"`.
+`config/examples/general.json` is a neutral starting point for a TV you set up for someone else (Serene, no leagues).

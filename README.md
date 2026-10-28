@@ -7,16 +7,17 @@
 **شاشة رئيسية عربية لأجهزة Google TV: مواقيت الصلاة، التاريخ الهجري، الطقس، ومباريات دوريك، بدون إعلانات.**
 
 [![CI](https://github.com/techdev-lab/homelab-launcher/actions/workflows/ci.yml/badge.svg)](https://github.com/techdev-lab/homelab-launcher/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/techdev-lab/homelab-launcher?label=APK)](https://github.com/techdev-lab/homelab-launcher/releases/latest)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Min SDK 26](https://img.shields.io/badge/min%20SDK-26-3DDC84?logo=android&logoColor=white)
 
 ### [English](#english) · [العربية](#العربية)
 
-[Install](docs/INSTALL.md) · [Configuration](docs/CONFIG.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
+**[⬇ Download the APK](https://github.com/techdev-lab/homelab-launcher/releases/latest)** · [Install](docs/INSTALL.md) · [Configuration](docs/CONFIG.md) · [Security](SECURITY.md) · [Contributing](CONTRIBUTING.md)
 
 <div dir="rtl">
 
-[التثبيت](docs/INSTALL.md) · [الإعدادات](docs/CONFIG.md) · [الأمان](SECURITY.md) · [المساهمة](CONTRIBUTING.md)
+**[⬇ نزّل ملف APK](https://github.com/techdev-lab/homelab-launcher/releases/latest)** · [التثبيت](docs/INSTALL.md) · [الإعدادات](docs/CONFIG.md) · [الأمان](SECURITY.md) · [المساهمة](CONTRIBUTING.md)
 
 </div>
 
@@ -38,6 +39,33 @@ The stock Google TV home screen is a wall of ads and recommendations, it speaks 
 
 It is written for Muslim and Arabic-speaking households first, but it is not tied to one country: you choose the city for prayer times and the leagues for the football cards.
 
+**One app, two looks.** The same APK carries two wallpaper sets, picked with the remote in *Launcher settings > Wallpapers*:
+
+| Look | For | Wallpapers |
+|---|---|---|
+| **HomeLab** | Home-lab and tech fans | Server racks, a cluster constellation, a terminal, circuits, a data-centre aisle |
+| **Serene** | Any home: your parents' TV, a guest room, a waiting room | Ten calm scenes: dusk, misty ridges, still water, dunes, night stars, aurora, sea at dawn... nothing personal |
+
+A fresh install starts on **Serene**. You can also use your own pictures, or none.
+
+### What's new in 2.7
+
+- **Download a ready APK** from [Releases](https://github.com/techdev-lab/homelab-launcher/releases/latest): no build tools needed.
+- **Wallpaper sets in the app:** HomeLab or Serene, chosen on the TV. Both are inside the APK.
+- **Favourite clubs** (2.6): up to 10 clubs, each one's next or live match in any competition, one club every 5 seconds.
+
+Full history: [CHANGELOG.md](CHANGELOG.md).
+
+### Download
+
+| File | What it is |
+|---|---|
+| `HomeLab-Launcher-<version>.apk` | **The one most people want.** Everything: prayer times, Hijri date, weather, football cards, favourite clubs, both wallpaper sets. |
+| `HomeLab-Launcher-<version>-offline.apk` | The same without any network access (no weather or football). For a TV that must stay offline. |
+| `SHA256SUMS.txt` | Checksums, to confirm the download is intact. |
+
+Install it like any sideloaded app: `adb install HomeLab-Launcher-<version>.apk`, or copy it to the TV with an app such as *Send files to TV* or *Downloader* and open it there. It installs **next to** the stock home screen; making it the Home screen is a separate, reversible step ([INSTALL.md](docs/INSTALL.md)). Every release is built and signed by GitHub Actions from the tagged source ([how](docs/RELEASING.md)), so you do not need to trust a file sent by a person or an AI assistant.
+
 ### What you get
 
 | | |
@@ -46,6 +74,7 @@ It is written for Muslim and Arabic-speaking households first, but it is not tie
 | **Prayer times, offline** | Umm al-Qura method, computed on the TV from the coordinates you set. No network and no location lookup: the city is typed into the config. Checked against an independent source to within 2 minutes. |
 | **Hijri date** | Umm al-Qura calendar from the platform's ICU, next to the Gregorian date. |
 | **Football cards** | One card per league group, side by side, e.g. the Saudi Pro League and "the big European leagues". A live match first, otherwise the next kick-off within 7 days. |
+| **Wallpapers** | Two built-in sets, **HomeLab** and **Serene**, changing every few minutes; pick one on the TV, or use your own pictures. |
 | **Favourite clubs** | Pick up to 10 clubs with the remote (Al Hilal, Al Nassr, Man City...). One card shows each club's live or next match in any competition, league, cup or continental, and moves to the next club every 5 seconds. |
 | **Weather** | Current conditions for the same city (Open-Meteo, free, no key). |
 | **Your dock** | Four apps of your choice on top (YouTube, Netflix, Shahid, Jellyfin, an IPTV player, anything), the rest in a grid. |
@@ -53,7 +82,7 @@ It is written for Muslim and Arabic-speaking households first, but it is not tie
 | **Screensaver** | A thin clock that glides around the screen with the Hijri date, the next prayer and a slow colour glow (no burn-in). |
 | **VPN indicator** | Set your VPN app (e.g. WireGuard) and the Wi-Fi pill shows a green "VPN" capsule while the tunnel is up, red when it dropped. |
 | **Two builds** | `online` (football, weather) and `offline` (no INTERNET permission at all). |
-| **Small and private** | About 500 KB, fonts included. No analytics, no accounts, no ads. The offline build cannot reach the network. |
+| **Small and private** | About 3 MB with fonts and 16 wallpapers. No analytics, no accounts, no ads. The offline build cannot reach the network. |
 
 | English | App grid | Screensaver |
 |---|---|---|
@@ -70,9 +99,9 @@ You need a Windows, macOS or Linux computer on the same Wi-Fi as the TV, and abo
    adb pair <TV-IP>:<PAIR-PORT> <CODE>
    adb connect <TV-IP>:<PORT>
    ```
-4. Build the APK (see [Build](#build); there is no prebuilt release yet) and install it as a normal app, the stock home stays:
+4. [Download the APK](https://github.com/techdev-lab/homelab-launcher/releases/latest) (or [build it](#build)) and install it as a normal app, the stock home stays:
    ```bash
-   adb install tvhome-online.apk
+   adb install HomeLab-Launcher-2.7.0.apk
    ```
 5. Copy `config/config.example.json`, set your city and leagues ([docs/CONFIG.md](docs/CONFIG.md)), push it:
    ```bash
@@ -93,7 +122,7 @@ cd launcher
 ./gradlew assembleOfflineRelease                             # no network at all
 ```
 
-The APKs land in `launcher/app/build/outputs/apk/<flavor>/release/`. They are signed with your local debug key, which is fine for sideloading.
+The APKs land in `launcher/app/build/outputs/apk/<flavor>/release/`. They are signed with your local debug key, which is fine for sideloading. Your own build cannot update a Release APK in place (different key): uninstall first, or keep to one source. Releases: [docs/RELEASING.md](docs/RELEASING.md).
 
 ### Repository layout
 
@@ -101,7 +130,7 @@ The APKs land in `launcher/app/build/outputs/apk/<flavor>/release/`. They are si
 launcher/           Android app (Java), tests in app/src/test
 config/             config.example.json and ready examples for a few cities
 scripts/            PowerShell helpers: inventory, make-Home, one-shot kit, with a fake-TV test suite
-wallpapers/         generated wallpapers: homelab/ (6) and general/ (10, for any TV), with their generators
+wallpapers/         generated wallpapers: homelab/ (6) and serene/ (10), built into the APK, with their generators
 docs/               install guide, config reference, design notes, the build story, AI prompts, screenshots
 ```
 
@@ -152,6 +181,33 @@ MIT License, see [LICENSE](LICENSE).
 
 موجّه للبيوت المسلمة والعربية، لكنه مو مربوط بدولة: تختار مدينتك للصلاة، ودورياتك لبطاقات الكورة. المصري يحط دوري أبطال أفريقيا، والإماراتي دوري أبطال آسيا وكأس الخليج، والسعودي دوري روشن، وهكذا.
 
+**تطبيق واحد بشكلين.** نفس ملف APK فيه مجموعتين خلفيات، تختار بينهم بالريموت من *إعدادات المشغّل ← الخلفيات*:
+
+| الشكل | لمين | الخلفيات |
+|---|---|---|
+| **هوم لاب** | محبين الهوم لاب والتقنية | خوادم، عنقود سيرفرات كالنجوم، شاشة أوامر، دوائر، ممر مركز بيانات |
+| **سكينة** | أي بيت: تلفزيون الوالد، مجلس الضيوف، صالة انتظار | عشر مناظر هادئة: الغروب، جبال في ضباب، ماء ساكن، كثبان، نجوم الليل، شفق، فجر على البحر… بدون أي شي شخصي |
+
+التثبيت الجديد يبدأ على **سكينة**. وتقدر تحط صورك الخاصة، أو بدون خلفية.
+
+### الجديد في 2.7
+
+- **ملف APK جاهز للتنزيل** من [صفحة الإصدارات](https://github.com/techdev-lab/homelab-launcher/releases/latest): ما تحتاج أدوات بناء.
+- **الخلفيات داخل التطبيق:** هوم لاب أو سكينة، تختارها من التلفزيون. الاثنتين داخل ملف APK.
+- **أنديتك المفضلة** (2.6): حتى 10 أندية، مباراة كل نادٍ الجاية أو المباشرة في أي بطولة، نادي كل 5 ثواني.
+
+كل التغييرات: [CHANGELOG.md](CHANGELOG.md).
+
+### التنزيل
+
+| الملف | وش هو |
+|---|---|
+| `HomeLab-Launcher-<الإصدار>.apk` | **اللي يبيه أغلب الناس.** كل شي: الصلاة، الهجري، الطقس، الكورة، الأندية المفضلة، ومجموعتي الخلفيات. |
+| `HomeLab-Launcher-<الإصدار>-offline.apk` | نفسه بدون أي اتصال إنترنت (بدون طقس وكورة). لتلفزيون لازم يبقى بدون إنترنت. |
+| `SHA256SUMS.txt` | بصمات الملفات، تتأكد إن التنزيل سليم. |
+
+تثبّته مثل أي تطبيق من برا المتجر: `adb install HomeLab-Launcher-<الإصدار>.apk`، أو تنقله للتلفزيون بتطبيق مثل *Send files to TV* أو *Downloader* وتفتحه هناك. ينزل **جنب** الشاشة الأصلية، وتحويله للشاشة الرئيسية خطوة ثانية لها رجوع ([دليل التثبيت](docs/INSTALL.md)). كل إصدار يبنيه ويوقّعه GitHub Actions من الكود نفسه ([كيف](docs/RELEASING.md))، فما تحتاج تثق بملف أرسله لك شخص أو ذكاء اصطناعي.
+
 ### وش فيه؟
 
 | | |
@@ -160,6 +216,7 @@ MIT License, see [LICENSE](LICENSE).
 | **مواقيت الصلاة بدون إنترنت** | بطريقة أم القرى، تنحسب على الجهاز من إحداثيات مدينتك. بدون تحديد موقع: تكتب المدينة في الإعدادات. فرقها عن مصدر مستقل أقل من دقيقتين. |
 | **التاريخ الهجري** | تقويم أم القرى، جنب الميلادي. |
 | **بطاقات الكورة** | بطاقة لكل مجموعة دوريات جنب بعض، مثلاً: الدوري السعودي، والدوريات الأوروبية الكبرى. المباشر أولاً، وإلا أقرب مباراة خلال 7 أيام. |
+| **الخلفيات** | مجموعتين داخل التطبيق، **هوم لاب** و**سكينة**، تتبدّل كل كم دقيقة؛ تختار من التلفزيون، أو تحط صورك. |
 | **أنديتك المفضلة** | تختار حتى 10 أندية بالريموت (الهلال، النصر، مانشستر سيتي…). بطاقة وحدة تعرض مباراة كل نادٍ المباشرة أو الجاية في أي بطولة: الدوري أو الكأس أو النخبة الآسيوية أو أبطال أوروبا، وتنتقل للنادي اللي بعده كل 5 ثواني. |
 | **الطقس** | لنفس المدينة (Open-Meteo، مجاني وبدون مفتاح). |
 | **شريط تطبيقاتك** | أربع تطبيقات تختارها فوق (يوتيوب، نتفليكس، شاهد، جيليفين، برنامج IPTV، أي شي)، والباقي تحت في شبكة. |
@@ -167,7 +224,7 @@ MIT License, see [LICENSE](LICENSE).
 | **شاشة توقف** | ساعة رفيعة تنساب على الشاشة، معها الهجري والصلاة الجاية ووهج يتغيّر لونه بهدوء (تحمي الشاشة من الحرق). |
 | **علامة الـVPN** | لو حطيت تطبيق الـVPN (مثل WireGuard) في الإعدادات، يطلع جنب كلمة واي فاي **VPN بالأخضر** وقت ما يكون شغّال، وبالأحمر لو انقطع. |
 | **نسختين** | `online` (كورة وطقس) و`offline` (بدون صلاحية إنترنت أبداً). |
-| **خفيف وخاص** | حوالي 500 كيلوبايت مع الخطوط. لا تتبع ولا حسابات ولا إعلانات. نسخة offline ما تقدر توصل للإنترنت أصلاً. |
+| **خفيف وخاص** | حوالي 3 ميغابايت مع الخطوط و16 خلفية. لا تتبع ولا حسابات ولا إعلانات. نسخة offline ما تقدر توصل للإنترنت أصلاً. |
 
 | بالإنجليزي | شبكة التطبيقات | شاشة التوقف |
 |---|---|---|
@@ -185,9 +242,9 @@ MIT License, see [LICENSE](LICENSE).
    adb pair <TV-IP>:<PAIR-PORT> <CODE>
    adb connect <TV-IP>:<PORT>
    ```
-5. ثبّت التطبيق كتطبيق عادي (الشاشة الأصلية تبقى). ما فيه إصدار جاهز للتنزيل بعد، فابنِ الملف أول من قسم «بناء التطبيق» تحت:
+5. [نزّل ملف APK](https://github.com/techdev-lab/homelab-launcher/releases/latest) (أو ابنِه من قسم «بناء التطبيق» تحت) وثبّته كتطبيق عادي (الشاشة الأصلية تبقى):
    ```bash
-   adb install tvhome-online.apk
+   adb install HomeLab-Launcher-2.7.0.apk
    ```
 6. انسخ `config/config.example.json` أو ملف مدينة من مجلد `config/examples`، عدّل المدينة والدوريات والتطبيقات، وادفعه:
    ```bash
@@ -222,7 +279,7 @@ MIT License, see [LICENSE](LICENSE).
 
 ### بناء التطبيق
 
-ما فيه إصدار جاهز للتنزيل بعد، فتبنيه بنفسك. تحتاج JDK 17 وAndroid SDK (المنصة 34):
+تقدر تنزّل الملف جاهز من [الإصدارات](https://github.com/techdev-lab/homelab-launcher/releases/latest)، أو تبنيه بنفسك. تحتاج JDK 17 وAndroid SDK (المنصة 34):
 
 ```bash
 cd launcher

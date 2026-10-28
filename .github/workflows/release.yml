@@ -1,0 +1,78 @@
+name: Release APK
+
+# Builds both flavors, signs them with the project key and publishes them as a GitHub Release, so anyone can
+# download a complete APK from the Releases page. Runs when a tag such as v2.7.0 is pushed, or by hand.
+#
+# Needs the repository secret TVHOME_KEYSTORE_B64 (the signing keystore, base64). Optional secrets:
+# TVHOME_KEYSTORE_PASSWORD, TVHOME_KEY_ALIAS, TVHOME_KEY_PASSWORD. Without the keystore the job stops: an APK
+# signed with a throwaway key could never be updated by the next release.
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Tag to release (must exist, e.g. v2.7.0)
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build, sign and publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    env:
+      TAG: ${{ github.event.inputs.tag || github.ref_name }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-java@v6.1.0
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v6.4.0
+      - name: Signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.TVHOME_KEYSTORE_B64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::Repository secret TVHOME_KEYSTORE_B64 is missing (see docs/RELEASING.md)."
+            exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          echo "TVHOME_KEYSTORE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+      - name: Test and build both flavors
+        working-directory: launcher
+        env:
+          TVHOME_KEYSTORE_PASSWORD: ${{ secrets.TVHOME_KEYSTORE_PASSWORD }}
+          TVHOME_KEY_ALIAS: ${{ secrets.TVHOME_KEY_ALIAS }}
+          TVHOME_KEY_PASSWORD: ${{ secrets.TVHOME_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew testOfflineReleaseUnitTest testOnlineReleaseUnitTest assembleOfflineRelease assembleOnlineRelease
+      - name: Name the files and write checksums
+        run: |
+          version="${TAG#v}"
+          mkdir dist
+          cp launcher/app/build/outputs/apk/online/release/app-online-release.apk "dist/HomeLab-Launcher-$version.apk"
+          cp launcher/app/build/outputs/apk/offline/release/app-offline-release.apk "dist/HomeLab-Launcher-$version-offline.apk"
+          cd dist
+          sha256sum *.apk > SHA256SUMS.txt
+          cat SHA256SUMS.txt
+          signer="$(ls "$ANDROID_HOME"/build-tools | sort -V | tail -1)"
+          "$ANDROID_HOME/build-tools/$signer/apksigner" verify --print-certs "HomeLab-Launcher-$version.apk" | grep -i "SHA-256"
+      - name: Release notes from CHANGELOG.md
+        run: |
+          version="${TAG#v}"
+          awk -v v="## $version" 'index($0, v) == 1 {on = 1; next} on && /^## / {exit} on' CHANGELOG.md > notes.md
+          cat notes.md docs/RELEASE_NOTES_FOOTER.md > release-notes.md
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$TAG" dist/*.apk dist/SHA256SUMS.txt --title "HomeLab Launcher ${TAG#v}" \
+            --notes-file release-notes.md --verify-tag

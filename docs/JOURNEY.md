@@ -46,6 +46,22 @@ The project went to GitHub, and then the **published** copy was tested the way a
 - **The first commits carried a placeholder author**, because the Git identity was not set. The history was rebuilt as one clean commit before publishing.
 - **The TV's `config.json` had drifted from its saved profile** (news switched on, one football card instead of two). Not a code bug: the kit script puts the profile back, with a backup first.
 
+## Day 5: your clubs, two looks, and a real download
+
+People do not follow a league, they follow a club. So the strip gained a **favourite clubs** card: pick up to ten
+clubs with the remote, and the card shows each one's next or live match, whatever the competition (a Saudi club in
+the AFC Champions League Elite, an English one in the Carabao Cup), one club every five seconds. ESPN's
+all-competition team schedule made that one request per club; it is large, so it is fetched twice a day, and only a
+match that is about to start or running is refreshed from that day's scoreboard. One catch found by reading the
+data, not the docs: ESPN files a day by US Eastern time, so a kick-off just after midnight UTC sits on the day before.
+
+The same app now has **two looks**. The tech wallpapers stay as *HomeLab*; a second, calm set called *Serene* is for
+any home (a parent's TV, a guest room). Both are inside the APK and picked on the TV, and a fresh install starts on
+Serene, because a downloaded app should look finished before anyone writes a config file.
+
+And there is finally a **download**: a release workflow builds and signs both flavors from a tag, so a person can
+fetch a complete APK from the Releases page instead of trusting a file someone sent them.
+
 ## Lessons
 
 1. Read before you run, pin what you run, and keep private keys out of synced folders.
@@ -59,3 +75,4 @@ The project went to GitHub, and then the **published** copy was tested the way a
 9. Test the published copy from a fresh clone, not the folder you wrote it in.
 10. A safety check must ask exactly the right question: "disabled for the user that matters", not "disabled somewhere".
 11. Write only what you verified. A promise in the README (a download, "no location permission") is a claim to test.
+12. Look at the real data before trusting the API's shape: the date a match is filed under is not always its UTC date.
