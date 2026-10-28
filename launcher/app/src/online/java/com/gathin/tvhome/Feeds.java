@@ -21,7 +21,7 @@ import java.util.Locale;
 import javax.net.ssl.HttpsURLConnection;
 
 /**
- * Online build only: matches from ESPN's public scoreboard JSON, headlines from the RSS/Atom feeds in
+ * Online build only: matches from ESPN's public scoreboard and team schedule JSON, headlines from the RSS/Atom feeds in
  * config.json and the current weather from Open-Meteo. HTTPS only, no redirects followed, short timeouts, capped sizes, plain parsers: no WebView, no
  * SDK, no proxy. Called off the main thread; any failure returns an empty list so the card simply hides.
  *
@@ -34,7 +34,8 @@ final class Feeds {
     private static final String ESPN = "https://site.api.espn.com/apis/site/v2/sports/soccer/";
     private static final String OPEN_METEO = "https://api.open-meteo.com/v1/forecast";
     private static final int TIMEOUT_MS = 8000;
-    private static final int MAX_BYTES = 512 * 1024;
+    /** A big club's schedule for the season is about 320 KB; a scoreboard or feed is far smaller. */
+    private static final int MAX_BYTES = 768 * 1024;
     private static final int MAX_HEADLINES_PER_FEED = 5;
 
     private Feeds() {
@@ -59,6 +60,63 @@ final class Feeds {
                 if (Interests.pickMatch(got, s.sportsTeams, now) != null) break;
             }
             out.addAll(got);
+        }
+        return out;
+    }
+
+    /**
+     * Every listed club's coming fixtures in all competitions: ESPN's "all" team schedule names each event's
+     * league, so a club's league, cup and continental matches come from one request per club.
+     */
+    static List<Interests.Match> clubSchedules(List<String> teamIds) {
+        List<Interests.Match> out = new ArrayList<>();
+        for (String id : Interests.clubIds(teamIds)) {
+            try {
+                out.addAll(schedule(get(ESPN + "all/teams/" + id + "/schedule?fixture=true")));
+            } catch (Exception e) {
+                Log.w(TAG, "club " + id + ": " + e);
+            }
+        }
+        return out;
+    }
+
+    /**
+     * The club matches that are live or about to start, refreshed from their competition's scoreboard for that
+     * day (small, and it carries the score and the minute). One request per competition and day; a failure keeps
+     * the schedule's copy.
+     */
+    static List<Interests.Match> refreshLive(List<Interests.Match> all, long now) {
+        java.util.LinkedHashSet<String> boards = new java.util.LinkedHashSet<>();
+        for (Interests.Match m : all) {
+            if (Interests.nearKickoff(m, now) && Interests.validLeague(m.code)) {
+                boards.add(m.code + "/scoreboard?dates=" + Interests.espnDay(m.startMillis, 0));
+                // ESPN files a day by US Eastern time: a kick-off just after midnight UTC sits on the day before.
+                boards.add(m.code + "/scoreboard?dates=" + Interests.espnDay(m.startMillis - 5 * 3_600_000L, 0));
+            }
+        }
+        if (boards.isEmpty()) return all;
+        List<Interests.Match> fresh = new ArrayList<>();
+        for (String board : boards) {
+            String code = board.substring(0, board.indexOf('/'));
+            try {
+                fresh.addAll(scoreboard(get(ESPN + board), code));
+            } catch (Exception e) {
+                Log.w(TAG, "live " + code + ": " + e);
+            }
+        }
+        return Interests.withUpdates(all, fresh);
+    }
+
+    private static List<Interests.Match> schedule(byte[] body) throws Exception {
+        List<Interests.Match> out = new ArrayList<>();
+        JSONArray events = new JSONObject(new String(body, StandardCharsets.UTF_8)).optJSONArray("events");
+        for (int i = 0; events != null && i < events.length(); i++) {
+            JSONObject ev = events.optJSONObject(i);
+            JSONObject lg = ev != null ? ev.optJSONObject("league") : null;
+            String code = lg != null ? lg.optString("slug", "") : "";
+            if (!Interests.validLeague(code)) continue;
+            Interests.Match m = match(ev, lg.optString("name", code), code);
+            if (m != null) out.add(m);
         }
         return out;
     }
@@ -95,14 +153,16 @@ final class Feeds {
             if ("home".equals(c.optString("homeAway"))) {
                 home = name;
                 homeId = id;
-                hs = c.optString("score", "");
+                hs = score(c);
             } else {
                 away = name;
                 awayId = id;
-                as = c.optString("score", "");
+                as = score(c);
             }
         }
+        // A scoreboard puts the status on the event, a team schedule on the competition.
         JSONObject status = ev.optJSONObject("status");
+        if (status == null && comp != null) status = comp.optJSONObject("status");
         JSONObject type = status != null ? status.optJSONObject("type") : null;
         String state = type != null ? type.optString("state", "") : "";
         String clock = status != null && Interests.Match.LIVE.equals(state) ? status.optString("displayClock", "") : "";
@@ -117,6 +177,13 @@ final class Feeds {
         }
         if (home.isEmpty() || away.isEmpty()) return null;
         return new Interests.Match(league, code, homeId, awayId, home, away, hs, as, state, clock, start);
+    }
+
+    /** A scoreboard gives the score as "2", a team schedule as {"displayValue": "2", ...}. */
+    private static String score(JSONObject competitor) {
+        Object v = competitor.opt("score");
+        if (v instanceof JSONObject) return ((JSONObject) v).optString("displayValue", "");
+        return v instanceof String ? (String) v : "";
     }
 
     static List<Interests.Headline> headlines(List<String> feeds) {

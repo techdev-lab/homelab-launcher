@@ -17,6 +17,14 @@ final class Feeds {
         return Collections.emptyList();
     }
 
+    static List<Interests.Match> clubSchedules(List<String> teamIds) {
+        return Collections.emptyList();
+    }
+
+    static List<Interests.Match> refreshLive(List<Interests.Match> all, long now) {
+        return all;
+    }
+
     static List<Interests.Headline> headlines(List<String> feeds) {
         return Collections.emptyList();
     }

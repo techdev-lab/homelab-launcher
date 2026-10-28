@@ -1,0 +1,605 @@
+{
+ "_note": "Clubs offered by Launcher settings > Favourite clubs. ESPN team ids from site.api.espn.com .../soccer/<league>/teams (2026-10-28). Any ESPN team id also works in config.json favorite_teams. Arabic names come from names_ar.json.",
+ "groups": [
+  {
+   "code": "ksa.1",
+   "name": "Saudi Pro League",
+   "name_ar": "الدوري السعودي",
+   "teams": [
+    {
+     "id": "929",
+     "name": "Al Hilal"
+    },
+    {
+     "id": "817",
+     "name": "Al Nassr"
+    },
+    {
+     "id": "2276",
+     "name": "Al Ittihad"
+    },
+    {
+     "id": "8346",
+     "name": "Al Ahli"
+    },
+    {
+     "id": "21833",
+     "name": "Abha"
+    },
+    {
+     "id": "131746",
+     "name": "Al Diriyah"
+    },
+    {
+     "id": "8363",
+     "name": "Al Ettifaq"
+    },
+    {
+     "id": "21446",
+     "name": "Al Faisaly"
+    },
+    {
+     "id": "13033",
+     "name": "Al Fateh"
+    },
+    {
+     "id": "21827",
+     "name": "Al Fayha"
+    },
+    {
+     "id": "21964",
+     "name": "Al Hazem"
+    },
+    {
+     "id": "21829",
+     "name": "Al Khaleej"
+    },
+    {
+     "id": "22028",
+     "name": "Al Kholood"
+    },
+    {
+     "id": "22022",
+     "name": "Al Qadsiah"
+    },
+    {
+     "id": "21965",
+     "name": "Al Riyadh"
+    },
+    {
+     "id": "793",
+     "name": "Al Shabab"
+    },
+    {
+     "id": "18459",
+     "name": "Al Taawoun"
+    },
+    {
+     "id": "130899",
+     "name": "Neom SC"
+    }
+   ]
+  },
+  {
+   "code": "eng.1",
+   "name": "English Premier League",
+   "name_ar": "الدوري الإنجليزي",
+   "teams": [
+    {
+     "id": "349",
+     "name": "AFC Bournemouth"
+    },
+    {
+     "id": "359",
+     "name": "Arsenal"
+    },
+    {
+     "id": "362",
+     "name": "Aston Villa"
+    },
+    {
+     "id": "337",
+     "name": "Brentford"
+    },
+    {
+     "id": "331",
+     "name": "Brighton & Hove Albion"
+    },
+    {
+     "id": "363",
+     "name": "Chelsea"
+    },
+    {
+     "id": "388",
+     "name": "Coventry City"
+    },
+    {
+     "id": "384",
+     "name": "Crystal Palace"
+    },
+    {
+     "id": "368",
+     "name": "Everton"
+    },
+    {
+     "id": "370",
+     "name": "Fulham"
+    },
+    {
+     "id": "306",
+     "name": "Hull City"
+    },
+    {
+     "id": "373",
+     "name": "Ipswich Town"
+    },
+    {
+     "id": "357",
+     "name": "Leeds United"
+    },
+    {
+     "id": "364",
+     "name": "Liverpool"
+    },
+    {
+     "id": "382",
+     "name": "Manchester City"
+    },
+    {
+     "id": "360",
+     "name": "Manchester United"
+    },
+    {
+     "id": "361",
+     "name": "Newcastle United"
+    },
+    {
+     "id": "393",
+     "name": "Nottingham Forest"
+    },
+    {
+     "id": "366",
+     "name": "Sunderland"
+    },
+    {
+     "id": "367",
+     "name": "Tottenham Hotspur"
+    }
+   ]
+  },
+  {
+   "code": "esp.1",
+   "name": "Spanish LALIGA",
+   "name_ar": "الدوري الإسباني",
+   "teams": [
+    {
+     "id": "96",
+     "name": "Alavés"
+    },
+    {
+     "id": "93",
+     "name": "Athletic Club"
+    },
+    {
+     "id": "1068",
+     "name": "Atlético Madrid"
+    },
+    {
+     "id": "83",
+     "name": "Barcelona"
+    },
+    {
+     "id": "85",
+     "name": "Celta Vigo"
+    },
+    {
+     "id": "90",
+     "name": "Deportivo"
+    },
+    {
+     "id": "3751",
+     "name": "Elche"
+    },
+    {
+     "id": "88",
+     "name": "Espanyol"
+    },
+    {
+     "id": "2922",
+     "name": "Getafe"
+    },
+    {
+     "id": "1538",
+     "name": "Levante"
+    },
+    {
+     "id": "99",
+     "name": "Málaga"
+    },
+    {
+     "id": "97",
+     "name": "Osasuna"
+    },
+    {
+     "id": "87",
+     "name": "Racing Santander"
+    },
+    {
+     "id": "101",
+     "name": "Rayo Vallecano"
+    },
+    {
+     "id": "244",
+     "name": "Real Betis"
+    },
+    {
+     "id": "86",
+     "name": "Real Madrid"
+    },
+    {
+     "id": "89",
+     "name": "Real Sociedad"
+    },
+    {
+     "id": "243",
+     "name": "Sevilla"
+    },
+    {
+     "id": "94",
+     "name": "Valencia"
+    },
+    {
+     "id": "102",
+     "name": "Villarreal"
+    }
+   ]
+  },
+  {
+   "code": "ita.1",
+   "name": "Italian Serie A",
+   "name_ar": "الدوري الإيطالي",
+   "teams": [
+    {
+     "id": "103",
+     "name": "AC Milan"
+    },
+    {
+     "id": "104",
+     "name": "AS Roma"
+    },
+    {
+     "id": "105",
+     "name": "Atalanta"
+    },
+    {
+     "id": "107",
+     "name": "Bologna"
+    },
+    {
+     "id": "2925",
+     "name": "Cagliari"
+    },
+    {
+     "id": "2572",
+     "name": "Como"
+    },
+    {
+     "id": "109",
+     "name": "Fiorentina"
+    },
+    {
+     "id": "4057",
+     "name": "Frosinone"
+    },
+    {
+     "id": "3263",
+     "name": "Genoa"
+    },
+    {
+     "id": "110",
+     "name": "Internazionale"
+    },
+    {
+     "id": "111",
+     "name": "Juventus"
+    },
+    {
+     "id": "112",
+     "name": "Lazio"
+    },
+    {
+     "id": "113",
+     "name": "Lecce"
+    },
+    {
+     "id": "4007",
+     "name": "Monza"
+    },
+    {
+     "id": "114",
+     "name": "Napoli"
+    },
+    {
+     "id": "115",
+     "name": "Parma"
+    },
+    {
+     "id": "3997",
+     "name": "Sassuolo"
+    },
+    {
+     "id": "239",
+     "name": "Torino"
+    },
+    {
+     "id": "118",
+     "name": "Udinese"
+    },
+    {
+     "id": "17530",
+     "name": "Venezia"
+    }
+   ]
+  },
+  {
+   "code": "ger.1",
+   "name": "German Bundesliga",
+   "name_ar": "الدوري الألماني",
+   "teams": [
+    {
+     "id": "598",
+     "name": "1. FC Union Berlin"
+    },
+    {
+     "id": "131",
+     "name": "Bayer Leverkusen"
+    },
+    {
+     "id": "132",
+     "name": "Bayern Munich"
+    },
+    {
+     "id": "124",
+     "name": "Borussia Dortmund"
+    },
+    {
+     "id": "268",
+     "name": "Borussia Mönchengladbach"
+    },
+    {
+     "id": "125",
+     "name": "Eintracht Frankfurt"
+    },
+    {
+     "id": "3841",
+     "name": "FC Augsburg"
+    },
+    {
+     "id": "122",
+     "name": "FC Cologne"
+    },
+    {
+     "id": "127",
+     "name": "Hamburg SV"
+    },
+    {
+     "id": "2950",
+     "name": "Mainz"
+    },
+    {
+     "id": "11420",
+     "name": "RB Leipzig"
+    },
+    {
+     "id": "126",
+     "name": "SC Freiburg"
+    },
+    {
+     "id": "3307",
+     "name": "SC Paderborn 07"
+    },
+    {
+     "id": "133",
+     "name": "Schalke 04"
+    },
+    {
+     "id": "10388",
+     "name": "SV Elversberg"
+    },
+    {
+     "id": "7911",
+     "name": "TSG Hoffenheim"
+    },
+    {
+     "id": "134",
+     "name": "VfB Stuttgart"
+    },
+    {
+     "id": "137",
+     "name": "Werder Bremen"
+    }
+   ]
+  },
+  {
+   "code": "fra.1",
+   "name": "French Ligue 1",
+   "name_ar": "الدوري الفرنسي",
+   "teams": [
+    {
+     "id": "172",
+     "name": "AJ Auxerre"
+    },
+    {
+     "id": "7868",
+     "name": "Angers"
+    },
+    {
+     "id": "174",
+     "name": "AS Monaco"
+    },
+    {
+     "id": "6997",
+     "name": "Brest"
+    },
+    {
+     "id": "3236",
+     "name": "Le Havre AC"
+    },
+    {
+     "id": "2697",
+     "name": "Le Mans"
+    },
+    {
+     "id": "175",
+     "name": "Lens"
+    },
+    {
+     "id": "166",
+     "name": "Lille"
+    },
+    {
+     "id": "273",
+     "name": "Lorient"
+    },
+    {
+     "id": "167",
+     "name": "Lyon"
+    },
+    {
+     "id": "176",
+     "name": "Marseille"
+    },
+    {
+     "id": "2502",
+     "name": "Nice"
+    },
+    {
+     "id": "6851",
+     "name": "Paris FC"
+    },
+    {
+     "id": "160",
+     "name": "Paris Saint-Germain"
+    },
+    {
+     "id": "169",
+     "name": "Stade Rennais"
+    },
+    {
+     "id": "180",
+     "name": "Strasbourg"
+    },
+    {
+     "id": "179",
+     "name": "Toulouse"
+    },
+    {
+     "id": "170",
+     "name": "Troyes"
+    }
+   ]
+  },
+  {
+   "code": "afc.champions",
+   "name": "Gulf clubs (AFC Champions League Elite only)",
+   "name_ar": "أندية الخليج (دوري أبطال آسيا للنخبة فقط)",
+   "teams": [
+    {
+     "id": "790",
+     "name": "Shabab Al Ahli"
+    },
+    {
+     "id": "7128",
+     "name": "Al Ain"
+    },
+    {
+     "id": "8365",
+     "name": "Al Wasl"
+    },
+    {
+     "id": "7135",
+     "name": "Al Sadd"
+    },
+    {
+     "id": "7129",
+     "name": "Al-Gharafa"
+    },
+    {
+     "id": "21575",
+     "name": "Al-Shamal"
+    },
+    {
+     "id": "20912",
+     "name": "Al-Quwa Al-Jawiya"
+    }
+   ]
+  },
+  {
+   "code": "uefa.champions",
+   "name": "More of Europe (UEFA Champions League clubs)",
+   "name_ar": "المزيد من أوروبا (أندية دوري أبطال أوروبا)",
+   "teams": [
+    {
+     "id": "887",
+     "name": "AEK Athens"
+    },
+    {
+     "id": "2980",
+     "name": "Bodo/Glimt"
+    },
+    {
+     "id": "570",
+     "name": "Club Brugge"
+    },
+    {
+     "id": "437",
+     "name": "FC Porto"
+    },
+    {
+     "id": "436",
+     "name": "Fenerbahce"
+    },
+    {
+     "id": "142",
+     "name": "Feyenoord Rotterdam"
+    },
+    {
+     "id": "432",
+     "name": "Galatasaray"
+    },
+    {
+     "id": "4411",
+     "name": "LASK Linz"
+    },
+    {
+     "id": "148",
+     "name": "PSV Eindhoven"
+    },
+    {
+     "id": "21922",
+     "name": "Sabah FK"
+    },
+    {
+     "id": "493",
+     "name": "Shakhtar Donetsk"
+    },
+    {
+     "id": "494",
+     "name": "Slavia Prague"
+    },
+    {
+     "id": "521",
+     "name": "Slovan Bratislava"
+    },
+    {
+     "id": "2250",
+     "name": "Sporting CP"
+    },
+    {
+     "id": "510",
+     "name": "Viking FK"
+    }
+   ]
+  }
+ ]
+}

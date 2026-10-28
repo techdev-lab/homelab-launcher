@@ -43,6 +43,13 @@ final class Interests {
          * ["uefa.champions", "eng.1"]]. Empty keeps the single card that rotates through sports_leagues.
          */
         final List<List<String>> sportsCards;
+        /**
+         * "favorite_teams" (or the clubs picked on the TV): ESPN team ids, at most {@link #MAX_CLUBS}, in the order
+         * the club card shows them. Each club's next or live match in any competition (league, cup, continental).
+         */
+        final List<String> favoriteTeams;
+        /** Seconds each club stays on the club card before the next one ("club_rotate_seconds", 3 to 60). */
+        final int clubRotateSeconds;
 
         Settings(String language, boolean hijriDate, String prayerCity, String prayerCityEn, double prayerLat,
                  double prayerLng, List<String> sportsLeagues, List<String> sportsTeams, List<String> newsFeeds,
@@ -61,6 +68,16 @@ final class Interests {
         Settings(String language, boolean hijriDate, String prayerCity, String prayerCityEn, double prayerLat,
                  double prayerLng, List<String> sportsLeagues, List<String> sportsTeams, List<String> newsFeeds,
                  List<String> newsFeedsEn, boolean weather, List<List<String>> sportsCards) {
+            this(language, hijriDate, prayerCity, prayerCityEn, prayerLat, prayerLng, sportsLeagues, sportsTeams,
+                    newsFeeds, newsFeedsEn, weather, sportsCards, Collections.emptyList(), CLUB_ROTATE_DEFAULT_S);
+        }
+
+        Settings(String language, boolean hijriDate, String prayerCity, String prayerCityEn, double prayerLat,
+                 double prayerLng, List<String> sportsLeagues, List<String> sportsTeams, List<String> newsFeeds,
+                 List<String> newsFeedsEn, boolean weather, List<List<String>> sportsCards,
+                 List<String> favoriteTeams, int clubRotateSeconds) {
+            this.favoriteTeams = Collections.unmodifiableList(favoriteTeams);
+            this.clubRotateSeconds = clubRotateSeconds;
             this.sportsCards = Collections.unmodifiableList(sportsCards);
             this.weather = weather;
             this.language = language;
@@ -98,6 +115,10 @@ final class Interests {
             java.util.LinkedHashSet<String> all = new java.util.LinkedHashSet<>(sportsLeagues);
             for (List<String> card : sportsCards) all.addAll(card);
             return new java.util.ArrayList<>(all);
+        }
+
+        boolean wantsClubs() {
+            return !favoriteTeams.isEmpty();
         }
 
         boolean wantsNews() {
@@ -158,6 +179,88 @@ final class Interests {
     static boolean validFeed(String url) {
         return url != null && url.length() <= 300 && url.startsWith("https://") && !url.contains(" ")
                 && !url.contains("@");
+    }
+
+    /** Up to ten favourite clubs: one schedule request each, so the cap keeps a refresh small. */
+    static final int MAX_CLUBS = 10;
+    static final int CLUB_ROTATE_DEFAULT_S = 5, CLUB_ROTATE_MIN_S = 3, CLUB_ROTATE_MAX_S = 60;
+    /** A club can go two weeks without a match over an international break, so look further than a league. */
+    static final int CLUB_LOOKAHEAD_DAYS = 21;
+
+    /** An ESPN team id goes into a URL path: digits only. */
+    static boolean validTeamId(String id) {
+        return id != null && id.matches("[0-9]{1,9}");
+    }
+
+    /** Valid, distinct ids in their order, cut at {@link #MAX_CLUBS}; anything else is dropped. */
+    static List<String> clubIds(List<String> raw) {
+        List<String> out = new java.util.ArrayList<>();
+        for (String r : raw) {
+            String id = r == null ? "" : r.trim();
+            if (validTeamId(id) && !out.contains(id) && out.size() < MAX_CLUBS) out.add(id);
+        }
+        return out;
+    }
+
+    /** The on-TV choice is stored as "929,817,382"; empty or junk gives an empty list. */
+    static List<String> clubIds(String joined) {
+        if (joined == null || joined.trim().isEmpty()) return Collections.emptyList();
+        return clubIds(java.util.Arrays.asList(joined.split(",")));
+    }
+
+    /** One match for each club that has something to show, in the clubs' order; a derby shows once. */
+    static List<Match> pickClubs(List<Match> all, List<String> teamIds, long now) {
+        List<Match> out = new java.util.ArrayList<>();
+        for (String id : teamIds) {
+            Match next = null, live = null;
+            for (Match m : all) {
+                if (!id.equals(m.homeId) && !id.equals(m.awayId)) continue;
+                if (Match.LIVE.equals(m.state)) {
+                    live = m;
+                    break;
+                }
+                if (Match.PRE.equals(m.state) && m.startMillis >= now - 5 * 60_000L
+                        && m.startMillis <= now + CLUB_LOOKAHEAD_DAYS * 24 * 3_600_000L
+                        && (next == null || m.startMillis < next.startMillis)) next = m;
+            }
+            Match pick = live != null ? live : next;
+            if (pick == null) continue;
+            boolean seen = false;
+            for (Match o : out) seen |= sameMatch(o, pick);
+            if (!seen) out.add(pick);
+        }
+        return out;
+    }
+
+    /** The same fixture seen from two sources (a club schedule and a scoreboard): competition and both team ids. */
+    static boolean sameMatch(Match a, Match b) {
+        return !a.homeId.isEmpty() && a.code.equals(b.code) && a.homeId.equals(b.homeId) && a.awayId.equals(b.awayId);
+    }
+
+    /**
+     * Club schedules are fetched rarely (they are large); a match that is live or about to start is refreshed
+     * from that day's scoreboard instead, so the score and minute stay current.
+     */
+    static boolean nearKickoff(Match m, long now) {
+        if (Match.LIVE.equals(m.state)) return true;
+        return Match.PRE.equals(m.state) && m.startMillis <= now + 15 * 60_000L
+                && m.startMillis >= now - 3 * 3_600_000L;
+    }
+
+    /** {@code all} with each match replaced by its fresh copy from {@code fresh}, when there is one. */
+    static List<Match> withUpdates(List<Match> all, List<Match> fresh) {
+        List<Match> out = new java.util.ArrayList<>(all.size());
+        for (Match m : all) {
+            Match use = m;
+            for (Match f : fresh) {
+                if (sameMatch(m, f)) {
+                    use = f;
+                    break;
+                }
+            }
+            out.add(use);
+        }
+        return out;
     }
 
     static final class Match {

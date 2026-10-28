@@ -1,7 +1,7 @@
 """Repository hygiene checks that run in CI and locally: python3 scripts/ci/check_hygiene.py
 
 1. Arabic text is allowed only where it belongs: the parallel *.ar.md docs, the bilingual README.md,
-   localization data (res/values-ar, assets/names_ar.json) and the city names in config/.
+   localization data (res/values-ar, assets/names_ar.json, assets/clubs.json) and the city names in config/.
    Code, comments, scripts, English docs and CI files must be English.
 2. Files that must never be tracked: Gradle local.properties, signing keys, ADB keys, .env files.
 """
@@ -14,7 +14,8 @@ import sys
 ARABIC_RANGES = ((0x0600, 0x06FF), (0x0750, 0x077F), (0xFB50, 0xFDFF), (0xFE70, 0xFEFF))
 
 ARABIC_ALLOWED_PREFIXES = ("launcher/app/src/main/res/values-ar/", "config/")
-ARABIC_ALLOWED_FILES = {"README.md", "launcher/app/src/main/assets/names_ar.json"}
+ARABIC_ALLOWED_FILES = {"README.md", "launcher/app/src/main/assets/names_ar.json",
+                        "launcher/app/src/main/assets/clubs.json"}
 
 FORBIDDEN_NAMES = {"local.properties", "adbkey", "adbkey.pub", ".env"}
 FORBIDDEN_SUFFIXES = (".keystore", ".jks")

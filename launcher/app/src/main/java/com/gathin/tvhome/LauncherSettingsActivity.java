@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,6 +19,8 @@ public final class LauncherSettingsActivity extends Activity {
     private TextView animationsChoice;
     private TextView advancedChoice;
     private TextView followThemeChoice;
+    private TextView clubsChoice;
+    private static final int CLUBS_REQUEST = 1;
     private int columns;
     private boolean animations;
     private boolean advancedEffects;
@@ -73,6 +76,11 @@ public final class LauncherSettingsActivity extends Activity {
                         .show();
             }
         });
+        clubsChoice = findViewById(R.id.clubsChoice);
+        // Matches need the network: the offline build has no INTERNET, so the row would promise nothing.
+        clubsChoice.setVisibility(Feeds.AVAILABLE ? View.VISIBLE : View.GONE);
+        clubsChoice.setOnClickListener(v ->
+                startActivityForResult(new Intent(this, ClubsActivity.class), CLUBS_REQUEST));
         followThemeChoice = findViewById(R.id.followThemeChoice);
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
@@ -94,6 +102,15 @@ public final class LauncherSettingsActivity extends Activity {
         columnChoices[Math.max(0, Math.min(columns - 4, 3))].requestFocus();
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == CLUBS_REQUEST && resultCode == RESULT_OK) {
+            setResult(RESULT_OK);
+            refresh();
+        }
+    }
+
     private void setAdvanced(boolean enabled) {
         advancedEffects = enabled;
         choices.edit().putBoolean("advanced_effects", enabled).apply();
@@ -112,6 +129,8 @@ public final class LauncherSettingsActivity extends Activity {
         advancedChoice.setEnabled(animations);
         advancedChoice.setAlpha(animations ? 1f : 0.5f);
         followThemeChoice.setSelected(!hasOnTvChoices());
+        clubsChoice.setText(getString(R.string.favorite_clubs_state,
+                Config.load(this).interests.favoriteTeams.size(), Interests.MAX_CLUBS));
     }
 
     private boolean hasOnTvChoices() {
