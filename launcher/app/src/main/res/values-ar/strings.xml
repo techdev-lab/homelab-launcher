@@ -4,7 +4,6 @@
     <string name="inputs">المدخلات</string>
     <string name="wifi">واي فاي</string>
     <string name="settings">الإعدادات</string>
-    <string name="choose_input">المدخلات</string>
     <string name="connected">متصل</string>
     <string name="standby">في وضع الاستعداد</string>
     <string name="not_connected">لا يوجد جهاز</string>
@@ -27,25 +26,6 @@
     <string name="input_key_service_description">يفتح قائمة المدخلات عند الضغط على زر المدخلات في جهاز التحكم.</string>
     <string name="home_key_name">زر الرئيسية</string>
     <string name="home_key_description">يجعل زر الرئيسية في جهاز التحكم يفتح هذه الشاشة.</string>
-    <string name="card_prompt_title">بطاقة جديدة من %1$s</string>
-    <string name="card_prompt_body">يمكن لتطبيق %1$s عرض بطاقة على شاشتك الرئيسية. إبقاؤها مخفية يترك مربّع التطبيق العادي كما هو.</string>
-    <string name="card_prompt_names">اسم البطاقة «%1$s»، واسم التطبيق «%2$s».</string>
-    <string name="card_prompt_resigned">تم تحديث %1$s بمفتاح توقيع مختلف، لذا لم يعد اختيارك السابق ساريًا. اختر من جديد بشأن بطاقته.</string>
-    <string name="card_prompt_relabelled">غيّر %1$s اسم بطاقته منذ أن اخترت. اختر من جديد بشأنها.</string>
-    <string name="card_prompt_hint">يمكنك تغيير هذا لاحقًا: اضغط مطولًا على OK فوق الإعدادات ثم اختر بطاقات التطبيقات.</string>
-    <string name="card_prompt_identity">%1$s، المفتاح %2$s</string>
-    <string name="card_keep_hidden">إبقاؤها مخفية</string>
-    <string name="card_show">عرض البطاقة</string>
-    <string name="card_not_saved">تعذّر حفظ الاختيار</string>
-    <string name="module_cards">بطاقات الوحدات</string>
-    <string name="no_module_cards">لا توجد بطاقات وحدات مثبّتة</string>
-    <string name="card_app_name">التطبيق: %1$s</string>
-    <string name="card_state_shown">معروضة</string>
-    <string name="card_state_over_limit">معروضة، فوق الحد الأقصى وهو 8</string>
-    <string name="card_state_hidden">مخفية</string>
-    <string name="card_state_new">جديدة</string>
-    <string name="card_state_new_key">مفتاح جديد</string>
-    <string name="card_state_new_label">اسم جديد</string>
     <string name="launcher_settings">إعدادات المشغّل</string>
     <string name="columns_label">تطبيقات في كل صف</string>
     <string name="animations_state">الرسوم المتحركة: %1$s</string>
@@ -109,7 +89,7 @@
     <string name="match_live">● مباشر</string>
     <string name="news">أخبار</string>
     <string name="favorite_clubs_state">الأندية المفضلة (%1$d من %2$d)</string>
-    <string name="favorite_clubs_hint">اختر حتى %1$d أندية. تعرض الشاشة الرئيسية مباراة كل نادٍ المباشرة أو القادمة في أي بطولة (الدوري، الكأس، القارية)، نادياً كل %2$d ثوانٍ، بالترتيب الذي تختاره.</string>
+    <string name="favorite_clubs_hint">اختر حتى %1$d أندية. تعرض الشاشة الرئيسية مباراتَي كل نادٍ القادمتين في أي بطولة (الدوري، الكأس، القارية)، مباراة كل %2$d ثوانٍ، بالترتيب الذي تختاره، وعليها نجمة ذهبية.</string>
     <string name="clubs_clear">مسح (استخدام أندية السمة)</string>
     <string name="clubs_limit">الحد %d أندية. احذف نادياً أولاً.</string>
     <string name="wallpapers_label">الخلفيات</string>
@@ -140,4 +120,9 @@
         <item>عنابي</item>
         <item>رمادي</item>
     </string-array>
+    <string name="text_size_label">حجم النص</string>
+    <string name="text_size_small">صغير</string>
+    <string name="text_size_medium">متوسط</string>
+    <string name="text_size_large">كبير</string>
+    <string name="text_size_hint">بطاقات الشاشة الرئيسية: الصغير يعرض ٥ في الصف، والمتوسط ٤، والكبير ٣. والباقي ينزل للصف التالي.</string>
 </resources>

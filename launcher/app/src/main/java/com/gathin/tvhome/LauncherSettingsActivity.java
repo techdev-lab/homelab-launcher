@@ -35,11 +35,13 @@ public final class LauncherSettingsActivity extends Activity {
     private String wallMode;
     private int backgroundColor;
     private boolean[] cards;
+    private String textSize;
     private float density;
 
     /** One row of choices: the views in screen order and the value each one stands for. */
     private final List<TextView> languageViews = new ArrayList<>(), wallViews = new ArrayList<>(),
-            colourViews = new ArrayList<>(), cardViews = new ArrayList<>(), motionViews = new ArrayList<>();
+            colourViews = new ArrayList<>(), cardViews = new ArrayList<>(), motionViews = new ArrayList<>(),
+            textSizeViews = new ArrayList<>();
 
     private static final String[] LANGUAGES = {"system", "ar", "en"};
     private static final String[] WALL_SETS = {Wallpapers.HOMELAB, Wallpapers.SERENE, Wallpapers.KIDS};
@@ -68,6 +70,7 @@ public final class LauncherSettingsActivity extends Activity {
         backgroundColor = config.backgroundColor;
         Interests.Settings s = config.interests;
         cards = new boolean[]{s.showPrayer, s.showWeather, s.showSports, s.showClubs};
+        textSize = config.textSize;
 
         int[] ids = {R.id.columns4, R.id.columns5, R.id.columns6, R.id.columns7};
         for (int i = 0; i < ids.length; i++) {
@@ -135,6 +138,19 @@ public final class LauncherSettingsActivity extends Activity {
             cardViews.add(c);
         }
         fill(R.id.cardsRow, cardViews);
+
+        int[] sizeNames = {R.string.text_size_small, R.string.text_size_medium, R.string.text_size_large};
+        for (int i = 0; i < StripSize.ALL.length; i++) {
+            final String size = StripSize.ALL[i];
+            textSizeViews.add(chip(getString(sizeNames[i]), v -> {
+                if (size.equals(textSize)) return;
+                textSize = size;
+                // The viewer's choice, like the clubs: a theme push does not clear it.
+                choices.edit().putString(Config.TEXT_SIZE_KEY, size).apply();
+                changed();
+            }));
+        }
+        fill(R.id.textSizeRow, textSizeViews);
 
         int[] motionNames = {R.string.motion_calm, R.string.motion_lively, R.string.motion_off};
         for (int i = 0; i < MOTIONS.length; i++) {
@@ -237,6 +253,7 @@ public final class LauncherSettingsActivity extends Activity {
                     && (Wallpapers.PLAIN_COLOURS[i] & 0xFFFFFF) == (backgroundColor & 0xFFFFFF));
         }
         for (int i = 0; i < cards.length; i++) cardViews.get(i).setSelected(cards[i]);
+        for (int i = 0; i < StripSize.ALL.length; i++) textSizeViews.get(i).setSelected(StripSize.ALL[i].equals(textSize));
         for (int i = 0; i < MOTIONS.length; i++) motionViews.get(i).setSelected(MOTIONS[i].equals(motion()));
         followThemeChoice.setSelected(!hasOnTvChoices());
         clubsChoice.setText(getString(R.string.favorite_clubs_state,

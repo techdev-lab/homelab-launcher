@@ -55,7 +55,6 @@ Google TV has two Home owners: `launcherx` (stock home) and `setupwraith` (setup
 - The on-TV "deadman" rollback timer in `Set-TvhomeAsHome.ps1` did not survive a dropped ADB link on Android 14. Keep the rollback command ready.
 - Prayer method is Umm al-Qura only.
 - Most Arab domestic leagues are not available from the current football source.
-- Move Mode (long-press reordering, inherited code) does not work with the physical remote and is not maintained.
 
 ## Roadmap (not started)
 

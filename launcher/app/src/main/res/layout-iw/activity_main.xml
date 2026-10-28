@@ -216,15 +216,15 @@
             </LinearLayout>
         </RelativeLayout>
 
-        <!-- Interests strip: prayer times (computed offline) and, in the online build, a match and a headline.
-             Its cards take focus between the header and the dock (MainActivity.makeCardFocusable).
-             Cards are added in code (MainActivity.updateInterests). -->
+        <!-- Interests strip: prayer times (computed offline) and, in the online build, matches, weather and news.
+             Rows of 5, 4 or 3 cards by the text size (StripSize); cards and rows are added in code
+             (MainActivity.updateInterests) and take focus between the header and the dock. -->
         <LinearLayout
             android:id="@+id/interests"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="14dp"
-            android:orientation="horizontal"
+            android:orientation="vertical"
             android:gravity="right"
             android:focusable="false"
             android:descendantFocusability="afterDescendants"

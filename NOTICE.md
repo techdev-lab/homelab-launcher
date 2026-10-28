@@ -6,12 +6,14 @@ HomeLab Launcher is a fork of the `tvhome` launcher in [Gathin23/cleanyourtv](ht
 
 ## Fonts
 
-The fonts are not covered by the MIT License in [LICENSE](LICENSE). Outfit is copyright The Outfit Project Authors and Readex Pro is copyright The Readex Pro Project Authors, both under the SIL Open Font License 1.1.
+The fonts are not covered by the MIT License in [LICENSE](LICENSE). Outfit is copyright The Outfit Project Authors and IBM Plex Sans Arabic is copyright IBM Corp., both under the SIL Open Font License 1.1.
 
 | Font | Files | License | Source |
 |---|---|---|---|
 | Outfit | `launcher/app/src/main/res/font/outfit*.ttf` | SIL OFL 1.1 (`launcher/FONT-LICENSE-OFL.txt`) | Bundled by upstream |
-| Readex Pro | `launcher/app/src/main/res/font/readex_pro.ttf` | SIL OFL 1.1 (`launcher/FONT-LICENSE-READEXPRO-OFL.txt`) | [google/fonts](https://github.com/google/fonts) at commit `8b0a1d0f5983c89bc2b93f1b5fb55f9e252744b5`, file `ofl/readexpro/ReadexPro[HEXP,wght].ttf`, SHA-256 `268BBA7E1E8F3B14D798B3FB0E40EBAA3FC39308C9AC0020E2FAF6DF181CC30E` |
+| IBM Plex Sans Arabic | `launcher/app/src/main/res/font/plex_arabic.ttf` (Regular), `plex_arabic_light.ttf` (Light), `plex_arabic_medium.ttf` (Medium) | SIL OFL 1.1 (`launcher/FONT-LICENSE-IBMPLEXSANSARABIC-OFL.txt`) | [google/fonts](https://github.com/google/fonts) at commit `9862abc066c9b83bf84c3e8ed1fc2d8d48f9bbf0`, files `ofl/ibmplexsansarabic/IBMPlexSansArabic-{Regular,Light,Medium}.ttf`, SHA-256 Regular `6F611412270A132BBAC838DA9259D4C68569B4175F3B3B8FA3FA36A30B56DAB9`, Light `0AF9D1EFFBB36FF74D13C64F752C771ECB9162A451CF151C5425F4D00D4DAA7C`, Medium `B8363AB9F733DFA4F8E96B8B2102C24B5CF4110FB96D1D3D9A9412F6FB49CF74` |
+
+Readex Pro (used for the cards up to 2.8) was removed in 2.9.
 
 ## Data sources (online build)
 

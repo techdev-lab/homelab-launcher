@@ -2,7 +2,16 @@
 
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
-## 2.8.1 (2026-10-28)
+## 2.9.0 (2026-10-28)
+- **Your clubs stand out.** Every match card with one of your favourite clubs, on the league cards too, gets a gold star before the competition. The club card now shows each club's **next two** matches, so a continental or cup match two days after a league match is no longer hidden behind it (Al Hilal: Saudi Pro League on Saturday, AFC Champions League Elite on Tuesday). The club card is now the first football card. Matching is by ESPN team id, so it works in both languages.
+- **Text size** (Launcher settings > Text size): Small, Medium or Large. The home screen's cards show 5, 4 or 3 in a row and wrap to the next row; every line of every card, the prayer card's included, grows with the size. Small is the 2.8 look, so an upgrade changes nothing until you pick. Also `"text_size"` in config.json; the TV's choice wins and a theme push does not clear it.
+- **The kick-off line is short and stays in order**: `Thu 29 Oct · 9:17 PM`, and on the Arabic screen the day name, day/month and the time. Before, the long Arabic line was cut off and the time could read backwards ("…:17"). The date and the clock sit in left-to-right isolates; the AM/PM word stays outside. New `WhenTextTest`.
+- **New font: IBM Plex Sans Arabic** for the cards, the Arabic header (clock, date, greeting, Hijri date) and the screensaver, Arabic and Latin from one family. Picked by rendering the same cards in seven OFL fonts (Readex Pro, IBM Plex Sans Arabic, Noto Kufi Arabic, Noto Sans Arabic, Tajawal, Cairo, Almarai): it is the narrowest at the same size, so all five prayer times fit a fifth of the screen. Readex Pro is removed. The English header keeps Outfit.
+- **Removed: Module cards and Move mode.** Nothing in the world declares a module card, so the menu only ever said "No module cards installed"; Move mode (hold OK on a tile) never worked with the physical remote. Holding OK on the Settings button now opens Launcher settings directly. An order saved by Move mode is cleared once, so the dock follows `dock_apps` again. `module_cards` in an old config.json is ignored. The app label cleaner moved to `Labels` with its tests.
+- Fixes from the review of 2.6 to 2.8.1: the release workflow's actions are pinned to commit SHAs; the card switches no longer change the shared empty settings object.
+- 2.8.1 was merged but never published as its own release; its fixes ship in 2.9.0.
+
+## 2.8.1 (2026-10-28, not released separately)
 - Found by a second full test on the TV after the 2.8.0 release: on the English screen the club card's league line cut off the position ("5/8") and the weather card cut the city ("Weather · Al-A..."). The position now comes first ("5/8 · Premier League") and the weather card shows the city on its own line.
 - **Example configs show a wallpaper out of the box.** Every file in `config/` said `"wallpaper_mode": "rotate"`, which needs pictures pushed to the TV: someone who copied an example and skipped that step got a plain screen. They now use `"serene"` (built into the APK); `docs/INSTALL.md` says wallpapers need no pushing and shows how to use your own.
 - Wording: the download table and release notes said "both wallpaper sets"; there are three. `wallpaper_interval_min` also applies to the built-in sets (CONFIG.md). Arabic grammar fix in the README.

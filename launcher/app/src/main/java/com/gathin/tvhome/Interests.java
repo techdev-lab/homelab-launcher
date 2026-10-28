@@ -53,13 +53,16 @@ final class Interests {
         /** Card switches from Launcher settings: a card that is off never shows, whatever config.json says. */
         boolean showPrayer = true, showWeather = true, showSports = true, showClubs = true;
 
-        /** This settings object with the TV's card switches applied. */
+        /** A copy with the TV's card switches applied; never changes this object (NONE is shared). */
         Settings withCards(boolean prayer, boolean weather, boolean sports, boolean clubs) {
-            showPrayer = prayer;
-            showWeather = weather;
-            showSports = sports;
-            showClubs = clubs;
-            return this;
+            Settings s = new Settings(language, hijriDate, prayerCity, prayerCityEn, prayerLat, prayerLng,
+                    sportsLeagues, sportsTeams, newsFeeds, newsFeedsEn, this.weather, sportsCards, favoriteTeams,
+                    clubRotateSeconds);
+            s.showPrayer = prayer;
+            s.showWeather = weather;
+            s.showSports = sports;
+            s.showClubs = clubs;
+            return s;
         }
 
         Settings(String language, boolean hijriDate, String prayerCity, String prayerCityEn, double prayerLat,
@@ -219,28 +222,74 @@ final class Interests {
         return clubIds(java.util.Arrays.asList(joined.split(",")));
     }
 
-    /** One match for each club that has something to show, in the clubs' order; a derby shows once. */
+    /**
+     * Matches per club on the club card: the live or next one and the one after, so a continental or cup match
+     * two days after a league match is not hidden behind it (Al Hilal: league on Saturday, AFC on Tuesday).
+     */
+    static final int CLUB_MATCHES = 2;
+
+    /**
+     * Up to {@link #CLUB_MATCHES} matches for each club that has something to show, a live one first, then the next
+     * kick-offs within {@link #CLUB_LOOKAHEAD_DAYS}; clubs in their order, each club's matches by time. A derby
+     * between two favourites shows once.
+     */
     static List<Match> pickClubs(List<Match> all, List<String> teamIds, long now) {
         List<Match> out = new java.util.ArrayList<>();
         for (String id : teamIds) {
-            Match next = null, live = null;
+            List<Match> mine = new java.util.ArrayList<>();
             for (Match m : all) {
                 if (!id.equals(m.homeId) && !id.equals(m.awayId)) continue;
-                if (Match.LIVE.equals(m.state)) {
-                    live = m;
-                    break;
-                }
-                if (Match.PRE.equals(m.state) && m.startMillis >= now - 5 * 60_000L
-                        && m.startMillis <= now + CLUB_LOOKAHEAD_DAYS * 24 * 3_600_000L
-                        && (next == null || m.startMillis < next.startMillis)) next = m;
+                boolean live = Match.LIVE.equals(m.state);
+                boolean soon = Match.PRE.equals(m.state) && m.startMillis >= now - 5 * 60_000L
+                        && m.startMillis <= now + CLUB_LOOKAHEAD_DAYS * 24 * 3_600_000L;
+                if (live || soon) mine.add(m);
             }
-            Match pick = live != null ? live : next;
-            if (pick == null) continue;
-            boolean seen = false;
-            for (Match o : out) seen |= sameMatch(o, pick);
-            if (!seen) out.add(pick);
+            mine.sort((a, b) -> {
+                boolean la = Match.LIVE.equals(a.state), lb = Match.LIVE.equals(b.state);
+                if (la != lb) return la ? -1 : 1;
+                return Long.compare(a.startMillis, b.startMillis);
+            });
+            int taken = 0;
+            for (Match pick : mine) {
+                if (taken == CLUB_MATCHES) break;
+                boolean seen = false;
+                for (Match o : out) seen |= sameMatch(o, pick);
+                if (!seen) out.add(pick);
+                taken++;
+            }
         }
         return out;
+    }
+
+    /** True when either side of the match is one of the favourite clubs, by ESPN id (names differ by language). */
+    static boolean involvesFavorite(Match m, List<String> teamIds) {
+        return (!m.homeId.isEmpty() && teamIds.contains(m.homeId)) || (!m.awayId.isEmpty() && teamIds.contains(m.awayId));
+    }
+
+    /** Left-to-right isolate and its end (U+2066, U+2069): a time or date keeps its order inside an Arabic line. */
+    static final char LRI = '\u2066', PDI = '\u2069';
+
+    /**
+     * The kick-off line of a match card, short enough for the narrowest card: the full day name, day/month and the
+     * clock on the Arabic screen ("Thursday 29/10, 9:17 PM" in Arabic words and digits), "Thu 29 Oct, 9:17 PM" on
+     * the English one, with a middle dot between date and clock. The date and the clock sit in left-to-right
+     * isolates, so a right-to-left line can never reverse "21:17" or cut it into "...:17"; the AM/PM word stays
+     * outside the isolate, where the line's own direction places it. One locale formats every part, so the digits
+     * match.
+     */
+    static String whenText(long millis, Locale loc, java.util.TimeZone tz, boolean twentyFour) {
+        boolean ar = "ar".equals(loc.getLanguage());
+        String day = format(ar ? "EEEE" : "EEE", loc, tz, millis);
+        String date = format(ar ? "d/M" : "d MMM", loc, tz, millis);
+        String clock = format(twentyFour ? "H:mm" : "h:mm", loc, tz, millis);
+        String marker = twentyFour ? "" : " " + format("a", loc, tz, millis);
+        return day + " " + LRI + date + PDI + " \u00B7 " + LRI + clock + PDI + marker;
+    }
+
+    private static String format(String pattern, Locale loc, java.util.TimeZone tz, long millis) {
+        java.text.SimpleDateFormat f = new java.text.SimpleDateFormat(pattern, loc);
+        f.setTimeZone(tz);
+        return f.format(new java.util.Date(millis));
     }
 
     /** The same fixture seen from two sources (a club schedule and a scoreboard): competition and both team ids. */

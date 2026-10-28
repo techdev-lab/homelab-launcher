@@ -50,7 +50,14 @@ It is written for Muslim and Arabic-speaking households first, but it is not tie
 
 A fresh install starts on **Serene**. Got a Google TV for the children? Pick **Kids**, switch off the football cards, and it is ready.
 
-### What's new in 2.8
+### What's new in 2.9
+
+- **Your clubs stand out:** a gold star on every match of your favourite clubs, and each club's next two matches, so Al Hilal's AFC Champions League Elite game shows next to the league one.
+- **Text size** on the TV: Small, Medium or Large (5, 4 or 3 cards in a row).
+- A short kick-off line that no longer gets cut or reversed in Arabic, and a new font, **IBM Plex Sans Arabic**.
+- Module cards and Move mode, which never worked with the remote, are gone.
+
+### 2.8
 
 - **Everything on the TV, no computer needed** (hold OK on the Settings button > *Launcher settings*): the language (TV language, Arabic or English), the wallpapers (HomeLab, Serene, **Kids**, or a plain colour), **which cards show** (prayer times, weather, football, your clubs: each one on or off), and the **motion** (calm, lively or off).
 - **The cards answer the remote:** from the apps press Up to reach them. OK on the clubs card jumps to the next club; OK on the others opens the settings.
@@ -87,15 +94,15 @@ Install it like any sideloaded app: `adb install HomeLab-Launcher-<version>.apk`
 | **Hijri date** | Umm al-Qura calendar from the platform's ICU, next to the Gregorian date. |
 | **Football cards** | One card per league group, side by side, e.g. the Saudi Pro League and "the big European leagues". A live match first, otherwise the next kick-off within 7 days. |
 | **Wallpapers** | Three built-in sets, **HomeLab**, **Serene** and **Kids**, changing every few minutes, or a plain colour; picked on the TV. Your own pictures still work through the config. |
-| **Settings on the TV** | Hold OK on the Settings button: language, apps per row, wallpapers, which cards show, favourite clubs, motion. No computer needed. |
-| **Favourite clubs** | Pick up to 10 clubs with the remote (Al Hilal, Al Nassr, Man City...). One card shows each club's live or next match in any competition, league, cup or continental, and moves to the next club every 5 seconds. |
+| **Settings on the TV** | Hold OK on the Settings button: language, apps per row, wallpapers, which cards show, text size, favourite clubs, motion. No computer needed. |
+| **Favourite clubs** | Pick up to 10 clubs with the remote (Al Hilal, Al Nassr, Man City...). One card shows each club's live or next two matches in any competition, league, cup or continental, one every 5 seconds, and every match of your clubs gets a gold star. |
 | **Weather** | Current conditions for the same city (Open-Meteo, free, no key). |
 | **Your dock** | Four apps of your choice on top (YouTube, Netflix, Shahid, Jellyfin, an IPTV player, anything), the rest in a grid. |
 | **Remote buttons** | The YouTube button on the Chromecast remote keeps working after the stock launcher is gone. |
 | **Screensaver** | A thin clock that glides around the screen with the Hijri date, the next prayer and a slow colour glow (no burn-in). |
 | **VPN indicator** | Set your VPN app (e.g. WireGuard) and the Wi-Fi pill shows a green "VPN" capsule while the tunnel is up, red when it dropped. |
 | **Two builds** | `online` (football, weather) and `offline` (no INTERNET permission at all). |
-| **Small and private** | About 3.7 MB with fonts and 22 wallpapers. No analytics, no accounts, no ads. The offline build cannot reach the network. |
+| **Small and private** | About 4 MB with fonts and 22 wallpapers. No analytics, no accounts, no ads. The offline build cannot reach the network. |
 
 | English | App grid | Screensaver |
 |---|---|---|
@@ -174,7 +181,7 @@ No analytics, no accounts, no crash reporting, no remote configuration. The full
 
 ### Credits and license
 
-HomeLab Launcher is a fork of the `tvhome` launcher from [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (MIT), which is why the Android package is still `com.gathin.tvhome`. Fonts: Outfit and Readex Pro, both SIL Open Font License 1.1. Data: ESPN public scoreboard, Open-Meteo. Details in [NOTICE.md](NOTICE.md).
+HomeLab Launcher is a fork of the `tvhome` launcher from [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (MIT), which is why the Android package is still `com.gathin.tvhome`. Fonts: Outfit and IBM Plex Sans Arabic, both SIL Open Font License 1.1. Data: ESPN public scoreboard, Open-Meteo. Details in [NOTICE.md](NOTICE.md).
 
 MIT License, see [LICENSE](LICENSE).
 
@@ -205,7 +212,14 @@ MIT License, see [LICENSE](LICENSE).
 
 التثبيت الجديد يبدأ على **سكينة**. **عندك جوجل تي في للأطفال؟** اختر خلفيات **أطفال**، وأطفئ بطاقات الكورة من الإعدادات، وصار جاهز لهم.
 
-### الجديد في 2.8
+### الجديد في 2.9
+
+- **أنديتك واضحة:** نجمة ذهبية على كل مباراة لأنديتك المفضلة، ومباراتين لكل نادٍ، فتطلع مباراة الهلال في النخبة الآسيوية جنب مباراة الدوري.
+- **حجم النص** من التلفزيون: صغير أو متوسط أو كبير (٥ أو ٤ أو ٣ بطاقات في الصف).
+- سطر موعد المباراة صار قصير وما يتقص ولا ينقلب بالعربي، وخط جديد **IBM Plex Sans Arabic**.
+- شلنا «بطاقات الوحدات» و«وضع النقل» لأنها ما كانت تشتغل بالريموت.
+
+### 2.8
 
 - **كل شي من التلفزيون بدون كمبيوتر** (ضغطة مطوّلة على زر الإعدادات ← *إعدادات المشغّل*): اللغة (لغة التلفزيون أو العربية أو English)، والخلفيات (هوم لاب، سكينة، **أطفال**، أو لون سادة)، و**أي البطاقات تظهر** (مواقيت الصلاة، الطقس، الكورة، أنديتك: كل وحدة تشغّلها أو تطفيها)، و**الحركة** (هادئة، حيوية، بدون).
 - **البطاقات تتحرك لها بالأسهم:** من التطبيقات اضغط فوق توصلها. OK على بطاقة الأندية ينقلك للنادي اللي بعده، وعلى الباقي يفتح الإعدادات.
@@ -242,15 +256,15 @@ MIT License, see [LICENSE](LICENSE).
 | **التاريخ الهجري** | تقويم أم القرى، جنب الميلادي. |
 | **بطاقات الكورة** | بطاقة لكل مجموعة دوريات جنب بعض، مثلاً: الدوري السعودي، والدوريات الأوروبية الكبرى. المباشر أولاً، وإلا أقرب مباراة خلال 7 أيام. |
 | **الخلفيات** | ثلاث مجموعات داخل التطبيق، **هوم لاب** و**سكينة** و**أطفال**، تتبدّل كل كم دقيقة، أو لون سادة؛ تختارها من التلفزيون. صورك الخاصة تشتغل من ملف الإعدادات. |
-| **الإعدادات من التلفزيون** | ضغطة مطوّلة على زر الإعدادات: اللغة، عدد التطبيقات في الصف، الخلفيات، أي البطاقات تظهر، الأندية المفضلة، الحركة. بدون كمبيوتر. |
-| **أنديتك المفضلة** | تختار حتى 10 أندية بالريموت (الهلال، النصر، مانشستر سيتي…). بطاقة وحدة تعرض مباراة كل نادٍ المباشرة أو الجاية في أي بطولة: الدوري أو الكأس أو النخبة الآسيوية أو أبطال أوروبا، وتنتقل للنادي اللي بعده كل 5 ثواني. |
+| **الإعدادات من التلفزيون** | ضغطة مطوّلة على زر الإعدادات: اللغة، عدد التطبيقات في الصف، الخلفيات، أي البطاقات تظهر، حجم النص، الأندية المفضلة، الحركة. بدون كمبيوتر. |
+| **أنديتك المفضلة** | تختار حتى 10 أندية بالريموت (الهلال، النصر، مانشستر سيتي…). بطاقة وحدة تعرض مباراتين لكل نادٍ (المباشرة أو الجاية) في أي بطولة: الدوري أو الكأس أو النخبة الآسيوية أو أبطال أوروبا، مباراة كل 5 ثواني، وكل مباراة لأنديتك عليها نجمة ذهبية. |
 | **الطقس** | لنفس المدينة (Open-Meteo، مجاني وبدون مفتاح). |
 | **شريط تطبيقاتك** | أربع تطبيقات تختارها فوق (يوتيوب، نتفليكس، شاهد، جيليفين، برنامج IPTV، أي شي)، والباقي تحت في شبكة. |
 | **زر يوتيوب في الريموت** | يبقى شغّال بعد ما نوقف اللانشر الأصلي. |
 | **شاشة توقف** | ساعة رفيعة تنساب على الشاشة، معها الهجري والصلاة الجاية ووهج يتغيّر لونه بهدوء (تحمي الشاشة من الحرق). |
 | **علامة الـVPN** | لو حطيت تطبيق الـVPN (مثل WireGuard) في الإعدادات، يطلع جنب كلمة واي فاي **VPN بالأخضر** وقت ما يكون شغّال، وبالأحمر لو انقطع. |
 | **نسختين** | `online` (كورة وطقس) و`offline` (بدون صلاحية إنترنت أبداً). |
-| **خفيف وخاص** | حوالي 3.7 ميغابايت مع الخطوط و22 خلفية. لا تتبع ولا حسابات ولا إعلانات. نسخة offline ما تقدر توصل للإنترنت أصلاً. |
+| **خفيف وخاص** | حوالي 4 ميغابايت مع الخطوط و22 خلفية. لا تتبع ولا حسابات ولا إعلانات. نسخة offline ما تقدر توصل للإنترنت أصلاً. |
 
 | بالإنجليزي | شبكة التطبيقات | شاشة التوقف |
 |---|---|---|
@@ -320,7 +334,7 @@ cd launcher
 
 ### الشكر والرخصة
 
-المشروع مبني على لانشر `tvhome` من مشروع [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (رخصة MIT)، ولهذا اسم الحزمة `com.gathin.tvhome`. الخطوط: Outfit وReadex Pro (رخصة SIL OFL 1.1). البيانات: ESPN وOpen-Meteo. التفاصيل في [NOTICE.md](NOTICE.md).
+المشروع مبني على لانشر `tvhome` من مشروع [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (رخصة MIT)، ولهذا اسم الحزمة `com.gathin.tvhome`. الخطوط: Outfit وIBM Plex Sans Arabic (رخصة SIL OFL 1.1). البيانات: ESPN وOpen-Meteo. التفاصيل في [NOTICE.md](NOTICE.md).
 
 رخصة MIT، شوف [LICENSE](LICENSE).
 

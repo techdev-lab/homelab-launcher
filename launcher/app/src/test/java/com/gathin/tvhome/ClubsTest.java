@@ -37,15 +37,42 @@ public class ClubsTest {
     }
 
     @Test
-    public void eachClubGetsItsNextMatchInAnyCompetition() {
+    public void eachClubGetsItsNextTwoMatchesInAnyCompetition() {
         List<Interests.Match> all = Arrays.asList(
                 m("ksa.1", HILAL, "13033", Interests.Match.PRE, NOW + 72 * HOUR),
                 m("afc.champions", HILAL, "790", Interests.Match.PRE, NOW + 24 * HOUR),
+                m("ksa.1", "8363", HILAL, Interests.Match.PRE, NOW + 9 * 24 * HOUR),
                 m("eng.1", CITY, "331", Interests.Match.PRE, NOW + 5 * HOUR));
         List<Interests.Match> picks = Interests.pickClubs(all, Arrays.asList(HILAL, CITY), NOW);
-        assertEquals(2, picks.size());
+        assertEquals(3, picks.size());
         assertEquals("afc.champions", picks.get(0).code);
-        assertEquals(CITY, picks.get(1).homeId);
+        assertEquals("ksa.1", picks.get(1).code);
+        assertEquals(NOW + 72 * HOUR, picks.get(1).startMillis);
+        assertEquals(CITY, picks.get(2).homeId);
+    }
+
+    @Test
+    public void continentalMatchAfterTheLeagueMatchIsShown() {
+        // The 2026-10-28 case: league on the 31st, AFC Champions League Elite on the 3rd.
+        List<Interests.Match> all = Arrays.asList(
+                m("afc.champions", HILAL, "790", Interests.Match.PRE, NOW + 6 * 24 * HOUR),
+                m("ksa.1", HILAL, "13033", Interests.Match.PRE, NOW + 3 * 24 * HOUR));
+        List<Interests.Match> picks = Interests.pickClubs(all, Collections.singletonList(HILAL), NOW);
+        assertEquals(2, picks.size());
+        assertEquals("ksa.1", picks.get(0).code);
+        assertEquals("afc.champions", picks.get(1).code);
+    }
+
+    @Test
+    public void starFollowsTheTeamIdOnEitherSide() {
+        List<String> favs = Arrays.asList(HILAL, NASSR);
+        assertTrue(Interests.involvesFavorite(m("ksa.1", HILAL, "13033", Interests.Match.PRE, NOW), favs));
+        assertTrue(Interests.involvesFavorite(m("ksa.1", "8363", NASSR, Interests.Match.PRE, NOW), favs));
+        assertFalse(Interests.involvesFavorite(m("ksa.1", "21964", "8363", Interests.Match.PRE, NOW), favs));
+        assertFalse(Interests.involvesFavorite(new Interests.Match("ksa.1", "Al Hilal", "Al Fateh", "", "", "pre", "",
+                NOW), favs));
+        assertFalse(Interests.involvesFavorite(m("ksa.1", HILAL, "1", Interests.Match.PRE, NOW),
+                Collections.<String>emptyList()));
     }
 
     @Test
@@ -54,9 +81,11 @@ public class ClubsTest {
                 m("ksa.1", "21827", HILAL, Interests.Match.POST, NOW - 30 * HOUR),
                 m("ksa.1", HILAL, "13033", Interests.Match.PRE, NOW + 2 * HOUR),
                 m("ksa.kings.cup", "21964", HILAL, Interests.Match.LIVE, NOW - HOUR));
-        Interests.Match pick = Interests.pickClubs(all, Collections.singletonList(HILAL), NOW).get(0);
-        assertEquals(Interests.Match.LIVE, pick.state);
-        assertEquals("ksa.kings.cup", pick.code);
+        List<Interests.Match> picks = Interests.pickClubs(all, Collections.singletonList(HILAL), NOW);
+        assertEquals(2, picks.size());
+        assertEquals(Interests.Match.LIVE, picks.get(0).state);
+        assertEquals("ksa.kings.cup", picks.get(0).code);
+        assertEquals(Interests.Match.PRE, picks.get(1).state);
     }
 
     @Test
@@ -117,6 +146,13 @@ public class ClubsTest {
                 .withCards(true, false, false, false);
         assertTrue(quiet.prayer());
         assertFalse(quiet.wantsWeather() || quiet.wantsMatches() || quiet.wantsClubs());
+    }
+
+    @Test
+    public void cardSwitchesNeverChangeTheSharedNone() {
+        Interests.Settings off = Interests.Settings.NONE.withCards(false, false, false, false);
+        assertFalse(off.showPrayer);
+        assertTrue(Interests.Settings.NONE.showPrayer && Interests.Settings.NONE.showClubs);
     }
 
     @Test

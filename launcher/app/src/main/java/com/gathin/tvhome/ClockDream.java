@@ -29,8 +29,8 @@ import java.util.TimeZone;
 /**
  * Screensaver: the launcher's thin clock over a slow ambient glow, with the Hijri date, the next prayer and a
  * hairline that fills once a minute. The block glides (no jump, no fade) to a new spot every 20 seconds and the
- * glow follows it and slowly changes colour, so nothing burns in. Arabic on an Arabic screen, in Readex Pro like
- * the home screen's cards. No network, no images: cheap enough for a 1 GB TV.
+ * glow follows it and slowly changes colour, so nothing burns in. Arabic on an Arabic screen, in IBM Plex Sans
+ * Arabic like the home screen's cards. No network, no images: cheap enough for a 1 GB TV.
  */
 public class ClockDream extends DreamService {
 
@@ -117,14 +117,15 @@ public class ClockDream extends DreamService {
         colorIndex = random.nextInt(PALETTE.length);
         setGlow(PALETTE[colorIndex]);
 
-        Typeface readex = getResources().getFont(R.font.readex_pro);
+        Typeface plex = getResources().getFont(R.font.plex_arabic);
+        Typeface plexLight = getResources().getFont(R.font.plex_arabic_light);
         // The date is the block's second child in every dream_clock layout (the clock row is the first).
         View date = ((LinearLayout) content).getChildAt(1);
         if (date instanceof TextView && arabic) {
-            ((TextView) date).setTypeface(readex);
+            ((TextView) date).setTypeface(plex);
             ((TextView) date).setLetterSpacing(0f);
         }
-        addExtras((LinearLayout) content, readex);
+        addExtras((LinearLayout) content, plexLight);
     }
 
     /** The hairline, the Hijri date and the next prayer, under the clock and date of the layout. */
@@ -148,7 +149,6 @@ public class ClockDream extends DreamService {
     private TextView line(Typeface font, float sp, int color, int gravity) {
         TextView t = new TextView(this);
         t.setTypeface(font);
-        t.setFontVariationSettings("'wght' 300");
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         t.setTextColor(color);
         t.setGravity(gravity);
