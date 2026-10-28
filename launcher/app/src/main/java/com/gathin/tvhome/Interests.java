@@ -53,16 +53,56 @@ final class Interests {
         /** Card switches from Launcher settings: a card that is off never shows, whatever config.json says. */
         boolean showPrayer = true, showWeather = true, showSports = true, showClubs = true;
 
-        /** A copy with the TV's card switches applied; never changes this object (NONE is shared). */
-        Settings withCards(boolean prayer, boolean weather, boolean sports, boolean clubs) {
+        /** "prayer_method" as written (TV choice, else config.json); shown on the prayer card when it names none. */
+        String prayerMethodKey = Prayer.UMM_AL_QURA.key;
+        /** The method in force, or null when {@link #prayerMethodKey} names no method: no times are made up then. */
+        Prayer.Method prayerMethod = Prayer.UMM_AL_QURA;
+        /** {@link Prayer#ASR_STANDARD} or {@link Prayer#ASR_HANAFI} ("asr_method"). */
+        int asrFactor = Prayer.ASR_STANDARD;
+        /** "prayer_adjust": the viewer's own minutes per time, {FAJR..ISHA}, each at most 30 either way. */
+        int[] prayerAdjust = new int[6];
+
+        /** A copy of every field; the with* methods change the copy, never this object (NONE is shared). */
+        private Settings copy() {
             Settings s = new Settings(language, hijriDate, prayerCity, prayerCityEn, prayerLat, prayerLng,
                     sportsLeagues, sportsTeams, newsFeeds, newsFeedsEn, this.weather, sportsCards, favoriteTeams,
                     clubRotateSeconds);
+            s.showPrayer = showPrayer;
+            s.showWeather = showWeather;
+            s.showSports = showSports;
+            s.showClubs = showClubs;
+            s.prayerMethodKey = prayerMethodKey;
+            s.prayerMethod = prayerMethod;
+            s.asrFactor = asrFactor;
+            s.prayerAdjust = prayerAdjust.clone();
+            return s;
+        }
+
+        /** A copy with the TV's card switches applied. */
+        Settings withCards(boolean prayer, boolean weather, boolean sports, boolean clubs) {
+            Settings s = copy();
             s.showPrayer = prayer;
             s.showWeather = weather;
             s.showSports = sports;
             s.showClubs = clubs;
             return s;
+        }
+
+        /** A copy with the prayer method (by key), the Asr factor and the manual minutes. */
+        Settings withPrayer(String methodKey, int asr, int[] adjust) {
+            Settings s = copy();
+            s.prayerMethodKey = methodKey;
+            s.prayerMethod = Prayer.method(methodKey);
+            s.asrFactor = asr == Prayer.ASR_HANAFI ? Prayer.ASR_HANAFI : Prayer.ASR_STANDARD;
+            s.prayerAdjust = adjust != null && adjust.length == 6 ? adjust.clone() : new int[6];
+            return s;
+        }
+
+        /** The six times for that date at the prayer place, or null when the method is unknown (see prayerMethod). */
+        double[] prayerTimes(int year, int month, int day, double tzHours, boolean ramadan) {
+            if (prayerMethod == null) return null;
+            return Prayer.times(year, month, day, prayerLat, prayerLng, tzHours, ramadan, prayerMethod, asrFactor,
+                    prayerAdjust);
         }
 
         Settings(String language, boolean hijriDate, String prayerCity, String prayerCityEn, double prayerLat,
@@ -432,6 +472,45 @@ final class Interests {
     static String espnDay(long now, int plusDays) {
         return java.time.Instant.ofEpochMilli(now).atZone(java.time.ZoneOffset.UTC).toLocalDate()
                 .plusDays(plusDays).format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+    }
+
+    /**
+     * TheSportsDB league codes, "tsdb.4829": the leagues ESPN does not carry (Egypt 4829, UAE 4678, Qatar 4663,
+     * Morocco 4520). Its free API gives the next fixtures but no live scores.
+     */
+    static final String TSDB_PREFIX = "tsdb.";
+
+    static boolean isTsdb(String code) {
+        if (code == null || !code.startsWith(TSDB_PREFIX)) return false;
+        String id = code.substring(TSDB_PREFIX.length());
+        return id.matches("[0-9]{1,7}");
+    }
+
+    /**
+     * A TheSportsDB event status as one of ours: not started is {@link Match#PRE}, playing {@link Match#LIVE},
+     * finished {@link Match#POST}; postponed, cancelled, abandoned or anything unknown is "", which no card shows.
+     */
+    static String tsdbState(String status) {
+        String s = status == null ? "" : status.trim().toUpperCase(Locale.ROOT);
+        switch (s) {
+            case "":
+            case "NS":
+            case "TBD":
+            case "NOT STARTED":
+                return Match.PRE;
+            case "1H": case "HT": case "2H": case "ET": case "BT": case "P": case "LIVE": case "INT":
+                return Match.LIVE;
+            case "FT": case "AET": case "PEN": case "AOT": case "AP": case "MATCH FINISHED":
+                return Match.POST;
+            default:
+                return "";
+        }
+    }
+
+    /** TheSportsDB's {@code ?d=} value, yyyy-MM-dd in UTC, {@code plusDays} after {@code now}. */
+    static String tsdbDay(long now, int plusDays) {
+        return java.time.Instant.ofEpochMilli(now).atZone(java.time.ZoneOffset.UTC).toLocalDate()
+                .plusDays(plusDays).toString();
     }
 
     static Match pickMatch(List<Match> all, List<String> teams, long now) {

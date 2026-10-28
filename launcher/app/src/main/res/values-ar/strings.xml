@@ -125,4 +125,26 @@
     <string name="text_size_medium">متوسط</string>
     <string name="text_size_large">كبير</string>
     <string name="text_size_hint">بطاقات الشاشة الرئيسية: الصغير يعرض ٥ في الصف، والمتوسط ٤، والكبير ٣. والباقي ينزل للصف التالي.</string>
+    <string name="prayer_method_unknown">طريقة حساب الصلاة غير معروفة: %1$s</string>
+    <string name="prayer_method_label">مواقيت الصلاة</string>
+    <string name="prayer_method_choice">طريقة الحساب: %1$s</string>
+    <string name="asr_standard">العصر: الجمهور</string>
+    <string name="asr_hanafi">العصر: الحنفي</string>
+    <string name="prayer_method_hint">تُحسب على التلفزيون بالطريقة اللي تختارها. كل طريقة تعطي أوقاتها هي، وقد تفرق دقائق عن التقويم المطبوع؛ وprayer_adjust في config.json يقدّم أو يؤخّر كل وقت بالدقائق.</string>
+    <string-array name="prayer_method_names">
+        <item>أم القرى (مكة)</item>
+        <item>الهيئة المصرية العامة للمساحة</item>
+        <item>منطقة الخليج</item>
+        <item>دبي</item>
+        <item>قطر</item>
+        <item>الكويت</item>
+        <item>الأردن</item>
+        <item>المغرب</item>
+        <item>الجزائر</item>
+        <item>تونس</item>
+        <item>تركيا (الشؤون الدينية)</item>
+        <item>رابطة العالم الإسلامي</item>
+        <item>أمريكا الشمالية (ISNA)</item>
+        <item>كراتشي</item>
+    </string-array>
 </resources>

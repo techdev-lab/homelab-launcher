@@ -1303,9 +1303,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         Calendar now = Calendar.getInstance();
         boolean ramadan = Hijri.isRamadan(Hijri.today());
         double tz = TimeZone.getDefault().getOffset(now.getTimeInMillis()) / 3_600_000.0;
-        double lat = interestsCfg.prayerLat, lng = interestsCfg.prayerLng;
-        double[] t = Prayer.times(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
-                now.get(Calendar.DAY_OF_MONTH), lat, lng, tz, ramadan);
+        double[] t = interestsCfg.prayerTimes(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
+                now.get(Calendar.DAY_OF_MONTH), tz, ramadan);
+        String city = interestsCfg.city(ar);
+        String meta = getString(R.string.prayer_times) + (city.isEmpty() ? "" : " · " + city);
+        if (t == null) {
+            // A method name the launcher does not know: say so instead of quietly using another method.
+            return card(meta, false, getString(R.string.prayer_method_unknown, interestsCfg.prayerMethodKey), null, 1.4f);
+        }
         double nowH = now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE) / 60.0
                 + now.get(Calendar.SECOND) / 3600.0;
         String[] names = getResources().getStringArray(R.array.prayer_names);
@@ -1316,11 +1321,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             title = getString(R.string.prayer_in, names[next]);
             big = Prayer.countdown(nowH, t[next]);
         } else {
-            // After Isha: tomorrow's Fajr, counted across midnight.
+            // After Isha: tomorrow's Fajr, counted across midnight, with tomorrow's UTC offset (a clock change
+            // at midnight, as in Egypt or Morocco, must not move it by an hour).
             Calendar tm = (Calendar) now.clone();
             tm.add(Calendar.DAY_OF_MONTH, 1);
-            double fajr = Prayer.times(tm.get(Calendar.YEAR), tm.get(Calendar.MONTH) + 1,
-                    tm.get(Calendar.DAY_OF_MONTH), lat, lng, tz, ramadan)[Prayer.FAJR];
+            double tzTomorrow = TimeZone.getDefault().getOffset(tm.getTimeInMillis()) / 3_600_000.0;
+            double fajr = Prayer.onTodaysClock(interestsCfg.prayerTimes(tm.get(Calendar.YEAR), tm.get(Calendar.MONTH) + 1,
+                    tm.get(Calendar.DAY_OF_MONTH), tzTomorrow, ramadan)[Prayer.FAJR], tz, tzTomorrow);
             title = getString(R.string.prayer_in, names[Prayer.FAJR]);
             big = Prayer.countdown(nowH, fajr + 24);
         }
@@ -1329,8 +1336,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (all.length() > 0) all.append("  ");
             all.append(names[i]).append(' ').append(Prayer.clock(t[i], twelve));
         }
-        String city = interestsCfg.city(ar);
-        String meta = getString(R.string.prayer_times) + (city.isEmpty() ? "" : " · " + city);
         LinearLayout c = card(meta, false, title, big, 1.4f);
         // Up to two lines: the five times do not fit one line in a lone prayer card on every font and locale
         // (Mi TV, en-GB, cut off at "Isha…"), and a wrapped line beats a missing prayer.

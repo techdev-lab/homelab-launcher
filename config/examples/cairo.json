@@ -22,11 +22,16 @@
   "prayer_city_en": "Cairo",
   "prayer_lat": 30.0444,
   "prayer_lng": 31.2357,
+  "prayer_method": "egypt",
+  "asr_method": "standard",
   "weather": true,
   "sports_leagues": [
-    "caf.champions"
+    "tsdb.4829"
   ],
   "sports_cards": [
+    [
+      "tsdb.4829"
+    ],
     [
       "caf.champions",
       "caf.confed"

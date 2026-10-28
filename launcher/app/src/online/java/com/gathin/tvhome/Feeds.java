@@ -21,7 +21,8 @@ import java.util.Locale;
 import javax.net.ssl.HttpsURLConnection;
 
 /**
- * Online build only: matches from ESPN's public scoreboard and team schedule JSON, headlines from the RSS/Atom feeds in
+ * Online build only: matches from ESPN's public scoreboard and team schedule JSON (and, for the leagues ESPN lacks,
+ * TheSportsDB's free API), headlines from the RSS/Atom feeds in
  * config.json and the current weather from Open-Meteo. HTTPS only, no redirects followed, short timeouts, capped sizes, plain parsers: no WebView, no
  * SDK, no proxy. Called off the main thread; any failure returns an empty list so the card simply hides.
  *
@@ -33,6 +34,20 @@ final class Feeds {
     private static final String TAG = "TvHome.Feeds";
     private static final String ESPN = "https://site.api.espn.com/apis/site/v2/sports/soccer/";
     private static final String OPEN_METEO = "https://api.open-meteo.com/v1/forecast";
+    /** TheSportsDB v1 with its documented public key "123" (not a secret): next fixtures, no live scores. */
+    private static final String TSDB = "https://www.thesportsdb.com/api/v1/json/123/";
+    /**
+     * The free key documents 30 requests a minute, but answered 429 at one every 2.2 s in a test on 2026-10-28:
+     * at least 4 s between two of ours, and after a 429 no call for {@link #TSDB_BACKOFF_MS}.
+     */
+    private static final long TSDB_GAP_MS = 4_000;
+    private static final long TSDB_BACKOFF_MS = 10 * 60_000L;
+    private static long tsdbBlockedUntil;
+    /** Fixtures change slowly and the free API has no live scores: a league is fetched at most once an hour. */
+    private static final long TSDB_REFRESH_MS = 60 * 60_000L;
+    private static long lastTsdbCall;
+    private static final java.util.Map<String, List<Interests.Match>> tsdbCache = new java.util.HashMap<>();
+    private static final java.util.Map<String, Long> tsdbFetched = new java.util.HashMap<>();
     private static final int TIMEOUT_MS = 8000;
     /** A big club's schedule for the season is about 320 KB; a scoreboard or feed is far smaller. */
     private static final int MAX_BYTES = 768 * 1024;
@@ -46,6 +61,10 @@ final class Feeds {
         long now = System.currentTimeMillis();
         for (String league : s.leaguesToFetch()) {
             if (!Interests.validLeague(league)) continue;
+            if (Interests.isTsdb(league)) {
+                out.addAll(tsdbLeague(league, s.sportsTeams, now));
+                continue;
+            }
             // The plain scoreboard is only the current matchday: once it has finished the card went empty for
             // the rest of the week. Walk forward one day at a time until there is a match to show.
             List<Interests.Match> got = new ArrayList<>();
@@ -105,6 +124,76 @@ final class Feeds {
             }
         }
         return Interests.withUpdates(all, fresh);
+    }
+
+    /**
+     * The coming fixtures of a TheSportsDB league: the next event, and when that one is postponed or missing, the
+     * league's days one by one (at most {@link Interests#LOOKAHEAD_DAYS}) until one is worth the card. Cached for an
+     * hour; a failure keeps the last good copy, or nothing.
+     */
+    private static List<Interests.Match> tsdbLeague(String code, List<String> teams, long now) {
+        Long at = tsdbFetched.get(code);
+        List<Interests.Match> cached = tsdbCache.get(code);
+        if (at != null && cached != null && now - at < TSDB_REFRESH_MS) return cached;
+        String id = code.substring(Interests.TSDB_PREFIX.length());
+        List<Interests.Match> got = new ArrayList<>();
+        try {
+            got.addAll(tsdbEvents(tsdbGet(TSDB + "eventsnextleague.php?id=" + id), code));
+            for (int day = 0; Interests.pickMatch(got, teams, now) == null && day <= Interests.LOOKAHEAD_DAYS; day++) {
+                got.addAll(tsdbEvents(tsdbGet(TSDB + "eventsday.php?d=" + Interests.tsdbDay(now, day) + "&l=" + id), code));
+            }
+        } catch (Exception e) {
+            Log.w(TAG, "league " + code + ": " + e);
+            return cached != null ? cached : Collections.emptyList();
+        }
+        tsdbCache.put(code, got);
+        tsdbFetched.put(code, now);
+        return got;
+    }
+
+    /** One request to TheSportsDB, spaced {@link #TSDB_GAP_MS} after the last, so the free limit is never hit. */
+    private static synchronized byte[] tsdbGet(String url) throws Exception {
+        if (System.currentTimeMillis() < tsdbBlockedUntil) throw new IOException("rate limited, waiting");
+        long wait = lastTsdbCall + TSDB_GAP_MS - System.currentTimeMillis();
+        if (wait > 0) Thread.sleep(wait);
+        try {
+            return get(url);
+        } catch (IOException e) {
+            if (String.valueOf(e.getMessage()).contains("HTTP 429")) {
+                tsdbBlockedUntil = System.currentTimeMillis() + TSDB_BACKOFF_MS;
+            }
+            throw e;
+        } finally {
+            lastTsdbCall = System.currentTimeMillis();
+        }
+    }
+
+    /** {"events": [...]} from TheSportsDB; times are UTC ("strTimestamp": "2026-10-29T14:00:00"). */
+    private static List<Interests.Match> tsdbEvents(byte[] body, String code) throws Exception {
+        List<Interests.Match> out = new ArrayList<>();
+        JSONArray events = new JSONObject(new String(body, StandardCharsets.UTF_8)).optJSONArray("events");
+        for (int i = 0; events != null && i < events.length(); i++) {
+            JSONObject e = events.optJSONObject(i);
+            if (e == null) continue;
+            String home = e.optString("strHomeTeam", ""), away = e.optString("strAwayTeam", "");
+            String homeId = e.optString("idHomeTeam", ""), awayId = e.optString("idAwayTeam", "");
+            if (home.isEmpty() || away.isEmpty() || !homeId.matches("[0-9]{1,9}") || !awayId.matches("[0-9]{1,9}")) continue;
+            String stamp = e.optString("strTimestamp", "");
+            if (stamp.isEmpty()) stamp = e.optString("dateEvent", "") + "T" + e.optString("strTime", "");
+            long start;
+            try {
+                start = Instant.parse(stamp.endsWith("Z") ? stamp : stamp + "Z").toEpochMilli();
+            } catch (Exception ex) {
+                continue;
+            }
+            String state = Interests.tsdbState(e.optString("strStatus", ""));
+            String hs = e.isNull("intHomeScore") ? "" : e.optString("intHomeScore", "");
+            String as = e.isNull("intAwayScore") ? "" : e.optString("intAwayScore", "");
+            // Team ids get a "t" so they never collide with ESPN ids in names_ar.json or the favourite clubs.
+            out.add(new Interests.Match(e.optString("strLeague", code), code, "t" + homeId, "t" + awayId, home, away,
+                    hs, as, state, "", start));
+        }
+        return out;
     }
 
     private static List<Interests.Match> schedule(byte[] body) throws Exception {

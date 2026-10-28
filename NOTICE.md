@@ -18,6 +18,8 @@ Readex Pro (used for the cards up to 2.8) was removed in 2.9.
 ## Data sources (online build)
 
 - Football: ESPN public site API (`site.api.espn.com`), no key, used for scoreboards only. Not affiliated with ESPN.
+- Arab domestic leagues: [TheSportsDB](https://www.thesportsdb.com) free API v1 with its documented public key, next fixtures only. Not affiliated with TheSportsDB.
+- Prayer methods: the angles and minute offsets of each method follow [api.aladhan.com](https://aladhan.com/calculation-methods); times are computed on the TV. Not affiliated with Aladhan.
 - Weather: [Open-Meteo](https://open-meteo.com) forecast API, free, no key.
 - News (off by default): any RSS feed the user adds.
 

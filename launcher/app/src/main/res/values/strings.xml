@@ -130,4 +130,26 @@
     <string name="text_size_medium">Medium</string>
     <string name="text_size_large">Large</string>
     <string name="text_size_hint">The cards on the home screen: small fits 5 in a row, medium 4, large 3. The rest move to the next row.</string>
+    <string name="prayer_method_unknown">Unknown prayer method: %1$s</string>
+    <string name="prayer_method_label">Prayer times</string>
+    <string name="prayer_method_choice">Method: %1$s</string>
+    <string name="asr_standard">Asr: standard</string>
+    <string name="asr_hanafi">Asr: Hanafi</string>
+    <string name="prayer_method_hint">Computed on the TV by the method you pick. A method gives that method\'s times, which can differ by a few minutes from a printed calendar; prayer_adjust in config.json shifts each time by minutes.</string>
+    <string-array name="prayer_method_names">
+        <item>Umm al-Qura (Makkah)</item>
+        <item>Egyptian General Authority of Survey</item>
+        <item>Gulf Region</item>
+        <item>Dubai</item>
+        <item>Qatar</item>
+        <item>Kuwait</item>
+        <item>Jordan</item>
+        <item>Morocco</item>
+        <item>Algeria</item>
+        <item>Tunisia</item>
+        <item>Turkey (Diyanet)</item>
+        <item>Muslim World League</item>
+        <item>North America (ISNA)</item>
+        <item>Karachi</item>
+    </string-array>
 </resources>

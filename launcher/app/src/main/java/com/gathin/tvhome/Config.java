@@ -45,6 +45,10 @@ final class Config {
     static final String LANGUAGE_KEY = "language";
     /** Strip text size picked on the TV (StripSize): kept across theme pushes, like the clubs. */
     static final String TEXT_SIZE_KEY = "text_size";
+    /** Prayer method and Asr convention picked on the TV (Prayer.METHODS keys, "standard"/"hanafi"); win over config. */
+    static final String PRAYER_METHOD_KEY = "prayer_method", ASR_KEY = "asr_method";
+    /** The six names "prayer_adjust" takes, in Prayer's order. */
+    static final String[] PRAYER_TIME_KEYS = {"fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"};
     /** Which strip cards show, picked on the TV: prayer, weather, football leagues, favourite clubs. */
     static final String[] CARD_KEYS = {"card_prayer", "card_weather", "card_football", "card_clubs"};
     private static final String THEME_REVISION_NAME = "theme_revision";
@@ -280,7 +284,31 @@ final class Config {
                 Feeds.AVAILABLE && bool(json, "weather", true),
                 leagueGroups(json, "sports_cards"), clubs, rotate).withCards(
                 choices.getBoolean(CARD_KEYS[0], true), choices.getBoolean(CARD_KEYS[1], true),
-                choices.getBoolean(CARD_KEYS[2], true), choices.getBoolean(CARD_KEYS[3], true));
+                choices.getBoolean(CARD_KEYS[2], true), choices.getBoolean(CARD_KEYS[3], true))
+                .withPrayer(prayerMethod(json, choices), Prayer.asrFactor(choices.getString(ASR_KEY,
+                        string(json, "asr_method", "standard"))), prayerAdjust(json));
+    }
+
+    /**
+     * The method key in force: the TV's choice when it names a method, else config.json "prayer_method" as written
+     * (an unknown name is kept so the prayer card can say so), else Umm al-Qura.
+     */
+    private static String prayerMethod(JSONObject json, SharedPreferences choices) {
+        String tv = choices.getString(PRAYER_METHOD_KEY, "");
+        if (Prayer.method(tv) != null) return tv;
+        String theme = string(json, "prayer_method", "");
+        return theme.isEmpty() ? Prayer.UMM_AL_QURA.key : theme;
+    }
+
+    /** "prayer_adjust": {"fajr": 2, "isha": -1, ...}; whole minutes, anything else is ignored (Prayer clamps to 30). */
+    static int[] prayerAdjust(JSONObject json) {
+        int[] out = new int[6];
+        JSONObject o = json == null ? null : json.optJSONObject("prayer_adjust");
+        for (int i = 0; o != null && i < PRAYER_TIME_KEYS.length; i++) {
+            Object v = o.opt(PRAYER_TIME_KEYS[i]);
+            if (v instanceof Integer || v instanceof Long) out[i] = (int) Math.max(-60, Math.min(60, ((Number) v).longValue()));
+        }
+        return out;
     }
 
     /** Team ids may be written as strings ("929") or numbers (929); both are read as text. */

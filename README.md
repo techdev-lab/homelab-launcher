@@ -52,6 +52,7 @@ A fresh install starts on **Serene**. Got a Google TV for the children? Pick **K
 
 ### What's new in 2.9
 
+- **Prayer methods:** 14 methods and Hanafi Asr, picked on the TV; and the **Egyptian, UAE, Qatari and Moroccan leagues** (next kick-off).
 - **Your clubs stand out:** a gold star on every match of your favourite clubs, and each club's next two matches, so Al Hilal's AFC Champions League Elite game shows next to the league one.
 - **Text size** on the TV: Small, Medium or Large (5, 4 or 3 cards in a row).
 - A short kick-off line that no longer gets cut or reversed in Arabic, and a new font, **IBM Plex Sans Arabic**.
@@ -169,14 +170,14 @@ No analytics, no accounts, no crash reporting, no remote configuration. The full
 ### Status and limits
 
 - Tested on **Chromecast with Google TV 4K** (`sabrina`, Android 14). The HD model (`boreal`) should behave the same but was not tested. Other Android TV devices: the app runs, the Home switch steps differ.
-- Prayer times use **Umm al-Qura** only. Countries with another official method (for example Egypt) may see a few minutes of difference. A `prayer_method` option is on the roadmap.
-- Football data comes from ESPN's public scoreboard. It has the Saudi Pro League, the big European leagues, the AFC and CAF Champions Leagues and the Gulf Cup, but **not** most Arab domestic leagues (Egypt, UAE, Qatar, Morocco were checked). Contributions of another free source are welcome.
+- Prayer times: **14 methods** (Umm al-Qura by default, Egyptian, Gulf, Dubai, Qatar, Kuwait, Jordan, Morocco, Algeria, Tunisia, Turkey, MWL, ISNA, Karachi) and standard or Hanafi Asr, picked on the TV or in the config, each tested against api.aladhan.com. A method can still differ by a few minutes from a printed national calendar; `prayer_adjust` shifts each time.
+- Football data comes from ESPN's public scoreboard (Saudi Pro League, the big European leagues, the AFC and CAF Champions Leagues, the Gulf Cup) and, for the **Egyptian, UAE, Qatari and Moroccan leagues**, from TheSportsDB's free API: next kick-off only, no live scores. Kuwait, Jordan, Tunisia and Algeria are still missing.
 - Arabic team names cover the Saudi league, the five big European leagues, the UEFA and AFC Champions League clubs (156 teams). Unknown teams show in English. Adding a league is a JSON edit: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Contributing and support
 
 - **A bug?** Open an issue with the bug-report form. It asks for the app version, the build and the device, and reminds you to remove IP addresses and keys.
-- **Want to help?** [CONTRIBUTING.md](CONTRIBUTING.md) lists what is most useful: Arabic team names for more leagues, a free football source for Arab domestic leagues, a `prayer_method` option, and testing on other devices.
+- **Want to help?** [CONTRIBUTING.md](CONTRIBUTING.md) lists what is most useful: Arabic team names for more leagues, a free source for the Arab leagues still missing (and live scores for them), and testing on other devices.
 - **A security problem?** Follow [SECURITY.md](SECURITY.md) instead of opening a public issue.
 
 ### Credits and license
@@ -214,6 +215,7 @@ MIT License, see [LICENSE](LICENSE).
 
 ### الجديد في 2.9
 
+- **طرق حساب الصلاة:** 14 طريقة والعصر الحنفي من التلفزيون؛ و**الدوري المصري والإماراتي والقطري والمغربي** (المباراة الجاية).
 - **أنديتك واضحة:** نجمة ذهبية على كل مباراة لأنديتك المفضلة، ومباراتين لكل نادٍ، فتطلع مباراة الهلال في النخبة الآسيوية جنب مباراة الدوري.
 - **حجم النص** من التلفزيون: صغير أو متوسط أو كبير (٥ أو ٤ أو ٣ بطاقات في الصف).
 - سطر موعد المباراة صار قصير وما يتقص ولا ينقلب بالعربي، وخط جديد **IBM Plex Sans Arabic**.
@@ -299,11 +301,11 @@ MIT License, see [LICENSE](LICENSE).
 
 `ksa.1` دوري روشن · `ksa.kings.cup` كأس الملك · `afc.champions` أبطال آسيا · `caf.champions` أبطال أفريقيا · `caf.confed` الكونفدرالية · `global.gulf_cup` كأس الخليج · `uefa.champions` أبطال أوروبا · `eng.1` الإنجليزي · `esp.1` الإسباني · `ita.1` الإيطالي · `ger.1` الألماني · `fra.1` الفرنسي · `fifa.worldq.afc` و`fifa.worldq.caf` تصفيات كأس العالم.
 
-**صراحة:** مصدر البيانات (ESPN) ما فيه الدوري المصري ولا الإماراتي ولا القطري ولا المغربي (جربناها كلها). لو تعرف مصدر مجاني ثاني، ساهم معنا.
+**الدوريات العربية:** الدوري المصري والإماراتي والقطري والمغربي صارت تجي من مصدر ثاني مجاني (TheSportsDB): المباراة الجاية فقط، بدون نتيجة مباشرة. الكويتي والأردني والتونسي والجزائري لسه ما لقينا لها مصدر.
 
 ### مواقيت الصلاة
 
-الحساب بطريقة **أم القرى** فقط حالياً. في الدول اللي عندها طريقة رسمية ثانية (مثل مصر) ممكن يطلع فرق دقائق. خيار `prayer_method` في خطة التطوير.
+**14 طريقة حساب** تختارها من التلفزيون أو الإعدادات: أم القرى (الافتراضية)، المصرية، الخليج، دبي، قطر، الكويت، الأردن، المغرب، الجزائر، تونس، تركيا، رابطة العالم الإسلامي، أمريكا الشمالية، كراتشي، والعصر على مذهب الجمهور أو الحنفي. كل طريقة مختبرة مقابل api.aladhan.com بفرق دقيقتين كحد أقصى، لكنها ممكن تختلف دقائق عن التقويم المطبوع في بلدك؛ و`prayer_adjust` يقدّم أو يؤخّر كل وقت.
 
 ### الصلاحيات والخصوصية
 
@@ -329,7 +331,7 @@ cd launcher
 ### المساهمة والدعم
 
 - **مشكلة؟** افتح بلاغاً من نموذج «Bug report». يسألك عن إصدار التطبيق والنسخة والجهاز، ويذكّرك تشيل عناوين IP والمفاتيح.
-- **تبي تساهم؟** [CONTRIBUTING.md](CONTRIBUTING.md) فيه أنفع المساهمات: أسماء فرق عربية لدوريات أكثر، ومصدر كورة مجاني للدوريات العربية، وخيار `prayer_method`، والتجربة على أجهزة ثانية.
+- **تبي تساهم؟** [CONTRIBUTING.md](CONTRIBUTING.md) فيه أنفع المساهمات: أسماء فرق عربية لدوريات أكثر، ومصدر مجاني للدوريات العربية الناقصة (ونتائجها المباشرة)، والتجربة على أجهزة ثانية.
 - **ثغرة أمنية؟** اتبع [SECURITY.md](SECURITY.md) وما تفتح بلاغاً عاماً.
 
 ### الشكر والرخصة

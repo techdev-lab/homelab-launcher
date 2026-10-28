@@ -14,13 +14,13 @@ public class WhenTextTest {
     /** Thursday 2026-10-29 14:17 UTC = 17:17 in Riyadh. */
     private static final long KICK_OFF = 1_793_283_420_000L;
     private static final TimeZone RIYADH = TimeZone.getTimeZone("Asia/Riyadh");
-    private static final String LRI = "⁦", PDI = "⁩";
+    private static final String LRI = "\u2066", PDI = "\u2069";
 
     @Test
     public void englishIsShortWithIsolatedDateAndClock() {
-        assertEquals("Thu " + LRI + "29 Oct" + PDI + " · " + LRI + "17:17" + PDI,
+        assertEquals("Thu " + LRI + "29 Oct" + PDI + " \u00B7 " + LRI + "17:17" + PDI,
                 Interests.whenText(KICK_OFF, Locale.ENGLISH, RIYADH, true));
-        assertEquals("Thu " + LRI + "29 Oct" + PDI + " · " + LRI + "5:17" + PDI + " PM",
+        assertEquals("Thu " + LRI + "29 Oct" + PDI + " \u00B7 " + LRI + "5:17" + PDI + " PM",
                 Interests.whenText(KICK_OFF, Locale.ENGLISH, RIYADH, false));
     }
 
@@ -54,7 +54,7 @@ public class WhenTextTest {
         boolean latin = false, arabic = false;
         for (char c : s.toCharArray()) {
             if (c >= '0' && c <= '9') latin = true;
-            if (c >= '٠' && c <= '٩') arabic = true;
+            if (c >= '\u0660' && c <= '\u0669') arabic = true;
         }
         assertFalse("mixed digits in " + s, latin && arabic);
     }

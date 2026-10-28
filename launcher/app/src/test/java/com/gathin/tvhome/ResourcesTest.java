@@ -50,6 +50,12 @@ public class ResourcesTest {
         check("prayer_names", 6);
     }
 
+    /** Launcher settings lists Prayer.METHODS by index: one name per method, in both languages. */
+    @Test
+    public void prayerMethodNames() throws Exception {
+        check("prayer_method_names", Prayer.METHODS.length);
+    }
+
     @Test
     public void hijriMonths() throws Exception {
         check("hijri_months", 12);

@@ -243,9 +243,9 @@ public class ClockDream extends DreamService {
         Calendar now = Calendar.getInstance();
         boolean ramadan = Hijri.isRamadan(Hijri.today());
         double tz = TimeZone.getDefault().getOffset(now.getTimeInMillis()) / 3_600_000.0;
-        double lat = settings.prayerLat, lng = settings.prayerLng;
-        double[] t = Prayer.times(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
-                now.get(Calendar.DAY_OF_MONTH), lat, lng, tz, ramadan);
+        double[] t = settings.prayerTimes(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
+                now.get(Calendar.DAY_OF_MONTH), tz, ramadan);
+        if (t == null) return getString(R.string.prayer_method_unknown, settings.prayerMethodKey);
         double nowH = now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE) / 60.0
                 + now.get(Calendar.SECOND) / 3600.0;
         String[] names = getResources().getStringArray(R.array.prayer_names);
@@ -257,8 +257,10 @@ public class ClockDream extends DreamService {
         } else {
             Calendar tm = (Calendar) now.clone();
             tm.add(Calendar.DAY_OF_MONTH, 1);
-            double fajr = Prayer.times(tm.get(Calendar.YEAR), tm.get(Calendar.MONTH) + 1,
-                    tm.get(Calendar.DAY_OF_MONTH), lat, lng, tz, ramadan)[Prayer.FAJR];
+            // Tomorrow's own UTC offset, expressed on today's clock (see MainActivity.prayerCard).
+            double tzTomorrow = TimeZone.getDefault().getOffset(tm.getTimeInMillis()) / 3_600_000.0;
+            double fajr = Prayer.onTodaysClock(settings.prayerTimes(tm.get(Calendar.YEAR), tm.get(Calendar.MONTH) + 1,
+                    tm.get(Calendar.DAY_OF_MONTH), tzTomorrow, ramadan)[Prayer.FAJR], tz, tzTomorrow);
             name = names[Prayer.FAJR];
             left = Prayer.countdown(nowH, fajr + 24);
         }
