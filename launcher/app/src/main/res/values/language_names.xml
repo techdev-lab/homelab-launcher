@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Each language's name in its own script (an endonym), the same on every screen, so it is never translated. -->
+<resources>
+    <string name="language_arabic" translatable="false">العربية</string>
+    <string name="language_english" translatable="false">English</string>
+</resources>

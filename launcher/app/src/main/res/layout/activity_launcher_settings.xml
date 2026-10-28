@@ -21,19 +21,13 @@
             android:textColor="#FFFFFFFF"
             android:textSize="34sp" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="@string/columns_label"
-            android:textColor="#FFFFFFFF"
-            android:textSize="20sp" />
+        <TextView style="@style/SettingsHeading" android:text="@string/language_label" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
+        <LinearLayout android:id="@+id/languageRow" style="@style/SettingsChoiceRow" />
+
+        <TextView style="@style/SettingsHeading" android:text="@string/columns_label" />
+
+        <LinearLayout style="@style/SettingsChoiceRow">
 
             <TextView android:id="@+id/columns4" style="@style/SettingsColumnChoice" android:text="4" />
             <TextView android:id="@+id/columns5" style="@style/SettingsColumnChoice" android:text="5" />
@@ -41,70 +35,38 @@
             <TextView android:id="@+id/columns7" style="@style/SettingsColumnChoice" android:text="7" />
         </LinearLayout>
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:text="@string/wallpapers_label"
-            android:textColor="#FFFFFFFF"
-            android:textSize="20sp" />
+        <TextView style="@style/SettingsHeading" android:text="@string/wallpapers_label" />
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:orientation="horizontal">
+        <LinearLayout android:id="@+id/wallpaperRow" style="@style/SettingsChoiceRow" />
 
-            <TextView android:id="@+id/wallHomelab" style="@style/SettingsColumnChoice" android:text="@string/wallpapers_homelab" />
-            <TextView android:id="@+id/wallSerene" style="@style/SettingsColumnChoice" android:text="@string/wallpapers_serene" />
-            <TextView android:id="@+id/wallMine" style="@style/SettingsColumnChoice" android:text="@string/wallpapers_mine" />
-            <TextView android:id="@+id/wallPlain" style="@style/SettingsColumnChoice" android:text="@string/wallpapers_plain" />
-        </LinearLayout>
+        <LinearLayout android:id="@+id/colourRow" style="@style/SettingsChoiceRow" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/wallpapers_hint"
-            android:textColor="#FFACB8C1"
-            android:textSize="14sp" />
+        <TextView style="@style/SettingsHint" android:text="@string/wallpapers_hint" />
 
-        <TextView
-            android:id="@+id/animationsChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="28dp" />
+        <TextView style="@style/SettingsHeading" android:text="@string/cards_label" />
 
-        <TextView
-            android:id="@+id/advancedChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="10dp" />
+        <LinearLayout android:id="@+id/cardsRow" style="@style/SettingsChoiceRow" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="@string/advanced_effects_warning"
-            android:textColor="#FFACB8C1"
-            android:textSize="14sp" />
+        <TextView style="@style/SettingsHint" android:text="@string/cards_hint" />
 
         <TextView
             android:id="@+id/clubsChoice"
             style="@style/SettingsRow"
-            android:layout_marginTop="18dp" />
+            android:layout_marginTop="12dp" />
+
+        <TextView style="@style/SettingsHeading" android:text="@string/motion_label" />
+
+        <LinearLayout android:id="@+id/motionRow" style="@style/SettingsChoiceRow" />
+
+        <TextView style="@style/SettingsHint" android:text="@string/motion_hint" />
 
         <TextView
             android:id="@+id/followThemeChoice"
             style="@style/SettingsRow"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="28dp"
             android:text="@string/follow_theme" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"
-            android:text="@string/follow_theme_hint"
-            android:textColor="#FFACB8C1"
-            android:textSize="14sp" />
+        <TextView style="@style/SettingsHint" android:text="@string/follow_theme_hint" />
 
         <TextView
             android:id="@+id/defaultHomeChoice"
@@ -112,13 +74,7 @@
             android:layout_marginTop="28dp"
             android:text="@string/home_settings" />
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="7dp"
-            android:text="@string/home_settings_help"
-            android:textColor="#FFACB8C1"
-            android:textSize="14sp" />
+        <TextView style="@style/SettingsHint" android:text="@string/home_settings_help" />
 
         <TextView
             android:id="@+id/tvSettingsChoice"

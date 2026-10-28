@@ -33,6 +33,11 @@ public final class ClubsActivity extends Activity {
     private TextView title;
 
     @Override
+    protected void attachBaseContext(android.content.Context base) {
+        super.attachBaseContext(Language.wrap(base));
+    }
+
+    @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
         setContentView(R.layout.activity_clubs);

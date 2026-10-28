@@ -12,7 +12,7 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * The two wallpaper sets inside the APK (assets/wallpapers/homelab and assets/wallpapers/serene). They are copied
+ * The wallpaper sets inside the APK (assets/wallpapers/homelab, serene and kids). They are copied
  * once per app version into the app's private files, so the rotation code keeps working on plain files and the
  * pictures are not decoded from a compressed stream every few minutes. A failed copy leaves the plain background.
  */

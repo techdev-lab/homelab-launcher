@@ -18,14 +18,20 @@ final class Wallpapers {
     static final long MAX_BYTES = 8L * 1024 * 1024;
 
     /** wallpaper_mode values. HOMELAB and SERENE are the two sets built into the APK (assets/wallpapers/). */
-    static final String PLAIN = "plain", FIXED = "fixed", ROTATE = "rotate", HOMELAB = "homelab", SERENE = "serene";
-    static final String[] BUILT_IN = {HOMELAB, SERENE};
+    static final String PLAIN = "plain", FIXED = "fixed", ROTATE = "rotate", HOMELAB = "homelab", SERENE = "serene",
+            KIDS = "kids";
+    static final String[] BUILT_IN = {HOMELAB, SERENE, KIDS};
+    /**
+     * The plain colours offered on the TV (Launcher settings > Wallpapers): black, navy, deep teal, forest,
+     * burgundy, graphite. Dark on purpose, so the white text and the glass cards keep their contrast.
+     */
+    static final int[] PLAIN_COLOURS = {0xFF0B0B0C, 0xFF12203A, 0xFF0E2A2A, 0xFF13261A, 0xFF2A1016, 0xFF1F2328};
 
     private Wallpapers() {
     }
 
     static boolean builtIn(String mode) {
-        return HOMELAB.equals(mode) || SERENE.equals(mode);
+        return HOMELAB.equals(mode) || SERENE.equals(mode) || KIDS.equals(mode);
     }
 
     static boolean known(String mode) {

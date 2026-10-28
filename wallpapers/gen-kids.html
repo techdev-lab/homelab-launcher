@@ -1,0 +1,204 @@
+<!doctype html>
+<html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000;overflow:hidden}canvas{display:block}</style></head>
+<body><canvas id="c" width="1920" height="1080"></canvas>
+<script>
+const W = 1920, H = 1080, c = document.getElementById('c'), g = c.getContext('2d');
+const scene = new URLSearchParams(location.search).get('s') || '1';
+let seed = 4242 + Number(scene) * 104729;
+const R = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+const rr = (a, b) => a + R() * (b - a);
+function bg(stops, x0 = 0, y0 = 0, x1 = 0, y1 = H) {
+  const gr = g.createLinearGradient(x0, y0, x1, y1); stops.forEach(([o, col]) => gr.addColorStop(o, col));
+  g.fillStyle = gr; g.fillRect(0, 0, W, H);
+}
+function glow(x, y, r, rgb, a) {
+  const gr = g.createRadialGradient(x, y, 0, x, y, r);
+  gr.addColorStop(0, `rgba(${rgb},${a})`); gr.addColorStop(1, `rgba(${rgb},0)`);
+  g.fillStyle = gr; g.fillRect(x - r, y - r, 2 * r, 2 * r);
+}
+function stars(n, maxR = 2, a = 0.8) {
+  for (let i = 0; i < n; i++) { const x = R() * W, y = R() * H * 0.8, r = rr(0.5, maxR);
+    g.fillStyle = `rgba(255,255,240,${rr(0.3, a)})`; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill(); }
+}
+function star5(x, y, r, col) {
+  g.fillStyle = col; g.beginPath();
+  for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, rad = i % 2 ? r * 0.45 : r;
+    g.lineTo(x + Math.cos(a) * rad, y + Math.sin(a) * rad); }
+  g.closePath(); g.fill();
+}
+function vignette(a = 0.45) {
+  const gr = g.createRadialGradient(W / 2, H / 2, H * 0.35, W / 2, H / 2, H * 1.05);
+  gr.addColorStop(0, 'rgba(0,0,0,0)'); gr.addColorStop(1, `rgba(0,0,0,${a})`); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+}
+
+// 1 · Space adventure: planets, a rocket and a smiling moon
+function space() {
+  bg([[0, '#0b0730'], [0.6, '#1a0f52'], [1, '#08041c']]);
+  glow(W * 0.7, H * 0.3, 700, '120,80,255', 0.25); stars(420, 2.2);
+  const planets = [[W * 0.18, H * 0.30, 95, '#ff7eb6', '#ffc2dd'], [W * 0.82, H * 0.22, 70, '#4fd1ff', '#b8f0ff'], [W * 0.62, H * 0.62, 55, '#ffd04f', '#fff0b3']];
+  planets.forEach(([x, y, r, c1, c2], i) => {
+    glow(x, y, r * 2.2, i === 0 ? '255,126,182' : i === 1 ? '79,209,255' : '255,208,79', 0.25);
+    const gr = g.createRadialGradient(x - r / 3, y - r / 3, r / 5, x, y, r); gr.addColorStop(0, c2); gr.addColorStop(1, c1);
+    g.fillStyle = gr; g.beginPath(); g.arc(x, y, r, 0, 7); g.fill();
+    if (i === 0) { g.strokeStyle = 'rgba(255,230,250,0.75)'; g.lineWidth = 9; g.beginPath(); g.ellipse(x, y, r * 1.7, r * 0.45, -0.3, 0, 7); g.stroke(); }
+  });
+  // rocket
+  g.save(); g.translate(W * 0.42, H * 0.42); g.rotate(-0.6);
+  glow(0, 150, 120, '255,170,60', 0.5);
+  g.fillStyle = '#ffb347'; g.beginPath(); g.moveTo(-28, 95); g.quadraticCurveTo(0, 230, 28, 95); g.fill();
+  g.fillStyle = '#f2f4ff'; g.beginPath(); g.moveTo(0, -150); g.quadraticCurveTo(70, -60, 52, 100); g.lineTo(-52, 100); g.quadraticCurveTo(-70, -60, 0, -150); g.fill();
+  g.fillStyle = '#ff5d73'; g.beginPath(); g.moveTo(0, -150); g.quadraticCurveTo(42, -105, 48, -70); g.lineTo(-48, -70); g.quadraticCurveTo(-42, -105, 0, -150); g.fill();
+  [[-52, 40, -95, 120, -52, 100], [52, 40, 95, 120, 52, 100]].forEach(([a, b, c2, d, e, f]) => { g.beginPath(); g.moveTo(a, b); g.lineTo(c2, d); g.lineTo(e, f); g.fill(); });
+  g.fillStyle = '#5fd0ff'; g.beginPath(); g.arc(0, -10, 26, 0, 7); g.fill(); g.strokeStyle = '#ffffff'; g.lineWidth = 6; g.stroke();
+  g.restore();
+  // moon with a smile
+  const mx = W * 0.9, my = H * 0.62; glow(mx, my, 200, '255,240,180', 0.3);
+  g.fillStyle = '#fff3c4'; g.beginPath(); g.arc(mx, my, 80, 0, 7); g.fill();
+  g.fillStyle = '#5a4a2a'; g.beginPath(); g.arc(mx - 25, my - 15, 7, 0, 7); g.arc(mx + 25, my - 15, 7, 0, 7); g.fill();
+  g.strokeStyle = '#5a4a2a'; g.lineWidth = 6; g.beginPath(); g.arc(mx, my + 5, 30, 0.2, Math.PI - 0.2); g.stroke();
+  for (let i = 0; i < 12; i++) star5(rr(0, W), rr(0, H * 0.7), rr(8, 16), 'rgba(255,240,170,0.9)');
+  vignette();
+}
+
+// 2 · Under the sea: fish, a whale, bubbles and coral
+function sea() {
+  bg([[0, '#06395f'], [0.55, '#06264a'], [1, '#03142b']]);
+  for (let i = 0; i < 6; i++) { g.fillStyle = 'rgba(160,230,255,0.05)'; g.beginPath(); const x = rr(0, W);
+    g.moveTo(x, 0); g.lineTo(x + 140, 0); g.lineTo(x + 420, H); g.lineTo(x + 200, H); g.fill(); }
+  // whale
+  const wx = W * 0.58, wy = H * 0.38;
+  g.fillStyle = '#4a8fd8'; g.beginPath(); g.ellipse(wx, wy, 230, 120, 0, 0, 7); g.fill();
+  g.beginPath(); g.moveTo(wx + 200, wy - 10); g.quadraticCurveTo(wx + 330, wy - 120, wx + 360, wy - 60); g.quadraticCurveTo(wx + 300, wy, wx + 360, wy + 50); g.quadraticCurveTo(wx + 320, wy + 40, wx + 200, wy + 20); g.fill();
+  g.fillStyle = '#bfe3ff'; g.beginPath(); g.ellipse(wx - 20, wy + 60, 170, 55, 0, 0, Math.PI); g.fill();
+  g.fillStyle = '#10223d'; g.beginPath(); g.arc(wx - 140, wy - 20, 13, 0, 7); g.fill();
+  g.fillStyle = '#ff9fb8'; g.beginPath(); g.arc(wx - 160, wy + 15, 14, 0, 7); g.fill();
+  // fish
+  const cols = ['#ffb347', '#ff6f91', '#ffd84d', '#7cf2c3', '#c49bff'];
+  for (let i = 0; i < 14; i++) { const x = rr(80, W - 80), y = rr(H * 0.1, H * 0.7), s = rr(0.6, 1.3), col = cols[i % 5], dir = R() < 0.5 ? 1 : -1;
+    g.save(); g.translate(x, y); g.scale(dir * s, s); g.fillStyle = col;
+    g.beginPath(); g.ellipse(0, 0, 40, 22, 0, 0, 7); g.fill(); g.beginPath(); g.moveTo(32, 0); g.lineTo(62, -20); g.lineTo(62, 20); g.fill();
+    g.fillStyle = '#0d1b2a'; g.beginPath(); g.arc(-22, -5, 4.5, 0, 7); g.fill(); g.restore(); }
+  // jellyfish
+  for (let i = 0; i < 3; i++) { const x = rr(W * 0.05, W * 0.35), y = rr(H * 0.15, H * 0.5);
+    glow(x, y, 90, '255,150,230', 0.25); g.fillStyle = 'rgba(255,170,235,0.85)'; g.beginPath(); g.arc(x, y, 38, Math.PI, 0); g.fill();
+    g.strokeStyle = 'rgba(255,190,240,0.7)'; g.lineWidth = 3; for (let k = -2; k <= 2; k++) { g.beginPath(); g.moveTo(x + k * 12, y);
+      g.bezierCurveTo(x + k * 12 + 12, y + 40, x + k * 12 - 12, y + 80, x + k * 12, y + 110); g.stroke(); } }
+  // bubbles
+  for (let i = 0; i < 60; i++) { g.strokeStyle = 'rgba(220,245,255,0.45)'; g.lineWidth = 2; g.beginPath(); g.arc(rr(0, W), rr(0, H), rr(4, 16), 0, 7); g.stroke(); }
+  // coral and sand
+  g.fillStyle = '#0b2440'; g.beginPath(); g.moveTo(0, H); for (let x = 0; x <= W; x += 40) g.lineTo(x, H - 90 - 25 * Math.sin(x / 140)); g.lineTo(W, H); g.fill();
+  ['#ff6f91', '#ffb347', '#c49bff', '#7cf2c3'].forEach((col, i) => { const x = 160 + i * 470; g.strokeStyle = col; g.lineWidth = 16; g.lineCap = 'round';
+    for (let k = 0; k < 5; k++) { g.beginPath(); g.moveTo(x, H - 80); g.quadraticCurveTo(x + rr(-60, 60), H - 160, x + rr(-90, 90), H - rr(200, 280)); g.stroke(); } });
+  vignette(0.4);
+}
+
+// 3 · Princess castle at dusk: pink and purple sky, rainbow, stars
+function castle() {
+  bg([[0, '#2a0f4f'], [0.5, '#6b2a7a'], [0.8, '#d0668f'], [1, '#2a0f3a']]);
+  stars(200, 1.8);
+  // rainbow
+  ['#ff5d73', '#ffa24f', '#ffe066', '#7ee08a', '#5fc8ff', '#a98bff'].forEach((col, i) => {
+    g.strokeStyle = col; g.globalAlpha = 0.55; g.lineWidth = 26; g.beginPath(); g.arc(W * 0.3, H * 0.95, 620 - i * 26, Math.PI, 2 * Math.PI); g.stroke(); });
+  g.globalAlpha = 1;
+  // castle
+  const base = H * 0.86, cx = W * 0.66; g.fillStyle = '#3b1b5c';
+  g.fillRect(cx - 260, base - 260, 520, 260);
+  [[-260, 180, 380], [-80, 120, 470], [80, 120, 470], [200, 120, 360]].forEach(([dx, w, hgt]) => {
+    g.fillRect(cx + dx, base - hgt, w > 150 ? 100 : w - 40, hgt);
+    const tx = cx + dx + (w > 150 ? 50 : (w - 40) / 2);
+    g.fillStyle = '#ff7eb6'; g.beginPath(); g.moveTo(tx - 62, base - hgt); g.lineTo(tx, base - hgt - 140); g.lineTo(tx + 62, base - hgt); g.fill();
+    g.fillStyle = '#ffe066'; g.beginPath(); g.moveTo(tx, base - hgt - 140); g.lineTo(tx, base - hgt - 190); g.lineTo(tx + 40, base - hgt - 172); g.lineTo(tx, base - hgt - 160); g.fill();
+    g.fillStyle = '#3b1b5c'; });
+  g.fillStyle = '#ffd84d'; for (let i = 0; i < 9; i++) { const x = cx - 230 + i * 55, y = base - rr(80, 220); g.beginPath(); g.arc(x, y, 9, Math.PI, 0); g.fillRect(x - 9, y, 18, 18); g.fill(); }
+  g.fillStyle = '#2a1145'; g.beginPath(); g.arc(cx, base, 55, Math.PI, 0); g.fill();
+  for (let i = 0; i < 14; i++) star5(rr(0, W), rr(0, H * 0.55), rr(8, 18), 'rgba(255,236,170,0.95)');
+  g.fillStyle = '#1e0a33'; g.beginPath(); g.moveTo(0, H); for (let x = 0; x <= W; x += 30) g.lineTo(x, H - 70 - 20 * Math.sin(x / 90)); g.lineTo(W, H); g.fill();
+  vignette(0.4);
+}
+
+// 4 · Dinosaur valley at sunset: friendly dinos, volcano, palms
+function dinos() {
+  bg([[0, '#2b1048'], [0.45, '#c2475a'], [0.75, '#ff9a4a'], [1, '#3a1a1a']]);
+  glow(W * 0.5, H * 0.62, 420, '255,220,120', 0.55);
+  g.fillStyle = '#ffd36b'; g.beginPath(); g.arc(W * 0.5, H * 0.66, 130, 0, 7); g.fill();
+  g.fillStyle = '#5a1f3a'; g.beginPath(); g.moveTo(W * 0.02, H * 0.78); g.lineTo(W * 0.16, H * 0.42); g.lineTo(W * 0.22, H * 0.42); g.lineTo(W * 0.36, H * 0.78); g.fill();
+  glow(W * 0.19, H * 0.40, 120, '255,120,60', 0.6);
+  for (let i = 0; i < 5; i++) { g.fillStyle = `rgba(90,60,80,${0.5 - i * 0.08})`; g.beginPath(); g.arc(W * 0.19 + i * 30, H * 0.36 - i * 55, 40 + i * 12, 0, 7); g.fill(); }
+  const ground = H * 0.80; g.fillStyle = '#2a1230'; g.fillRect(0, ground, W, H - ground);
+  // long-neck dino
+  g.fillStyle = '#3f8f5a';
+  g.beginPath(); g.ellipse(W * 0.62, ground - 95, 190, 95, 0, 0, 7); g.fill();
+  g.beginPath(); g.moveTo(W * 0.62 - 140, ground - 130); g.quadraticCurveTo(W * 0.62 - 230, ground - 330, W * 0.62 - 300, ground - 380);
+  g.lineTo(W * 0.62 - 250, ground - 395); g.quadraticCurveTo(W * 0.62 - 170, ground - 320, W * 0.62 - 90, ground - 160); g.fill();
+  g.beginPath(); g.ellipse(W * 0.62 - 300, ground - 392, 50, 30, -0.2, 0, 7); g.fill();
+  g.beginPath(); g.moveTo(W * 0.62 + 170, ground - 110); g.quadraticCurveTo(W * 0.62 + 330, ground - 60, W * 0.62 + 400, ground - 20); g.lineTo(W * 0.62 + 180, ground - 60); g.fill();
+  [-110, -40, 60, 130].forEach(dx => g.fillRect(W * 0.62 + dx, ground - 40, 42, 45));
+  g.fillStyle = '#ffffff'; g.beginPath(); g.arc(W * 0.62 - 318, ground - 400, 9, 0, 7); g.fill(); g.fillStyle = '#111'; g.beginPath(); g.arc(W * 0.62 - 320, ground - 400, 4.5, 0, 7); g.fill();
+  g.fillStyle = '#ffd36b'; for (let i = 0; i < 6; i++) { g.beginPath(); g.arc(W * 0.62 - 120 + i * 50, ground - 160 + Math.abs(i - 2.5) * 6, 13, 0, 7); g.fill(); }
+  // small dino
+  g.fillStyle = '#8a5bd6'; const sx = W * 0.86;
+  g.beginPath(); g.ellipse(sx, ground - 70, 70, 50, 0, 0, 7); g.fill(); g.beginPath(); g.ellipse(sx - 75, ground - 115, 42, 32, 0, 0, 7); g.fill();
+  g.beginPath(); g.moveTo(sx + 60, ground - 80); g.lineTo(sx + 150, ground - 50); g.lineTo(sx + 60, ground - 50); g.fill();
+  g.fillRect(sx - 30, ground - 30, 22, 32); g.fillRect(sx + 18, ground - 30, 22, 32);
+  g.fillStyle = '#ffffff'; g.beginPath(); g.arc(sx - 88, ground - 122, 8, 0, 7); g.fill(); g.fillStyle = '#111'; g.beginPath(); g.arc(sx - 90, ground - 122, 4, 0, 7); g.fill();
+  g.fillStyle = '#ff9fb8'; for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(sx - 40 + i * 25, ground - 115); g.lineTo(sx - 28 + i * 25, ground - 140); g.lineTo(sx - 16 + i * 25, ground - 112); g.fill(); }
+  // palms
+  [W * 0.38, W * 0.97].forEach(px => { g.strokeStyle = '#2a1230'; g.lineWidth = 18; g.beginPath(); g.moveTo(px, ground); g.quadraticCurveTo(px + 30, ground - 150, px - 10, ground - 300); g.stroke();
+    g.fillStyle = '#2a1230'; for (let k = 0; k < 6; k++) { g.save(); g.translate(px - 10, ground - 300); g.rotate(k * 1.05); g.beginPath(); g.ellipse(70, 0, 80, 18, 0.2, 0, 7); g.fill(); g.restore(); } });
+  vignette(0.45);
+}
+
+// 5 · Balloons over clouds at twilight
+function balloons() {
+  bg([[0, '#122a5c'], [0.6, '#3a5aa8'], [1, '#1a2550']]);
+  stars(120, 1.6, 0.6);
+  for (let i = 0; i < 9; i++) { const x = rr(-100, W), y = rr(H * 0.55, H * 0.95), s = rr(0.8, 1.6); g.fillStyle = `rgba(230,236,255,${rr(0.18, 0.4)})`;
+    [[0, 0, 90], [80, -30, 110], [180, 0, 90], [90, 20, 100]].forEach(([dx, dy, r]) => { g.beginPath(); g.arc(x + dx * s, y + dy * s, r * s, 0, 7); g.fill(); }); }
+  const bal = [[W * 0.22, H * 0.38, 1.1, ['#ff6f91', '#ffd84d']], [W * 0.52, H * 0.25, 1.4, ['#5fd0ff', '#ffffff']], [W * 0.78, H * 0.45, 0.9, ['#a98bff', '#7cf2c3']], [W * 0.92, H * 0.18, 0.6, ['#ffa24f', '#ff6f91']]];
+  bal.forEach(([x, y, s, [c1, c2]]) => {
+    g.save(); g.translate(x, y); g.scale(s, s);
+    for (let k = 0; k < 6; k++) { g.fillStyle = k % 2 ? c1 : c2; g.beginPath(); g.ellipse(0, 0, 110 - k * 18, 130, 0, 0, 7); g.fill(); }
+    g.fillStyle = c1; g.beginPath(); g.ellipse(0, 0, 20, 130, 0, 0, 7); g.fill();
+    g.strokeStyle = 'rgba(255,255,255,0.7)'; g.lineWidth = 3; g.beginPath(); g.moveTo(-40, 118); g.lineTo(-25, 190); g.moveTo(40, 118); g.lineTo(25, 190); g.stroke();
+    g.fillStyle = '#8a5a2b'; g.fillRect(-30, 188, 60, 42); g.restore(); });
+  for (let i = 0; i < 10; i++) star5(rr(0, W), rr(0, H * 0.5), rr(6, 12), 'rgba(255,240,180,0.85)');
+  vignette(0.45);
+}
+
+// 6 · Enchanted night garden: flowers, butterflies, fireflies and a unicorn silhouette
+function garden() {
+  bg([[0, '#1a0b3a'], [0.6, '#2b1460'], [1, '#0d0620']]);
+  stars(260, 1.8); glow(W * 0.78, H * 0.22, 260, '255,240,200', 0.35);
+  g.fillStyle = '#fff6d8'; g.beginPath(); g.arc(W * 0.78, H * 0.22, 70, 0, 7); g.fill();
+  g.fillStyle = '#24104a'; g.beginPath(); g.arc(W * 0.78 + 30, H * 0.22 - 15, 62, 0, 7); g.fill();
+  const ground = H * 0.83; g.fillStyle = '#150a2e'; g.beginPath(); g.moveTo(0, H); for (let x = 0; x <= W; x += 30) g.lineTo(x, ground - 30 * Math.sin(x / 260)); g.lineTo(W, H); g.fill();
+  // unicorn silhouette on the hill
+  const ux = W * 0.30, uy = ground - 30; glow(ux - 40, uy - 160, 260, '200,170,255', 0.18); g.fillStyle = '#e9dcff';
+  g.beginPath(); g.ellipse(ux, uy - 120, 120, 60, 0, 0, 7); g.fill();
+  g.beginPath(); g.moveTo(ux - 90, uy - 150); g.lineTo(ux - 150, uy - 260); g.lineTo(ux - 110, uy - 280); g.lineTo(ux - 50, uy - 150); g.fill();
+  g.beginPath(); g.ellipse(ux - 150, uy - 270, 55, 30, -0.4, 0, 7); g.fill();
+  [-80, -40, 50, 90].forEach(dx => g.fillRect(ux + dx, uy - 80, 20, 82));
+  g.fillStyle = '#ffd84d'; g.beginPath(); g.moveTo(ux - 150, uy - 295); g.lineTo(ux - 120, uy - 380); g.lineTo(ux - 132, uy - 290); g.fill();
+  glow(ux - 125, uy - 340, 70, '255,216,77', 0.5);
+  g.strokeStyle = '#ff7eb6'; g.lineWidth = 10; g.beginPath(); g.moveTo(ux - 120, uy - 240); g.quadraticCurveTo(ux - 60, uy - 220, ux - 40, uy - 160); g.stroke();
+  g.strokeStyle = '#a98bff'; g.beginPath(); g.moveTo(ux + 115, uy - 130); g.quadraticCurveTo(ux + 170, uy - 100, ux + 160, uy - 30); g.stroke();
+  // flowers
+  const fc = ['#ff7eb6', '#ffd84d', '#7cf2c3', '#a98bff', '#5fd0ff'];
+  for (let i = 0; i < 26; i++) { const x = rr(40, W - 40), y = ground + rr(10, 120), r = rr(10, 18), col = fc[i % 5];
+    g.strokeStyle = '#3c7a5a'; g.lineWidth = 4; g.beginPath(); g.moveTo(x, y + 40); g.lineTo(x, y); g.stroke();
+    g.fillStyle = col; for (let k = 0; k < 6; k++) { g.beginPath(); g.arc(x + Math.cos(k * 1.05) * r, y + Math.sin(k * 1.05) * r, r * 0.7, 0, 7); g.fill(); }
+    g.fillStyle = '#fff2b0'; g.beginPath(); g.arc(x, y, r * 0.5, 0, 7); g.fill(); }
+  // butterflies and fireflies
+  for (let i = 0; i < 7; i++) { const x = rr(W * 0.45, W * 0.95), y = rr(H * 0.35, H * 0.7), col = fc[(i + 2) % 5];
+    glow(x, y, 50, '255,230,255', 0.18); g.fillStyle = col;
+    g.beginPath(); g.ellipse(x - 16, y - 8, 18, 24, -0.5, 0, 7); g.ellipse(x + 16, y - 8, 18, 24, 0.5, 0, 7); g.fill();
+    g.beginPath(); g.ellipse(x - 12, y + 14, 11, 14, 0.4, 0, 7); g.ellipse(x + 12, y + 14, 11, 14, -0.4, 0, 7); g.fill();
+    g.fillStyle = '#1a0b3a'; g.fillRect(x - 2, y - 18, 4, 38); }
+  for (let i = 0; i < 70; i++) { const x = rr(0, W), y = rr(H * 0.3, H); glow(x, y, 14, '255,240,140', 0.55); }
+  vignette(0.45);
+}
+
+({ '1': space, '2': sea, '3': castle, '4': dinos, '5': balloons, '6': garden })[scene]();
+document.title = 'done';
+</script></body></html>

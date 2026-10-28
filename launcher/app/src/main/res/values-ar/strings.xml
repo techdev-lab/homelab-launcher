@@ -117,5 +117,27 @@
     <string name="wallpapers_serene">سكينة</string>
     <string name="wallpapers_mine">صوري</string>
     <string name="wallpapers_plain">بدون</string>
-    <string name="wallpapers_hint">هوم لاب: خوادم وشاشات أوامر ودوائر. سكينة: مناظر هادئة تناسب أي بيت. الاثنتان داخل التطبيق وتتبدّل كل بضع دقائق. صوري: الصور اللي نسختها للتلفزيون.</string>
+    <string name="wallpapers_hint">هوم لاب: خوادم وشاشات أوامر ودوائر. سكينة: مناظر هادئة تناسب أي بيت. أطفال: صواريخ وبحر وقلاع وديناصورات لتلفزيون الصغار. تتبدّل كل بضع دقائق. أو اختر لوناً سادة.</string>
+    <string name="wallpapers_kids">أطفال</string>
+    <string name="language_label">اللغة</string>
+    <string name="language_system">لغة التلفزيون</string>
+    <string name="cards_label">البطاقات في الشاشة الرئيسية</string>
+    <string name="cards_hint">شغّل أو أطفئ كل بطاقة. الأخضر يعني ظاهرة.</string>
+    <string name="card_prayer">مواقيت الصلاة</string>
+    <string name="card_weather">الطقس</string>
+    <string name="card_football">الكورة</string>
+    <string name="card_clubs">أنديتي</string>
+    <string name="motion_label">الحركة</string>
+    <string name="motion_calm">هادئة</string>
+    <string name="motion_lively">حيوية</string>
+    <string name="motion_off">بدون</string>
+    <string name="motion_hint">هادئة: تلاشي ناعم. حيوية: البطاقات ترتفع والأيقونات تكبر، وتستهلك ذاكرة أكثر. بدون: بلا حركة، الأفضل للتلفزيونات البطيئة.</string>
+    <string-array name="plain_colour_names">
+        <item>أسود</item>
+        <item>كحلي</item>
+        <item>فيروزي</item>
+        <item>أخضر</item>
+        <item>عنابي</item>
+        <item>رمادي</item>
+    </string-array>
 </resources>

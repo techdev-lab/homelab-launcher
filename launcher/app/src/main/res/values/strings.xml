@@ -122,5 +122,27 @@
     <string name="wallpapers_serene">Serene</string>
     <string name="wallpapers_mine">My pictures</string>
     <string name="wallpapers_plain">Plain</string>
-    <string name="wallpapers_hint">HomeLab: racks, terminals and circuits. Serene: calm scenes for any home. Both are built in and change every few minutes. My pictures: the ones you pushed to the TV.</string>
+    <string name="wallpapers_hint">HomeLab: racks, terminals and circuits. Serene: calm scenes for any home. Kids: rockets, sea, castles and dinosaurs for a children\'s TV. They change every few minutes. Or pick a plain colour.</string>
+    <string name="wallpapers_kids">Kids</string>
+    <string name="language_label">Language</string>
+    <string name="language_system">TV language</string>
+    <string name="cards_label">Cards on the home screen</string>
+    <string name="cards_hint">Turn each card on or off. Green means it shows.</string>
+    <string name="card_prayer">Prayer times</string>
+    <string name="card_weather">Weather</string>
+    <string name="card_football">Football</string>
+    <string name="card_clubs">My clubs</string>
+    <string name="motion_label">Motion</string>
+    <string name="motion_calm">Calm</string>
+    <string name="motion_lively">Lively</string>
+    <string name="motion_off">Off</string>
+    <string name="motion_hint">Calm: soft fades. Lively: tiles lift and icons zoom, which uses more memory. Off: no animation, best on slow TVs.</string>
+    <string-array name="plain_colour_names" translatable="false">
+        <item>Black</item>
+        <item>Navy</item>
+        <item>Teal</item>
+        <item>Forest</item>
+        <item>Burgundy</item>
+        <item>Graphite</item>
+    </string-array>
 </resources>
