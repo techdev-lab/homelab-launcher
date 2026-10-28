@@ -8,6 +8,7 @@ All builds keep `versionCode 4` so any of them can replace another with `adb ins
 - The "general" set from 2.6.0 is now called **Serene** (`wallpapers/serene/`, `wallpapers/gen-serene.py`); the pictures are unchanged.
 - The APK grows from about 0.5 MB to about 3 MB (the 16 wallpapers).
 - Tests: `WallpapersTest` covers the mode rules (TV choice first, then config, Serene on a fresh install, older themes keep their look).
+- Found on the TV: the Wallpapers row now reads right to left on an Arabic screen, like the columns row.
 
 ## 2.6.0 (2026-10-28)
 - **Favourite clubs.** Pick up to 10 clubs on the TV (Launcher settings > Favourite clubs) or in `config.json` (`favorite_teams`, ESPN team ids). A club card on the home screen shows each club's live or next match in **any** competition (league, King's Cup, AFC Champions League Elite, UEFA Champions League, domestic cups) and moves to the next club every 5 seconds (`club_rotate_seconds`, 3 to 60). A derby between two of your clubs shows once. The card shows "2/5" so you know more clubs follow. Online build only.

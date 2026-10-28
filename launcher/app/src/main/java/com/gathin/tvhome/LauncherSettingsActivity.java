@@ -94,6 +94,12 @@ public final class LauncherSettingsActivity extends Activity {
                 refresh();
             });
         }
+        // Same as the columns row: read the choices right to left on an RTL screen, focus follows the positions.
+        if (getResources().getBoolean(R.bool.rtl_app_grid)) {
+            LinearLayout row = (LinearLayout) wallChoices[0].getParent();
+            row.removeAllViews();
+            for (int i = wallChoices.length - 1; i >= 0; i--) row.addView(wallChoices[i]);
+        }
         // "My pictures" needs pictures pushed to files/wallpapers; without any it would show a bare colour.
         boolean mine = !Wallpapers.list(Config.dir(this) == null ? null
                 : new java.io.File(Config.dir(this), Wallpapers.DIR_NAME)).isEmpty();
