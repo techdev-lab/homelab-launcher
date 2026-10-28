@@ -35,6 +35,8 @@ final class Config {
     static final String FILE_NAME = "config.json";
     static final String WALLPAPER_NAME = "wallpaper.jpg";
     static final String SETTINGS_NAME = "launcher_settings";
+    /** Clubs picked on the TV, "929,817"; kept across theme pushes (they are the viewer's, not the theme's). */
+    static final String FAVORITE_TEAMS_KEY = "favorite_teams";
     private static final String THEME_REVISION_NAME = "theme_revision";
     private static final String THEME_SIGNATURE_KEY = "theme_signature";
 
@@ -207,7 +209,7 @@ final class Config {
                 Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
                 shamsi, moduleCards, reducedMotion, vpn, homeSettings, background,
                 Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, wallpaper, applied,
-                festival, interests(json), appKeys(json), rotation, wallMinutes);
+                festival, interests(json, choices), appKeys(json), rotation, wallMinutes);
     }
 
     /** Default: the YouTube button. A theme's "app_keys" object replaces the whole map ({} turns it off). */
@@ -234,8 +236,20 @@ final class Config {
     }
 
     /** The interests keys; absent or bad values switch that part off. Nothing here fetches anything. */
-    private static Interests.Settings interests(JSONObject json) {
-        if (json == null) return Interests.Settings.NONE;
+    private static Interests.Settings interests(JSONObject json, SharedPreferences choices) {
+        // Clubs picked on the TV (LauncherSettings > Favourite clubs) win over the theme's favorite_teams.
+        List<String> clubs = choices.contains(FAVORITE_TEAMS_KEY)
+                ? Interests.clubIds(choices.getString(FAVORITE_TEAMS_KEY, ""))
+                : json == null ? new ArrayList<>() : Interests.clubIds(idList(json, "favorite_teams"));
+        if (!Feeds.AVAILABLE) clubs = new ArrayList<>();
+        int rotate = json == null ? Interests.CLUB_ROTATE_DEFAULT_S : integer(json, "club_rotate_seconds",
+                Interests.CLUB_ROTATE_DEFAULT_S, Interests.CLUB_ROTATE_MIN_S, Interests.CLUB_ROTATE_MAX_S);
+        if (json == null) {
+            if (clubs.isEmpty()) return Interests.Settings.NONE;
+            return new Interests.Settings("system", false, "", "", Double.NaN, Double.NaN, new ArrayList<>(),
+                    new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), Feeds.AVAILABLE, new ArrayList<>(),
+                    clubs, rotate);
+        }
         return new Interests.Settings(language(json), bool(json, "hijri_date", false),
                 string(json, "prayer_city", ""), string(json, "prayer_city_en", ""),
                 number(json, "prayer_lat"), number(json, "prayer_lng"),
@@ -245,7 +259,19 @@ final class Config {
                 stringList(json, "news_feeds_en", new ArrayList<>()),
                 // The offline build has no network, so the key cannot switch it on there.
                 Feeds.AVAILABLE && bool(json, "weather", true),
-                leagueGroups(json, "sports_cards"));
+                leagueGroups(json, "sports_cards"), clubs, rotate);
+    }
+
+    /** Team ids may be written as strings ("929") or numbers (929); both are read as text. */
+    private static List<String> idList(JSONObject o, String key) {
+        JSONArray a = o.optJSONArray(key);
+        List<String> out = new ArrayList<>();
+        for (int i = 0; a != null && i < a.length(); i++) {
+            Object item = a.opt(i);
+            if (item instanceof String) out.add(((String) item).trim());
+            else if (item instanceof Integer || item instanceof Long) out.add(String.valueOf(item));
+        }
+        return out;
     }
 
     /** "sports_cards": up to 4 groups of up to 8 valid league codes; bad entries are dropped, empty groups too. */

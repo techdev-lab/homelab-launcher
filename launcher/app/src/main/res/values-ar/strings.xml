@@ -108,4 +108,8 @@
     </string-array>
     <string name="match_live">● مباشر</string>
     <string name="news">أخبار</string>
+    <string name="favorite_clubs_state">الأندية المفضلة (%1$d من %2$d)</string>
+    <string name="favorite_clubs_hint">اختر حتى %1$d أندية. تعرض الشاشة الرئيسية مباراة كل نادٍ المباشرة أو القادمة في أي بطولة (الدوري، الكأس، القارية)، نادياً كل %2$d ثوانٍ، بالترتيب الذي تختاره.</string>
+    <string name="clubs_clear">مسح (استخدام أندية السمة)</string>
+    <string name="clubs_limit">الحد %d أندية. احذف نادياً أولاً.</string>
 </resources>

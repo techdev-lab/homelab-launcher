@@ -113,4 +113,8 @@
     </string-array>
     <string name="match_live">● LIVE</string>
     <string name="news">News</string>
+    <string name="favorite_clubs_state">Favourite clubs (%1$d of %2$d)</string>
+    <string name="favorite_clubs_hint">Pick up to %1$d clubs. Home shows each club\'s live or next match in any competition (league, cup, continental), one club every %2$d seconds, in the order you pick them.</string>
+    <string name="clubs_clear">Clear (use the theme\'s clubs)</string>
+    <string name="clubs_limit">Up to %d clubs. Remove one first.</string>
 </resources>

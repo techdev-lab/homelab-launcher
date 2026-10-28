@@ -40,6 +40,16 @@ The method is **Umm al-Qura** (Fajr 18.5°, Isha 90 minutes after Maghrib, 120 i
 | `sports_cards` | `[["ksa.1"], ["uefa.champions", "eng.1", "esp.1", "ita.1", "ger.1"]]` | One card per group, side by side. Each card shows a live match of its group, otherwise the next kick-off within 7 days. Up to 4 groups of 8 leagues. |
 | `sports_leagues` | `["ksa.1"]` | Without `sports_cards`: one card that rotates through these leagues every minute. |
 | `sports_teams` | `["Al Hilal"]` | Only matches with one of these teams (case-insensitive, either side). Empty keeps all. |
+| `favorite_teams` | `["929", "817", "382"]` | Your clubs, up to 10, by ESPN team id. One extra card shows each club's live or next match (within 21 days) in any competition, one club at a time. Clubs picked on the TV (Launcher settings > Favourite clubs) take priority; "Clear" there goes back to this list. |
+| `club_rotate_seconds` | `5` (default) | Seconds per club on the club card, 3 to 60. |
+
+**Finding a team id.** The picker on the TV covers 136 clubs. For any other club, open
+`https://site.api.espn.com/apis/site/v2/sports/soccer/<league>/teams` (for example `ksa.1`) and use the `id` next to the
+club's name. A few common ones: Al Hilal `929`, Al Nassr `817`, Al Ittihad `2276`, Al Ahli `8346`, Man City `382`,
+Real Madrid `86`, Barcelona `83`, Liverpool `364`, Arsenal `359`, Al Ain `7128`, Al Sadd `7135`.
+
+ESPN has no domestic data for the Egyptian, Moroccan, UAE or Qatari leagues, so clubs from those leagues show only their
+continental matches (AFC or CAF Champions League), and nothing between tournaments.
 
 League codes are ESPN's. Checked to work:
 
@@ -76,4 +86,12 @@ Not available from this source (checked): the Egyptian, UAE, Qatari, Moroccan, K
 
 ## Wallpapers
 
-`wallpapers/homelab/` has six 1920x1080 pictures generated in the browser by `wallpapers/gen.html` (no photos, no third-party images). Open the HTML file, export, and push the JPGs to `files/wallpapers/`.
+Two generated sets, no photos and no third-party images:
+
+| Folder | Pictures | Made by | For |
+|---|---|---|---|
+| `wallpapers/homelab/` | 6 | `wallpapers/gen.html` (open in a browser, export) | A home-lab look: racks, terminals, circuits. |
+| `wallpapers/general/` | 10 | `wallpapers/gen-general.py` (Python, Pillow and numpy) | Any TV: dusk, ridges, still water, dunes, ribbons, circles, night stars, aurora, sea at dawn, a faint geometric lattice. Nothing that points to a household. |
+
+Push the set you want to `files/wallpapers/` and set `"wallpaper_mode": "rotate"`. `config/examples/general.json` is a
+neutral starting point for a TV you set up for someone else.

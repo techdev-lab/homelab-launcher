@@ -125,6 +125,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private volatile Interests.Weather weather;
     private int headlineIndex;
     private int matchIndex;
+    /** Favourite clubs' fixtures (favorite_teams), the card that shows them and which club it is on. */
+    private volatile List<Interests.Match> clubMatches = Collections.emptyList();
+    private View clubCard;
+    private int clubIndex;
+    /** Club schedules are large and change slowly: fetched every 12 hours, live scores in between. */
+    private static final long CLUB_SCHEDULE_MS = 12 * 60 * MINUTE_MS;
+    private long clubScheduleMs;
+    private List<String> clubScheduleIds = Collections.emptyList();
     private ExecutorService feedThread;
     /** Resting backgrounds of the header pills and strip cards, re-tinted with the ambient colour (Glass). */
     private final List<GradientDrawable> glassPills = new ArrayList<>();
@@ -232,6 +240,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             sky.update();
             updateWallpaperRotation();
             handler.postDelayed(this, MINUTE_MS);
+        }
+    };
+    /** The club card moves to the next favourite club every club_rotate_seconds (default 5) while Home shows. */
+    private final Runnable clubTick = new Runnable() {
+        @Override
+        public void run() {
+            clubIndex++;
+            showClubCard();
+            handler.postDelayed(this, interestsCfg.clubRotateSeconds * 1000L);
         }
     };
     /** Online build: matches, news and weather every 15 minutes, only while Home is on screen. */
@@ -607,7 +624,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         updateWallpaperRotation();
         handler.postDelayed(minuteTick, MINUTE_MS);
         if (Feeds.AVAILABLE && (interestsCfg.wantsMatches() || interestsCfg.wantsNews()
-                || interestsCfg.wantsWeather())) handler.post(feedTick);
+                || interestsCfg.wantsWeather() || interestsCfg.wantsClubs())) handler.post(feedTick);
+        if (interestsCfg.wantsClubs()) handler.postDelayed(clubTick, interestsCfg.clubRotateSeconds * 1000L);
         if (festive && diya != null) {
             diya.start();
             LocalDate today = LocalDate.now();
@@ -697,6 +715,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         ambient.animate().cancel();
         handler.removeCallbacks(minuteTick);
         handler.removeCallbacks(feedTick);
+        handler.removeCallbacks(clubTick);
         if (diya != null) diya.stop();
         // Nothing of ours stays on screen over another app; an undecided prompt simply returns next time.
         if (cardPrompt != null) cardPrompt.dismiss();
@@ -1112,6 +1131,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             List<Interests.Match> m = s.wantsMatches() ? Feeds.matches(s) : Collections.emptyList();
             List<Interests.Headline> h = feeds.isEmpty() ? Collections.emptyList() : Feeds.headlines(feeds);
             Interests.Weather w = s.wantsWeather() ? Feeds.weather(s.prayerLat, s.prayerLng) : null;
+            if (s.wantsClubs()) {
+                long now = System.currentTimeMillis();
+                List<Interests.Match> c = clubMatches;
+                if (c.isEmpty() || now - clubScheduleMs >= CLUB_SCHEDULE_MS || !clubScheduleIds.equals(s.favoriteTeams)) {
+                    c = Feeds.clubSchedules(s.favoriteTeams);
+                    clubScheduleMs = now;
+                    clubScheduleIds = s.favoriteTeams;
+                }
+                clubMatches = Feeds.refreshLive(c, now);
+            }
             matches = m;
             headlines = h;
             weather = w;
@@ -1140,6 +1169,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             List<Interests.Match> picks = Interests.pickMatches(matches, interestsCfg.sportsTeams, now);
             if (!picks.isEmpty()) cards.add(matchCard(picks.get(matchIndex++ % picks.size()), ar));
         }
+        clubCard = null;
+        if (interestsCfg.wantsClubs()) {
+            List<Interests.Match> clubs = Interests.pickClubs(clubMatches, interestsCfg.favoriteTeams, now);
+            if (!clubs.isEmpty()) cards.add(clubCard = clubCard(clubs, ar));
+        }
         List<Interests.Headline> h = headlines;
         if (!h.isEmpty()) cards.add(newsCard(h.get(headlineIndex++ % h.size()), ar));
         boolean rtl = getResources().getBoolean(R.bool.rtl_menu_bar);
@@ -1150,6 +1184,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // With sports_cards: prayer 1.4 + one per match card + news 1 only when news is on.
         float sum = interestsCfg.sportsCards.isEmpty() ? 3.4f
                 : 1.4f + interestsCfg.sportsCards.size() + (interestsCfg.wantsNews() ? 1f : 0f);
+        // The club card takes the match card's place when no league is set, else it adds one more share.
+        if (interestsCfg.wantsClubs() && interestsCfg.wantsMatches()) sum += 1f;
         interestsStrip.setWeightSum(interestsCfg.wantsWeather() ? sum + WEATHER_WEIGHT : sum);
         tintGlass(ambientColor);
         for (int i = 0; i < cards.size(); i++) {
@@ -1227,6 +1263,42 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             away = NamesAr.or(n.teams, m.awayId, away);
         }
         return card(when, live, league, home + "  ×  " + away, big, 1f);
+    }
+
+    /** The favourite club whose turn it is: the match card's four lines, the league line says where and which club. */
+    private View clubCard(List<Interests.Match> clubs, boolean ar) {
+        int i = Math.floorMod(clubIndex, clubs.size());
+        Interests.Match m = clubs.get(i);
+        String count = clubs.size() > 1 ? "  ·  " + (i + 1) + "/" + clubs.size() : "";
+        LinearLayout c = (LinearLayout) matchCard(m, ar);
+        // matchCard's second line is the league; add the position so a viewer knows more clubs follow.
+        if (!count.isEmpty() && c.getChildCount() > 1 && c.getChildAt(1) instanceof TextView) {
+            TextView league = (TextView) c.getChildAt(1);
+            league.setText(league.getText() + count);
+        }
+        return c;
+    }
+
+    /** Swaps only the club card (no strip rebuild), with a short fade, when there is more than one club to show. */
+    private void showClubCard() {
+        View old = clubCard;
+        if (old == null || interestsStrip == null || old.getParent() != interestsStrip) return;
+        List<Interests.Match> clubs = Interests.pickClubs(clubMatches, interestsCfg.favoriteTeams,
+                System.currentTimeMillis());
+        if (clubs.size() < 2) return;
+        int at = interestsStrip.indexOfChild(old);
+        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) old.getLayoutParams();
+        glassCards.remove(old.getBackground());
+        View next = clubCard(clubs, arabic());
+        next.setLayoutParams(lp);
+        interestsStrip.removeViewAt(at);
+        interestsStrip.addView(next, at);
+        clubCard = next;
+        tintGlass(ambientColor);
+        if (animations && !reducedMotion) {
+            next.setAlpha(0f);
+            next.animate().alpha(1f).setDuration(350).start();
+        }
     }
 
     /** Narrower than the others: a condition and a number need less room than two team names or a headline. */

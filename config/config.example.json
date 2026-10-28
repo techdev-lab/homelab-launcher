@@ -41,6 +41,12 @@
     ]
   ],
   "sports_teams": [],
+  "favorite_teams": [
+    "929",
+    "817",
+    "382"
+  ],
+  "club_rotate_seconds": 5,
   "news_feeds": [],
   "news_feeds_en": [],
   "wallpaper_mode": "rotate",
