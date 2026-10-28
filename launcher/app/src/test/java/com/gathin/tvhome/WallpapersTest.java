@@ -14,6 +14,29 @@ import org.junit.Test;
 public class WallpapersTest {
 
     @Test
+    public void choiceOnTheTvWinsThenConfig() {
+        assertEquals("homelab", Wallpapers.mode("homelab", "rotate", true, false));
+        assertEquals("rotate", Wallpapers.mode("", "rotate", true, false));
+        assertEquals("serene", Wallpapers.mode(null, "serene", true, true));
+    }
+
+    @Test
+    public void freshInstallShowsSereneButOldThemesKeepTheirLook() {
+        assertEquals("serene", Wallpapers.mode("", "", false, false));
+        assertEquals("fixed", Wallpapers.mode("", "", false, true));
+        assertEquals("fixed", Wallpapers.mode("", "", true, false));
+        assertEquals("fixed", Wallpapers.mode("nonsense", "also-bad", true, false));
+    }
+
+    @Test
+    public void builtInSetsAreKnown() {
+        assertTrue(Wallpapers.builtIn("homelab"));
+        assertTrue(Wallpapers.builtIn("serene"));
+        assertFalse(Wallpapers.builtIn("rotate"));
+        assertFalse(Wallpapers.builtIn(null));
+    }
+
+    @Test
     public void onlyPicturesWithinSize() {
         assertTrue(Wallpapers.accepted("01-homelab.jpg", 500_000));
         assertTrue(Wallpapers.accepted("x.PNG", 1));

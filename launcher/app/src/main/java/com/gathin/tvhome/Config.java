@@ -37,6 +37,8 @@ final class Config {
     static final String SETTINGS_NAME = "launcher_settings";
     /** Clubs picked on the TV, "929,817"; kept across theme pushes (they are the viewer's, not the theme's). */
     static final String FAVORITE_TEAMS_KEY = "favorite_teams";
+    /** Wallpaper set picked on the TV (Wallpapers modes); a theme push or "Follow theme" clears it. */
+    static final String WALLPAPER_MODE_KEY = "wallpaper_mode";
     private static final String THEME_REVISION_NAME = "theme_revision";
     private static final String THEME_SIGNATURE_KEY = "theme_signature";
 
@@ -88,6 +90,8 @@ final class Config {
     final List<File> wallpapers;
     /** Minutes per picture while rotating (config.json "wallpaper_interval_min", 1 to 240, default 5). */
     final int wallpaperMinutes;
+    /** The wallpaper mode in force (Wallpapers.mode): plain, fixed, rotate, homelab or serene. */
+    final String wallpaperMode;
 
     private Config(List<String> dockApps, boolean fillDock, List<String> hiddenApps, String liveTvPackage,
                    String liveTvAction, String sourcePanelService, String sourcePanelAction, String inputAction,
@@ -96,7 +100,7 @@ final class Config {
                    boolean showHomeSettingsShortcut, int backgroundColor, int skyIntensity,
                    int[] settingsKeycodes, boolean settingsKeyPanel, File wallpaper, boolean overlayApplied,
                    Festival festival, Interests.Settings interests, Map<Integer, String> appKeys,
-                   List<File> wallpapers, int wallpaperMinutes) {
+                   List<File> wallpapers, int wallpaperMinutes, String wallpaperMode) {
         this.dockApps = Collections.unmodifiableList(dockApps);
         this.fillDock = fillDock;
         this.hiddenApps = Collections.unmodifiableList(hiddenApps);
@@ -125,6 +129,7 @@ final class Config {
         this.appKeys = Collections.unmodifiableMap(appKeys);
         this.wallpapers = Collections.unmodifiableList(wallpapers);
         this.wallpaperMinutes = wallpaperMinutes;
+        this.wallpaperMode = wallpaperMode;
     }
 
     /** The folder the theme tools push into; null when external storage is unavailable. */
@@ -196,10 +201,12 @@ final class Config {
         if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
         // A theme can also switch the wallpaper off while the file is still there.
         if (json != null && json.has("wallpaper") && !bool(json, "wallpaper", true)) wallpaper = null;
-        String wallMode = json == null ? "" : string(json, "wallpaper_mode", "");
+        String wallMode = Wallpapers.mode(choices.getString(WALLPAPER_MODE_KEY, ""),
+                json == null ? "" : string(json, "wallpaper_mode", ""), json != null, wallpaper != null);
         List<File> rotation = new ArrayList<>();
-        if ("plain".equals(wallMode)) wallpaper = null;
-        else if ("rotate".equals(wallMode) && dir != null) rotation = Wallpapers.list(new File(dir, Wallpapers.DIR_NAME));
+        if (Wallpapers.PLAIN.equals(wallMode)) wallpaper = null;
+        else if (Wallpapers.ROTATE.equals(wallMode) && dir != null) rotation = Wallpapers.list(new File(dir, Wallpapers.DIR_NAME));
+        else if (Wallpapers.builtIn(wallMode)) rotation = BuiltInWallpapers.list(ctx, wallMode);
         int wallMinutes = json == null ? 5 : integer(json, "wallpaper_interval_min", 5, 1, 240);
         // A festive skin comes only from a theme; config.xml has no festival.
         Festival festival = json == null ? Festival.NONE : Festival.parse(string(json, "festival", ""),
@@ -209,7 +216,7 @@ final class Config {
                 Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
                 shamsi, moduleCards, reducedMotion, vpn, homeSettings, background,
                 Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, wallpaper, applied,
-                festival, interests(json, choices), appKeys(json), rotation, wallMinutes);
+                festival, interests(json, choices), appKeys(json), rotation, wallMinutes, wallMode);
     }
 
     /** Default: the YouTube button. A theme's "app_keys" object replaces the whole map ({} turns it off). */
@@ -320,10 +327,10 @@ final class Config {
             // explicit theme push or reset by the updated tools.
             SharedPreferences.Editor editor = choices.edit();
             if (!"absent".equals(token)) editor.remove("columns").remove("animations")
-                    .remove("advanced_effects");
+                    .remove("advanced_effects").remove(WALLPAPER_MODE_KEY);
             editor.putString(THEME_SIGNATURE_KEY, signature).commit();
         } else if (!seen.equals(signature)) {
-            choices.edit().remove("columns").remove("animations").remove("advanced_effects")
+            choices.edit().remove("columns").remove("animations").remove("advanced_effects").remove(WALLPAPER_MODE_KEY)
                     .putString(THEME_SIGNATURE_KEY, signature).commit();
         }
     }

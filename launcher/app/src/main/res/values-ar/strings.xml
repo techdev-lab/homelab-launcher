@@ -112,4 +112,10 @@
     <string name="favorite_clubs_hint">اختر حتى %1$d أندية. تعرض الشاشة الرئيسية مباراة كل نادٍ المباشرة أو القادمة في أي بطولة (الدوري، الكأس، القارية)، نادياً كل %2$d ثوانٍ، بالترتيب الذي تختاره.</string>
     <string name="clubs_clear">مسح (استخدام أندية السمة)</string>
     <string name="clubs_limit">الحد %d أندية. احذف نادياً أولاً.</string>
+    <string name="wallpapers_label">الخلفيات</string>
+    <string name="wallpapers_homelab">هوم لاب</string>
+    <string name="wallpapers_serene">سكينة</string>
+    <string name="wallpapers_mine">صوري</string>
+    <string name="wallpapers_plain">بدون</string>
+    <string name="wallpapers_hint">هوم لاب: خوادم وشاشات أوامر ودوائر. سكينة: مناظر هادئة تناسب أي بيت. الاثنتان داخل التطبيق وتتبدّل كل بضع دقائق. صوري: الصور اللي نسختها للتلفزيون.</string>
 </resources>

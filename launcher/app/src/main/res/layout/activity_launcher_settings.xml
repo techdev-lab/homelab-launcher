@@ -42,6 +42,34 @@
         </LinearLayout>
 
         <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:text="@string/wallpapers_label"
+            android:textColor="#FFFFFFFF"
+            android:textSize="20sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:orientation="horizontal">
+
+            <TextView android:id="@+id/wallHomelab" style="@style/SettingsColumnChoice" android:text="@string/wallpapers_homelab" />
+            <TextView android:id="@+id/wallSerene" style="@style/SettingsColumnChoice" android:text="@string/wallpapers_serene" />
+            <TextView android:id="@+id/wallMine" style="@style/SettingsColumnChoice" android:text="@string/wallpapers_mine" />
+            <TextView android:id="@+id/wallPlain" style="@style/SettingsColumnChoice" android:text="@string/wallpapers_plain" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/wallpapers_hint"
+            android:textColor="#FFACB8C1"
+            android:textSize="14sp" />
+
+        <TextView
             android:id="@+id/animationsChoice"
             style="@style/SettingsRow"
             android:layout_marginTop="28dp" />

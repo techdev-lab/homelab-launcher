@@ -20,6 +20,11 @@ public final class LauncherSettingsActivity extends Activity {
     private TextView advancedChoice;
     private TextView followThemeChoice;
     private TextView clubsChoice;
+    /** Wallpaper choices in screen order and the mode each one saves. */
+    private final TextView[] wallChoices = new TextView[4];
+    private static final String[] WALL_MODES = {Wallpapers.HOMELAB, Wallpapers.SERENE, Wallpapers.ROTATE,
+            Wallpapers.PLAIN};
+    private String wallMode;
     private static final int CLUBS_REQUEST = 1;
     private int columns;
     private boolean animations;
@@ -76,6 +81,23 @@ public final class LauncherSettingsActivity extends Activity {
                         .show();
             }
         });
+        wallMode = config.wallpaperMode;
+        int[] wallIds = {R.id.wallHomelab, R.id.wallSerene, R.id.wallMine, R.id.wallPlain};
+        for (int i = 0; i < wallIds.length; i++) {
+            final String mode = WALL_MODES[i];
+            wallChoices[i] = findViewById(wallIds[i]);
+            wallChoices[i].setOnClickListener(v -> {
+                if (mode.equals(wallMode)) return;
+                wallMode = mode;
+                choices.edit().putString(Config.WALLPAPER_MODE_KEY, mode).apply();
+                setResult(RESULT_OK);
+                refresh();
+            });
+        }
+        // "My pictures" needs pictures pushed to files/wallpapers; without any it would show a bare colour.
+        boolean mine = !Wallpapers.list(Config.dir(this) == null ? null
+                : new java.io.File(Config.dir(this), Wallpapers.DIR_NAME)).isEmpty();
+        wallChoices[2].setVisibility(mine || Wallpapers.ROTATE.equals(wallMode) ? View.VISIBLE : View.GONE);
         clubsChoice = findViewById(R.id.clubsChoice);
         // Matches need the network: the offline build has no INTERNET, so the row would promise nothing.
         clubsChoice.setVisibility(Feeds.AVAILABLE ? View.VISIBLE : View.GONE);
@@ -84,8 +106,10 @@ public final class LauncherSettingsActivity extends Activity {
         followThemeChoice = findViewById(R.id.followThemeChoice);
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
-            choices.edit().remove("columns").remove("animations").remove("advanced_effects").commit();
+            choices.edit().remove("columns").remove("animations").remove("advanced_effects")
+                    .remove(Config.WALLPAPER_MODE_KEY).commit();
             Config current = Config.load(this);
+            wallMode = current.wallpaperMode;
             columns = current.columns;
             animations = current.animations;
             advancedEffects = current.animations && current.advancedEffects;
@@ -128,6 +152,7 @@ public final class LauncherSettingsActivity extends Activity {
                 getString(advancedEffects ? R.string.on : R.string.off)));
         advancedChoice.setEnabled(animations);
         advancedChoice.setAlpha(animations ? 1f : 0.5f);
+        for (int i = 0; i < wallChoices.length; i++) wallChoices[i].setSelected(WALL_MODES[i].equals(wallMode));
         followThemeChoice.setSelected(!hasOnTvChoices());
         clubsChoice.setText(getString(R.string.favorite_clubs_state,
                 Config.load(this).interests.favoriteTeams.size(), Interests.MAX_CLUBS));
@@ -135,7 +160,7 @@ public final class LauncherSettingsActivity extends Activity {
 
     private boolean hasOnTvChoices() {
         return choices.contains("columns") || choices.contains("animations")
-                || choices.contains("advanced_effects");
+                || choices.contains("advanced_effects") || choices.contains(Config.WALLPAPER_MODE_KEY);
     }
 
     private void open(Intent intent) {

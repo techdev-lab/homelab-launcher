@@ -117,4 +117,10 @@
     <string name="favorite_clubs_hint">Pick up to %1$d clubs. Home shows each club\'s live or next match in any competition (league, cup, continental), one club every %2$d seconds, in the order you pick them.</string>
     <string name="clubs_clear">Clear (use the theme\'s clubs)</string>
     <string name="clubs_limit">Up to %d clubs. Remove one first.</string>
+    <string name="wallpapers_label">Wallpapers</string>
+    <string name="wallpapers_homelab">HomeLab</string>
+    <string name="wallpapers_serene">Serene</string>
+    <string name="wallpapers_mine">My pictures</string>
+    <string name="wallpapers_plain">Plain</string>
+    <string name="wallpapers_hint">HomeLab: racks, terminals and circuits. Serene: calm scenes for any home. Both are built in and change every few minutes. My pictures: the ones you pushed to the TV.</string>
 </resources>

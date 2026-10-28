@@ -1,10 +1,10 @@
-"""General wallpapers: ten calm, neutral 1920x1080 scenes (no text, no people, nothing household).
+"""Serene wallpapers: ten calm, neutral 1920x1080 scenes (no text, no people, nothing household).
 
 For a TV that is not yours: a parent's living room, a guest room, a waiting room. Every scene is drawn from
 code, so there is no photo licence to worry about and the set can be rebuilt byte for byte.
 
-Needs Pillow and numpy. Usage: python gen-general.py <output-dir>
-Scenes 01-06 are the first set (general-v1); 07-10 were added in general-v2. Seeds are fixed per scene, so
+Needs Pillow and numpy. Usage: python gen-serene.py <output-dir>
+The set was called "general" in 2.6.0. Scenes 01-06 are the first six; 07-10 were added later. Seeds are fixed per scene, so
 adding scenes never changes the earlier ones.
 """
 import sys
