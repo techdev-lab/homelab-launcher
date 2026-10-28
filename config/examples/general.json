@@ -1,0 +1,39 @@
+{
+  "dock_apps": [
+    "com.google.android.youtube.tv",
+    "com.netflix.ninja",
+    "net.mbc.shahidTV",
+    "com.thmanyah.shasha.tv"
+  ],
+  "hidden_apps": [],
+  "live_tv_package": "",
+  "vpn_app": "",
+  "background_color": "#0B0B0C",
+  "columns": 4,
+  "fill_dock": true,
+  "module_cards": true,
+  "animations": true,
+  "reduced_motion": false,
+  "sky_intensity": 0,
+  "shamsi_date": false,
+  "festival": "",
+  "language": "system",
+  "hijri_date": true,
+  "prayer_city": "مكة المكرمة",
+  "prayer_city_en": "Makkah",
+  "prayer_lat": 21.4225,
+  "prayer_lng": 39.8262,
+  "weather": true,
+  "sports_leagues": [],
+  "sports_cards": [],
+  "sports_teams": [],
+  "favorite_teams": [
+    "929",
+    "817"
+  ],
+  "club_rotate_seconds": 5,
+  "news_feeds": [],
+  "news_feeds_en": [],
+  "wallpaper_mode": "rotate",
+  "wallpaper_interval_min": 10
+}
