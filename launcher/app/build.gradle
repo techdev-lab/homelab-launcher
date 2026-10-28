@@ -21,7 +21,7 @@ android {
         // versionCode needs `install -d`, which Android allows for debuggable packages only, and ours are not.
         // Raise it once 2.4 has passed on the TV and 2.3 is no longer the way back.
         versionCode 4
-        versionName '2.5.5'
+        versionName '2.6.0'
     }
 
     buildTypes {

@@ -2,11 +2,17 @@
 
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
-## Unreleased
+## 2.6.0 (2026-10-28)
+- **Favourite clubs.** Pick up to 10 clubs on the TV (Launcher settings > Favourite clubs) or in `config.json` (`favorite_teams`, ESPN team ids). A club card on the home screen shows each club's live or next match in **any** competition (league, King's Cup, AFC Champions League Elite, UEFA Champions League, domestic cups) and moves to the next club every 5 seconds (`club_rotate_seconds`, 3 to 60). A derby between two of your clubs shows once. The card shows "2/5" so you know more clubs follow. Online build only.
+- Data: one ESPN team schedule per club every 12 hours (about 300 KB each), and that day's scoreboard only while one of your clubs is about to play or playing, so the score and minute stay current without heavy traffic. The response cap is now 768 KB (a big club's season schedule is about 320 KB).
+- The picker lists 136 clubs: the Saudi Pro League, the five big European leagues, the Gulf clubs in the AFC Champions League Elite, and the other UEFA Champions League clubs. Any other ESPN team id works in `config.json`.
+- Arabic names for all Ligue 1 clubs, the AFC Champions League Elite clubs and 15 more competitions (King's Cup, Carabao Cup, Copa del Rey, Europa League and others).
+- New wallpaper set `wallpapers/general/`: ten calm, neutral scenes for a TV that is not yours (no text, no people, nothing household), drawn by `wallpapers/gen-general.py` (Pillow and numpy, fixed seeds, rebuildable byte for byte). New example `config/examples/general.json`.
 - The screensaver now follows the home screen's language: `config.json` `language` first, then the launcher's own Android language (`cmd locale set-app-locales`), then the TV's. Before, an Arabic home screen still got an English screensaver, because Android starts a screensaver with the TV's system language only. New `Language` class and `LanguageTest`.
 - Arabic labels for the quick-settings panel (Display, Network, Apps and its hint), which showed in English on an Arabic TV. `ResourcesTest` now fails when a translatable English string has no Arabic version.
 - `scripts/Apply-TvhomeKit.ps1`: the "launcherx and setupwraith disabled" checks now look at user 0 only (a TV with a second user profile was refused by mistake), and the config backup no longer aborts under Windows PowerShell 5.1.
 - Docs: `INSTALL.md` explains how to give the launcher its own language (Arabic on an English TV) and how to run the kit script; `JOURNEY.md` has a Day 4 with the errors found by testing the published copy and how they were fixed.
+- Tests: `ClubsTest` (9 cases: id rules, any-competition pick, live first, derby once, 21-day window, live refresh window, scoreboard update). 130 unit tests per build flavor.
 
 ## 2.5.5 (2026-10-22)
 - All user-facing text moved out of the Java code into resources: prayer names, Hijri months and weekdays, "Prayer times", "LIVE", "News" and the "in" phrasing now live in `res/values/strings.xml` and `res/values-ar/strings.xml`. The code itself is English only.

@@ -46,6 +46,7 @@ It is written for Muslim and Arabic-speaking households first, but it is not tie
 | **Prayer times, offline** | Umm al-Qura method, computed on the TV from the coordinates you set. No network and no location lookup: the city is typed into the config. Checked against an independent source to within 2 minutes. |
 | **Hijri date** | Umm al-Qura calendar from the platform's ICU, next to the Gregorian date. |
 | **Football cards** | One card per league group, side by side, e.g. the Saudi Pro League and "the big European leagues". A live match first, otherwise the next kick-off within 7 days. |
+| **Favourite clubs** | Pick up to 10 clubs with the remote (Al Hilal, Al Nassr, Man City...). One card shows each club's live or next match in any competition, league, cup or continental, and moves to the next club every 5 seconds. |
 | **Weather** | Current conditions for the same city (Open-Meteo, free, no key). |
 | **Your dock** | Four apps of your choice on top (YouTube, Netflix, Shahid, Jellyfin, an IPTV player, anything), the rest in a grid. |
 | **Remote buttons** | The YouTube button on the Chromecast remote keeps working after the stock launcher is gone. |
@@ -100,7 +101,7 @@ The APKs land in `launcher/app/build/outputs/apk/<flavor>/release/`. They are si
 launcher/           Android app (Java), tests in app/src/test
 config/             config.example.json and ready examples for a few cities
 scripts/            PowerShell helpers: inventory, make-Home, one-shot kit, with a fake-TV test suite
-wallpapers/         6 generated wallpapers and the HTML generator that draws them
+wallpapers/         generated wallpapers: homelab/ (6) and general/ (10, for any TV), with their generators
 docs/               install guide, config reference, design notes, the build story, AI prompts, screenshots
 ```
 
@@ -108,7 +109,7 @@ docs/               install guide, config reference, design notes, the build sto
 
 | Permission or component | Build | What it is for |
 |---|---|---|
-| `INTERNET` | online only | Football (ESPN public scoreboard), weather (Open-Meteo) and the RSS feeds you configure. HTTPS only, 8-second timeouts, a 512 KB response cap, redirects not followed. |
+| `INTERNET` | online only | Football (ESPN public scoreboard), weather (Open-Meteo) and the RSS feeds you configure. HTTPS only, 8-second timeouts, a 768 KB response cap, redirects not followed. |
 | `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` | both | The Wi-Fi pill. |
 | `ACCESS_FINE_LOCATION` | both | Android 10 and later only let an app read the Wi-Fi network name with it. No code in the app calls a location API; the city for prayer times and weather is typed into the config. |
 | Accessibility services (`HomeKeyService`, `InputKeyService`) | both, opt-in | Make the remote's Home and Input buttons work after the stock launcher is disabled. They see key events only, not window content, and stay off until you enable them. |
@@ -159,6 +160,7 @@ MIT License, see [LICENSE](LICENSE).
 | **مواقيت الصلاة بدون إنترنت** | بطريقة أم القرى، تنحسب على الجهاز من إحداثيات مدينتك. بدون تحديد موقع: تكتب المدينة في الإعدادات. فرقها عن مصدر مستقل أقل من دقيقتين. |
 | **التاريخ الهجري** | تقويم أم القرى، جنب الميلادي. |
 | **بطاقات الكورة** | بطاقة لكل مجموعة دوريات جنب بعض، مثلاً: الدوري السعودي، والدوريات الأوروبية الكبرى. المباشر أولاً، وإلا أقرب مباراة خلال 7 أيام. |
+| **أنديتك المفضلة** | تختار حتى 10 أندية بالريموت (الهلال، النصر، مانشستر سيتي…). بطاقة وحدة تعرض مباراة كل نادٍ المباشرة أو الجاية في أي بطولة: الدوري أو الكأس أو النخبة الآسيوية أو أبطال أوروبا، وتنتقل للنادي اللي بعده كل 5 ثواني. |
 | **الطقس** | لنفس المدينة (Open-Meteo، مجاني وبدون مفتاح). |
 | **شريط تطبيقاتك** | أربع تطبيقات تختارها فوق (يوتيوب، نتفليكس، شاهد، جيليفين، برنامج IPTV، أي شي)، والباقي تحت في شبكة. |
 | **زر يوتيوب في الريموت** | يبقى شغّال بعد ما نوقف اللانشر الأصلي. |
@@ -210,7 +212,7 @@ MIT License, see [LICENSE](LICENSE).
 
 | الصلاحية أو المكوّن | النسخة | وش تسوي |
 |---|---|---|
-| `INTERNET` | online فقط | الكورة (مصدر ESPN العام) والطقس (Open-Meteo) وخلاصات RSS اللي تضبطها. HTTPS فقط، مهلة 8 ثواني، حد 512 كيلوبايت للرد، وما تُتبع التحويلات. |
+| `INTERNET` | online فقط | الكورة (مصدر ESPN العام) والطقس (Open-Meteo) وخلاصات RSS اللي تضبطها. HTTPS فقط، مهلة 8 ثواني، حد 768 كيلوبايت للرد، وما تُتبع التحويلات. |
 | `ACCESS_NETWORK_STATE` و`ACCESS_WIFI_STATE` | النسختين | شريحة الواي فاي. |
 | `ACCESS_FINE_LOCATION` | النسختين | أندرويد 10 وما فوق ما يخلي التطبيق يقرأ اسم شبكة الواي فاي إلا بها. التطبيق ما يستدعي أي واجهة موقع؛ المدينة تكتبها في الإعدادات. |
 | خدمات إمكانية الوصول (`HomeKeyService` و`InputKeyService`) | النسختين، اختيارية | تشغّل زرّي Home وInput في الريموت بعد إيقاف اللانشر الأصلي. ترى ضغطات الأزرار فقط، مو محتوى الشاشة، وتبقى مطفية لين تفعّلها. |
