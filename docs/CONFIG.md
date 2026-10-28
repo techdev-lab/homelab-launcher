@@ -77,7 +77,7 @@ Not available from this source (checked): the Egyptian, UAE, Qatari, Moroccan, K
 | Key | Values | Notes |
 |---|---|---|
 | `wallpaper_mode` | `serene`, `homelab`, `kids`, `rotate`, `fixed`, `plain` | `serene`, `homelab` and `kids` rotate the sets built into the APK; `plain` shows `background_color`. `rotate` uses every picture you pushed to `files/wallpapers/`, `fixed` the single `files/wallpaper.jpg`. Without a config.json a fresh install shows `serene`. A choice made on the TV (*Launcher settings > Wallpapers*) wins until the next theme push or *Follow theme*. |
-| `wallpaper_interval_min` | `1` to `240` (default 5) | Minutes per picture in `rotate`. |
+| `wallpaper_interval_min` | `1` to `240` (default 5) | Minutes per picture, for `rotate` and for the built-in sets. |
 | `background_color` | `"#0B0B0C"` | Behind everything. |
 | `animations`, `reduced_motion` | `true` / `false` | Turn effects down on slow TVs. |
 | `module_cards` | `true` | Allow app cards. |
@@ -98,7 +98,7 @@ Not available from this source (checked): the Egyptian, UAE, Qatari, Moroccan, K
 ## Wallpapers
 
 Two generated sets, no photos and no third-party images. Both are copied into the APK at build time
-(`syncWallpaperAssets` in `launcher/app/build.gradle`), so `"wallpaper_mode": "homelab"` or `"serene"` needs no push:
+(`syncWallpaperAssets` in `launcher/app/build.gradle`), so `"wallpaper_mode": "homelab"`, `"serene"` or `"kids"` needs no push:
 
 | Folder | Pictures | Made by | For |
 |---|---|---|---|

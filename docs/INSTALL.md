@@ -56,14 +56,17 @@ Copy `config/config.example.json` (or one of `config/examples/`), set your city 
 
 ```bash
 adb push config.json /sdcard/Android/data/com.gathin.tvhome/files/config.json
-adb shell mkdir -p /sdcard/Android/data/com.gathin.tvhome/files/wallpapers
-adb push wallpapers/homelab/. /sdcard/Android/data/com.gathin.tvhome/files/wallpapers/
-# Not needed for the built-in sets: set "wallpaper_mode" to "homelab", "serene" or "kids",
-# or pick them on the TV (hold OK on the Settings button > Launcher settings > Wallpapers).
 adb shell am force-stop com.gathin.tvhome
 ```
 
 Press HOME, then open tvhome again to see the result.
+
+**Wallpapers need no pushing.** The examples use `"wallpaper_mode": "serene"`, one of three sets built into the APK (`homelab`, `serene`, `kids`). Change the value, or pick a set or a plain colour on the TV (hold OK on the Settings button > Launcher settings > Wallpapers). To use your own pictures instead, set `"wallpaper_mode": "rotate"` and push them:
+
+```bash
+adb shell mkdir -p /sdcard/Android/data/com.gathin.tvhome/files/wallpapers
+adb push my-pictures/. /sdcard/Android/data/com.gathin.tvhome/files/wallpapers/
+```
 
 The launcher and its screensaver follow the TV's language. To show them in Arabic on a TV whose system language is English, without changing the TV language for every app, set `"language": "ar"` in `config.json` (works on every Android version), or give the launcher its own Android language (Android 13 and later; `adb shell cmd locale help` also explains how to clear it):
 
