@@ -58,8 +58,8 @@ Copy `config/config.example.json` (or one of `config/examples/`), set your city 
 adb push config.json /sdcard/Android/data/com.gathin.tvhome/files/config.json
 adb shell mkdir -p /sdcard/Android/data/com.gathin.tvhome/files/wallpapers
 adb push wallpapers/homelab/. /sdcard/Android/data/com.gathin.tvhome/files/wallpapers/
-# Not needed for the two built-in sets: set "wallpaper_mode": "homelab" or "serene",
-# or pick them on the TV in Launcher settings > Wallpapers.
+# Not needed for the built-in sets: set "wallpaper_mode" to "homelab", "serene" or "kids",
+# or pick them on the TV (hold OK on the Settings button > Launcher settings > Wallpapers).
 adb shell am force-stop com.gathin.tvhome
 ```
 

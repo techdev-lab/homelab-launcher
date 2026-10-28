@@ -2,12 +2,22 @@
 
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
+## 2.8.0 (2026-10-28)
+- **Launcher settings has everything a viewer needs** (hold OK on the Settings button): Language (TV language, Arabic, English: saved for the launcher and handed to Android as the app's own language), Apps per row, Wallpapers, Cards, Favourite clubs and Motion.
+- **Kids wallpapers**: six generated children's scenes (`wallpapers/kids/`, `wallpapers/gen-kids.html`), built into the APK; `wallpaper_mode` `kids`.
+- **Plain colours** instead of "no wallpaper": black, navy, teal, forest, burgundy, graphite (saved as `background_color`). The "My pictures" choice left the TV screen (it duplicated the pushed HomeLab set); `"wallpaper_mode": "rotate"` in config.json still shows your own pictures.
+- **Card switches**: prayer times, weather, football and my clubs can each be turned off on the TV. Weather keeps working with the prayer card off. The strip's widths follow the cards that are on.
+- **Motion** is one choice of three: Calm (soft fades), Lively (tiles lift, icons zoom) or Off.
+- **The strip cards take focus**: Up from the dock reaches them, Up again the top bar, Down returns. A focused card has a white edge that survives the clubs card's 5-second swap. OK on the clubs card shows the next club, on the rotating league or news card the next item, on the others it opens Launcher settings. Found on the TV: the strip's layout blocked focus on its children (`blocksDescendants`).
+- README in both languages: a table of what works right after installing the APK and what needs a computer once (Home button, YouTube button, screensaver), the Kids look, what's new in 2.8.
+
 ## 2.7.0 (2026-10-28)
 - **Ready-to-download APK.** A new `Release APK` workflow builds both flavors from a tag, signs them with the project key and publishes them on the Releases page with `SHA256SUMS.txt` (`docs/RELEASING.md`). File names: `HomeLab-Launcher-<version>.apk` (full) and `-offline.apk`.
 - **Two wallpaper sets inside the APK, picked on the TV.** *Launcher settings > Wallpapers*: **HomeLab** (6), **Serene** (10), *My pictures* (only when you pushed some) or *Plain*. New `wallpaper_mode` values `homelab` and `serene`; a fresh install with no config.json starts on Serene. The pictures are copied from `wallpapers/` into the APK at build time, so there is one copy in the repository. A theme push or *Follow theme* clears the on-TV choice, like the other look settings.
 - The "general" set from 2.6.0 is now called **Serene** (`wallpapers/serene/`, `wallpapers/gen-serene.py`); the pictures are unchanged.
 - The APK grows from about 0.5 MB to about 3 MB (the 16 wallpapers).
 - Tests: `WallpapersTest` covers the mode rules (TV choice first, then config, Serene on a fresh install, older themes keep their look).
+- Found on the TV: the Wallpapers row now reads right to left on an Arabic screen, like the columns row.
 
 ## 2.6.0 (2026-10-28)
 - **Favourite clubs.** Pick up to 10 clubs on the TV (Launcher settings > Favourite clubs) or in `config.json` (`favorite_teams`, ESPN team ids). A club card on the home screen shows each club's live or next match in **any** competition (league, King's Cup, AFC Champions League Elite, UEFA Champions League, domestic cups) and moves to the next club every 5 seconds (`club_rotate_seconds`, 3 to 60). A derby between two of your clubs shows once. The card shows "2/5" so you know more clubs follow. Online build only.

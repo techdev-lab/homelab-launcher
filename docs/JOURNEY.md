@@ -62,6 +62,11 @@ Serene, because a downloaded app should look finished before anyone writes a con
 And there is finally a **download**: a release workflow builds and signs both flavors from a tag, so a person can
 fetch a complete APK from the Releases page instead of trusting a file someone sent them.
 
+Later the same day, a full test on the TV turned up what a checklist had missed: the cards could not be reached with
+the arrows (their layout blocked focus), and two wallpaper choices showed the same pictures. So the settings screen
+grew into the one place a viewer needs: language, wallpapers (now with a **Kids** set and plain colours), which cards
+show, and the motion. Nothing there needs a computer.
+
 ## Lessons
 
 1. Read before you run, pin what you run, and keep private keys out of synced folders.

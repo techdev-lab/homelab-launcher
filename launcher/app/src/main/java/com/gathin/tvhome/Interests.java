@@ -50,6 +50,17 @@ final class Interests {
         final List<String> favoriteTeams;
         /** Seconds each club stays on the club card before the next one ("club_rotate_seconds", 3 to 60). */
         final int clubRotateSeconds;
+        /** Card switches from Launcher settings: a card that is off never shows, whatever config.json says. */
+        boolean showPrayer = true, showWeather = true, showSports = true, showClubs = true;
+
+        /** This settings object with the TV's card switches applied. */
+        Settings withCards(boolean prayer, boolean weather, boolean sports, boolean clubs) {
+            showPrayer = prayer;
+            showWeather = weather;
+            showSports = sports;
+            showClubs = clubs;
+            return this;
+        }
 
         Settings(String language, boolean hijriDate, String prayerCity, String prayerCityEn, double prayerLat,
                  double prayerLng, List<String> sportsLeagues, List<String> sportsTeams, List<String> newsFeeds,
@@ -103,11 +114,11 @@ final class Interests {
 
         /** Prayer times need a real place: 0,0 (the template's placeholder) or out-of-range values mean off. */
         boolean prayer() {
-            return validPlace(prayerLat, prayerLng);
+            return showPrayer && validPlace(prayerLat, prayerLng);
         }
 
         boolean wantsMatches() {
-            return !sportsLeagues.isEmpty() || !sportsCards.isEmpty();
+            return showSports && (!sportsLeagues.isEmpty() || !sportsCards.isEmpty());
         }
 
         /** Every league to fetch once: sports_leagues, then the ones only named in sports_cards. */
@@ -118,16 +129,16 @@ final class Interests {
         }
 
         boolean wantsClubs() {
-            return !favoriteTeams.isEmpty();
+            return showClubs && !favoriteTeams.isEmpty();
         }
 
         boolean wantsNews() {
             return !newsFeeds.isEmpty() || !newsFeedsEn.isEmpty();
         }
 
-        /** Weather uses the prayer place, so it needs the same real coordinates. */
+        /** Weather uses the prayer place, so it needs the same real coordinates (not the prayer card itself). */
         boolean wantsWeather() {
-            return weather && prayer();
+            return showWeather && weather && validPlace(prayerLat, prayerLng);
         }
     }
 

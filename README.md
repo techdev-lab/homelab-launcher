@@ -39,20 +39,22 @@ The stock Google TV home screen is a wall of ads and recommendations, it speaks 
 
 It is written for Muslim and Arabic-speaking households first, but it is not tied to one country: you choose the city for prayer times and the leagues for the football cards.
 
-**One app, two looks.** The same APK carries two wallpaper sets, picked with the remote in *Launcher settings > Wallpapers*:
+**One app, three looks.** The same APK carries three wallpaper sets, picked with the remote in *Launcher settings > Wallpapers*, plus six plain colours:
 
 | Look | For | Wallpapers |
 |---|---|---|
 | **HomeLab** | Home-lab and tech fans | Server racks, a cluster constellation, a terminal, circuits, a data-centre aisle |
 | **Serene** | Any home: your parents' TV, a guest room, a waiting room | Ten calm scenes: dusk, misty ridges, still water, dunes, night stars, aurora, sea at dawn... nothing personal |
+| **Kids** | A children's TV | A rocket in space, under the sea, a rainbow castle, friendly dinosaurs, balloons, a night garden |
+| **Plain colour** | Anyone who wants no picture | Black, navy, teal, forest, burgundy or graphite |
 
-A fresh install starts on **Serene**. You can also use your own pictures, or none.
+A fresh install starts on **Serene**. Got a Google TV for the children? Pick **Kids**, switch off the football cards, and it is ready.
 
-### What's new in 2.7
+### What's new in 2.8
 
-- **Download a ready APK** from [Releases](https://github.com/techdev-lab/homelab-launcher/releases/latest): no build tools needed.
-- **Wallpaper sets in the app:** HomeLab or Serene, chosen on the TV. Both are inside the APK.
-- **Favourite clubs** (2.6): up to 10 clubs, each one's next or live match in any competition, one club every 5 seconds.
+- **Everything on the TV, no computer needed** (hold OK on the Settings button > *Launcher settings*): the language (TV language, Arabic or English), the wallpapers (HomeLab, Serene, **Kids**, or a plain colour), **which cards show** (prayer times, weather, football, your clubs: each one on or off), and the **motion** (calm, lively or off).
+- **The cards answer the remote:** from the apps press Up to reach them. OK on the clubs card jumps to the next club; OK on the others opens the settings.
+- **A ready APK to download** from [Releases](https://github.com/techdev-lab/homelab-launcher/releases/latest) (2.7), and **favourite clubs** (2.6): up to 10 clubs, each one's next or live match in any competition.
 
 Full history: [CHANGELOG.md](CHANGELOG.md).
 
@@ -66,15 +68,26 @@ Full history: [CHANGELOG.md](CHANGELOG.md).
 
 Install it like any sideloaded app: `adb install HomeLab-Launcher-<version>.apk`, or copy it to the TV with an app such as *Send files to TV* or *Downloader* and open it there. It installs **next to** the stock home screen; making it the Home screen is a separate, reversible step ([INSTALL.md](docs/INSTALL.md)). Every release is built and signed by GitHub Actions from the tagged source ([how](docs/RELEASING.md)), so you do not need to trust a file sent by a person or an AI assistant.
 
+**What works straight after installing, and what needs a computer once.** Google TV keeps three things for its own apps, so they take one step with a computer and `adb` (all in [INSTALL.md](docs/INSTALL.md), and all reversible):
+
+| Feature | After installing the APK | How |
+|---|---|---|
+| Home screen with clock, Hijri date, prayer times, weather, football, clubs, wallpapers and all settings | Works: open *HomeLab Launcher* from your apps | Nothing to do |
+| Your city for prayer times and weather | Needs a config file | Copy an example from `config/examples`, push it once ([CONFIG.md](docs/CONFIG.md)) |
+| Open it with the Home button (replace Google's home screen) | Needs a computer once | `scripts/Set-TvhomeAsHome.ps1` ([INSTALL.md](docs/INSTALL.md) step 5) |
+| YouTube button on the remote | Needs a computer once | One `adb` command ([INSTALL.md](docs/INSTALL.md) step 6) |
+| Screensaver (gliding clock with the Hijri date and next prayer) | Needs a computer once | One `adb` command: Google TV's menu hides other screensavers (step 6) |
+
 ### What you get
 
 | | |
 |---|---|
-| **Arabic and English, end to end** | Follows the TV's language, or its own (`language` in the config, or Android's per-app language). In Arabic the whole screen is Arabic, right to left, including app names, league names and 114 team names, and the screensaver follows the same language. In English it is fully English. |
+| **Arabic and English, end to end** | Follows the TV's language, or its own: pick it in *Launcher settings*. In Arabic the whole screen is Arabic, right to left, including app names, league names and 156 team names, and the screensaver follows the same language. In English it is fully English. |
 | **Prayer times, offline** | Umm al-Qura method, computed on the TV from the coordinates you set. No network and no location lookup: the city is typed into the config. Checked against an independent source to within 2 minutes. |
 | **Hijri date** | Umm al-Qura calendar from the platform's ICU, next to the Gregorian date. |
 | **Football cards** | One card per league group, side by side, e.g. the Saudi Pro League and "the big European leagues". A live match first, otherwise the next kick-off within 7 days. |
-| **Wallpapers** | Two built-in sets, **HomeLab** and **Serene**, changing every few minutes; pick one on the TV, or use your own pictures. |
+| **Wallpapers** | Three built-in sets, **HomeLab**, **Serene** and **Kids**, changing every few minutes, or a plain colour; picked on the TV. Your own pictures still work through the config. |
+| **Settings on the TV** | Hold OK on the Settings button: language, apps per row, wallpapers, which cards show, favourite clubs, motion. No computer needed. |
 | **Favourite clubs** | Pick up to 10 clubs with the remote (Al Hilal, Al Nassr, Man City...). One card shows each club's live or next match in any competition, league, cup or continental, and moves to the next club every 5 seconds. |
 | **Weather** | Current conditions for the same city (Open-Meteo, free, no key). |
 | **Your dock** | Four apps of your choice on top (YouTube, Netflix, Shahid, Jellyfin, an IPTV player, anything), the rest in a grid. |
@@ -82,7 +95,7 @@ Install it like any sideloaded app: `adb install HomeLab-Launcher-<version>.apk`
 | **Screensaver** | A thin clock that glides around the screen with the Hijri date, the next prayer and a slow colour glow (no burn-in). |
 | **VPN indicator** | Set your VPN app (e.g. WireGuard) and the Wi-Fi pill shows a green "VPN" capsule while the tunnel is up, red when it dropped. |
 | **Two builds** | `online` (football, weather) and `offline` (no INTERNET permission at all). |
-| **Small and private** | About 3 MB with fonts and 16 wallpapers. No analytics, no accounts, no ads. The offline build cannot reach the network. |
+| **Small and private** | About 3.7 MB with fonts and 22 wallpapers. No analytics, no accounts, no ads. The offline build cannot reach the network. |
 
 | English | App grid | Screensaver |
 |---|---|---|
@@ -101,7 +114,7 @@ You need a Windows, macOS or Linux computer on the same Wi-Fi as the TV, and abo
    ```
 4. [Download the APK](https://github.com/techdev-lab/homelab-launcher/releases/latest) (or [build it](#build)) and install it as a normal app, the stock home stays:
    ```bash
-   adb install HomeLab-Launcher-2.7.0.apk
+   adb install HomeLab-Launcher-2.8.0.apk
    ```
 5. Copy `config/config.example.json`, set your city and leagues ([docs/CONFIG.md](docs/CONFIG.md)), push it:
    ```bash
@@ -130,7 +143,7 @@ The APKs land in `launcher/app/build/outputs/apk/<flavor>/release/`. They are si
 launcher/           Android app (Java), tests in app/src/test
 config/             config.example.json and ready examples for a few cities
 scripts/            PowerShell helpers: inventory, make-Home, one-shot kit, with a fake-TV test suite
-wallpapers/         generated wallpapers: homelab/ (6) and serene/ (10), built into the APK, with their generators
+wallpapers/         generated wallpapers built into the APK: homelab/ (6), serene/ (10), kids/ (6), with their generators
 docs/               install guide, config reference, design notes, the build story, AI prompts, screenshots
 ```
 
@@ -151,7 +164,7 @@ No analytics, no accounts, no crash reporting, no remote configuration. The full
 - Tested on **Chromecast with Google TV 4K** (`sabrina`, Android 14). The HD model (`boreal`) should behave the same but was not tested. Other Android TV devices: the app runs, the Home switch steps differ.
 - Prayer times use **Umm al-Qura** only. Countries with another official method (for example Egypt) may see a few minutes of difference. A `prayer_method` option is on the roadmap.
 - Football data comes from ESPN's public scoreboard. It has the Saudi Pro League, the big European leagues, the AFC and CAF Champions Leagues and the Gulf Cup, but **not** most Arab domestic leagues (Egypt, UAE, Qatar, Morocco were checked). Contributions of another free source are welcome.
-- Arabic team names cover the six leagues used here (114 teams). Unknown teams show in English. Adding a league is a JSON edit: see [CONTRIBUTING.md](CONTRIBUTING.md).
+- Arabic team names cover the Saudi league, the five big European leagues, the UEFA and AFC Champions League clubs (156 teams). Unknown teams show in English. Adding a league is a JSON edit: see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Contributing and support
 
@@ -181,20 +194,22 @@ MIT License, see [LICENSE](LICENSE).
 
 موجّه للبيوت المسلمة والعربية، لكنه مو مربوط بدولة: تختار مدينتك للصلاة، ودورياتك لبطاقات الكورة. المصري يحط دوري أبطال أفريقيا، والإماراتي دوري أبطال آسيا وكأس الخليج، والسعودي دوري روشن، وهكذا.
 
-**تطبيق واحد بشكلين.** نفس ملف APK فيه مجموعتين خلفيات، تختار بينهم بالريموت من *إعدادات المشغّل ← الخلفيات*:
+**تطبيق واحد بثلاث أشكال.** نفس ملف APK فيه ثلاث مجموعات خلفيات، تختار بينها بالريموت من *إعدادات المشغّل ← الخلفيات*، ومعها ستة ألوان سادة:
 
 | الشكل | لمين | الخلفيات |
 |---|---|---|
 | **هوم لاب** | محبين الهوم لاب والتقنية | خوادم، عنقود سيرفرات كالنجوم، شاشة أوامر، دوائر، ممر مركز بيانات |
 | **سكينة** | أي بيت: تلفزيون الوالد، مجلس الضيوف، صالة انتظار | عشر مناظر هادئة: الغروب، جبال في ضباب، ماء ساكن، كثبان، نجوم الليل، شفق، فجر على البحر… بدون أي شي شخصي |
+| **أطفال** | تلفزيون الصغار | صاروخ في الفضاء، تحت البحر، قلعة وقوس قزح، ديناصورات لطيفة، بالونات، حديقة الليل |
+| **لون سادة** | اللي ما يبي صورة | أسود، كحلي، فيروزي، أخضر، عنابي، رمادي |
 
-التثبيت الجديد يبدأ على **سكينة**. وتقدر تحط صورك الخاصة، أو بدون خلفية.
+التثبيت الجديد يبدأ على **سكينة**. **عندك جوجل تي في للأطفال؟** اختر خلفيات **أطفال**، وأطفئ بطاقات الكورة من الإعدادات، وصار جاهز لهم.
 
-### الجديد في 2.7
+### الجديد في 2.8
 
-- **ملف APK جاهز للتنزيل** من [صفحة الإصدارات](https://github.com/techdev-lab/homelab-launcher/releases/latest): ما تحتاج أدوات بناء.
-- **الخلفيات داخل التطبيق:** هوم لاب أو سكينة، تختارها من التلفزيون. الاثنتين داخل ملف APK.
-- **أنديتك المفضلة** (2.6): حتى 10 أندية، مباراة كل نادٍ الجاية أو المباشرة في أي بطولة، نادي كل 5 ثواني.
+- **كل شي من التلفزيون بدون كمبيوتر** (ضغطة مطوّلة على زر الإعدادات ← *إعدادات المشغّل*): اللغة (لغة التلفزيون أو العربية أو English)، والخلفيات (هوم لاب، سكينة، **أطفال**، أو لون سادة)، و**أي البطاقات تظهر** (مواقيت الصلاة، الطقس، الكورة، أنديتك: كل وحدة تشغّلها أو تطفيها)، و**الحركة** (هادئة، حيوية، بدون).
+- **البطاقات تتحرك لها بالأسهم:** من التطبيقات اضغط فوق توصلها. OK على بطاقة الأندية ينقلك للنادي اللي بعده، وعلى الباقي يفتح الإعدادات.
+- **ملف APK جاهز للتنزيل** من [صفحة الإصدارات](https://github.com/techdev-lab/homelab-launcher/releases/latest) (2.7)، و**أنديتك المفضلة** (2.6): حتى 10 أندية، مباراة كل نادٍ الجاية أو المباشرة في أي بطولة.
 
 كل التغييرات: [CHANGELOG.md](CHANGELOG.md).
 
@@ -208,15 +223,26 @@ MIT License, see [LICENSE](LICENSE).
 
 تثبّته مثل أي تطبيق من برا المتجر: `adb install HomeLab-Launcher-<الإصدار>.apk`، أو تنقله للتلفزيون بتطبيق مثل *Send files to TV* أو *Downloader* وتفتحه هناك. ينزل **جنب** الشاشة الأصلية، وتحويله للشاشة الرئيسية خطوة ثانية لها رجوع ([دليل التثبيت](docs/INSTALL.md)). كل إصدار يبنيه ويوقّعه GitHub Actions من الكود نفسه ([كيف](docs/RELEASING.md))، فما تحتاج تثق بملف أرسله لك شخص أو ذكاء اصطناعي.
 
+**وش يشتغل مباشرة بعد التثبيت، ووش يحتاج كمبيوتر مرة وحدة.** جوجل تي في يحتفظ بثلاث أشياء لتطبيقاته، فتحتاج خطوة وحدة بكمبيوتر و`adb` (كلها في [دليل التثبيت](docs/INSTALL.md)، وكلها لها رجوع):
+
+| الميزة | بعد تثبيت الملف | الطريقة |
+|---|---|---|
+| الشاشة الرئيسية: الساعة، الهجري، الصلاة، الطقس، الكورة، الأندية، الخلفيات، وكل الإعدادات | تشتغل: افتح *HomeLab Launcher* من تطبيقاتك | ما تسوي شي |
+| مدينتك للصلاة والطقس | تحتاج ملف إعدادات | انسخ مثال من `config/examples` وادفعه مرة ([الإعدادات](docs/CONFIG.md)) |
+| يفتح بزر الهوم (بدل شاشة جوجل) | كمبيوتر مرة وحدة | السكربت `scripts/Set-TvhomeAsHome.ps1` ([دليل التثبيت](docs/INSTALL.md) الخطوة 5) |
+| زر يوتيوب في الريموت | كمبيوتر مرة وحدة | أمر `adb` واحد ([دليل التثبيت](docs/INSTALL.md) الخطوة 6) |
+| شاشة التوقف (ساعة تنساب مع الهجري والصلاة الجاية) | كمبيوتر مرة وحدة | أمر `adb` واحد: قائمة جوجل تي في تخفي شاشات التوقف الثانية (الخطوة 6) |
+
 ### وش فيه؟
 
 | | |
 |---|---|
-| **عربي وإنجليزي بالكامل** | يتبع لغة التلفزيون، أو لغته الخاصة (مفتاح `language` في الإعدادات، أو لغة التطبيق في أندرويد). بالعربي الشاشة كلها عربي من اليمين لليسار، حتى أسماء التطبيقات (يوتيوب، شاهد، جيليفين…) والدوريات و114 فريقاً، وشاشة التوقف تتبع نفس اللغة. بالإنجليزي كلها إنجليزي. |
+| **عربي وإنجليزي بالكامل** | يتبع لغة التلفزيون، أو لغته الخاصة: تختارها من *إعدادات المشغّل*. بالعربي الشاشة كلها عربي من اليمين لليسار، حتى أسماء التطبيقات (يوتيوب، شاهد، جيليفين…) والدوريات و156 فريقاً، وشاشة التوقف تتبع نفس اللغة. بالإنجليزي كلها إنجليزي. |
 | **مواقيت الصلاة بدون إنترنت** | بطريقة أم القرى، تنحسب على الجهاز من إحداثيات مدينتك. بدون تحديد موقع: تكتب المدينة في الإعدادات. فرقها عن مصدر مستقل أقل من دقيقتين. |
 | **التاريخ الهجري** | تقويم أم القرى، جنب الميلادي. |
 | **بطاقات الكورة** | بطاقة لكل مجموعة دوريات جنب بعض، مثلاً: الدوري السعودي، والدوريات الأوروبية الكبرى. المباشر أولاً، وإلا أقرب مباراة خلال 7 أيام. |
-| **الخلفيات** | مجموعتين داخل التطبيق، **هوم لاب** و**سكينة**، تتبدّل كل كم دقيقة؛ تختار من التلفزيون، أو تحط صورك. |
+| **الخلفيات** | ثلاث مجموعات داخل التطبيق، **هوم لاب** و**سكينة** و**أطفال**، تتبدّل كل كم دقيقة، أو لون سادة؛ تختارها من التلفزيون. صورك الخاصة تشتغل من ملف الإعدادات. |
+| **الإعدادات من التلفزيون** | ضغطة مطوّلة على زر الإعدادات: اللغة، عدد التطبيقات في الصف، الخلفيات، أي البطاقات تظهر، الأندية المفضلة، الحركة. بدون كمبيوتر. |
 | **أنديتك المفضلة** | تختار حتى 10 أندية بالريموت (الهلال، النصر، مانشستر سيتي…). بطاقة وحدة تعرض مباراة كل نادٍ المباشرة أو الجاية في أي بطولة: الدوري أو الكأس أو النخبة الآسيوية أو أبطال أوروبا، وتنتقل للنادي اللي بعده كل 5 ثواني. |
 | **الطقس** | لنفس المدينة (Open-Meteo، مجاني وبدون مفتاح). |
 | **شريط تطبيقاتك** | أربع تطبيقات تختارها فوق (يوتيوب، نتفليكس، شاهد، جيليفين، برنامج IPTV، أي شي)، والباقي تحت في شبكة. |
@@ -224,7 +250,7 @@ MIT License, see [LICENSE](LICENSE).
 | **شاشة توقف** | ساعة رفيعة تنساب على الشاشة، معها الهجري والصلاة الجاية ووهج يتغيّر لونه بهدوء (تحمي الشاشة من الحرق). |
 | **علامة الـVPN** | لو حطيت تطبيق الـVPN (مثل WireGuard) في الإعدادات، يطلع جنب كلمة واي فاي **VPN بالأخضر** وقت ما يكون شغّال، وبالأحمر لو انقطع. |
 | **نسختين** | `online` (كورة وطقس) و`offline` (بدون صلاحية إنترنت أبداً). |
-| **خفيف وخاص** | حوالي 3 ميغابايت مع الخطوط و16 خلفية. لا تتبع ولا حسابات ولا إعلانات. نسخة offline ما تقدر توصل للإنترنت أصلاً. |
+| **خفيف وخاص** | حوالي 3.7 ميغابايت مع الخطوط و22 خلفية. لا تتبع ولا حسابات ولا إعلانات. نسخة offline ما تقدر توصل للإنترنت أصلاً. |
 
 | بالإنجليزي | شبكة التطبيقات | شاشة التوقف |
 |---|---|---|
@@ -244,7 +270,7 @@ MIT License, see [LICENSE](LICENSE).
    ```
 5. [نزّل ملف APK](https://github.com/techdev-lab/homelab-launcher/releases/latest) (أو ابنِه من قسم «بناء التطبيق» تحت) وثبّته كتطبيق عادي (الشاشة الأصلية تبقى):
    ```bash
-   adb install HomeLab-Launcher-2.7.0.apk
+   adb install HomeLab-Launcher-2.8.0.apk
    ```
 6. انسخ `config/config.example.json` أو ملف مدينة من مجلد `config/examples`، عدّل المدينة والدوريات والتطبيقات، وادفعه:
    ```bash

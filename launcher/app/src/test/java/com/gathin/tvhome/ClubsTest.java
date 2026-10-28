@@ -102,6 +102,24 @@ public class ClubsTest {
     }
 
     @Test
+    public void cardSwitchesTurnEachCardOffOnItsOwn() {
+        List<String> none = Collections.emptyList();
+        Interests.Settings on = new Interests.Settings("ar", true, "", "", 25.37, 49.59, Arrays.asList("ksa.1"), none,
+                none, none, true, Collections.emptyList(), Arrays.asList(HILAL), 5);
+        assertTrue(on.prayer() && on.wantsWeather() && on.wantsMatches() && on.wantsClubs());
+        Interests.Settings noPrayer = new Interests.Settings("ar", true, "", "", 25.37, 49.59, Arrays.asList("ksa.1"),
+                none, none, none, true, Collections.emptyList(), Arrays.asList(HILAL), 5)
+                .withCards(false, true, true, true);
+        assertFalse(noPrayer.prayer());
+        assertTrue("weather keeps the place when only the prayer card is off", noPrayer.wantsWeather());
+        Interests.Settings quiet = new Interests.Settings("ar", true, "", "", 25.37, 49.59, Arrays.asList("ksa.1"),
+                none, none, none, true, Collections.emptyList(), Arrays.asList(HILAL), 5)
+                .withCards(true, false, false, false);
+        assertTrue(quiet.prayer());
+        assertFalse(quiet.wantsWeather() || quiet.wantsMatches() || quiet.wantsClubs());
+    }
+
+    @Test
     public void settingsWithoutClubsDoNotWantThem() {
         assertFalse(Interests.Settings.NONE.wantsClubs());
         List<String> none = Collections.emptyList();

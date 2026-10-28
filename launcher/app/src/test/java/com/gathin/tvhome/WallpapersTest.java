@@ -32,6 +32,8 @@ public class WallpapersTest {
     public void builtInSetsAreKnown() {
         assertTrue(Wallpapers.builtIn("homelab"));
         assertTrue(Wallpapers.builtIn("serene"));
+        assertTrue(Wallpapers.builtIn("kids"));
+        assertEquals("kids", Wallpapers.mode("kids", "rotate", true, true));
         assertFalse(Wallpapers.builtIn("rotate"));
         assertFalse(Wallpapers.builtIn(null));
     }

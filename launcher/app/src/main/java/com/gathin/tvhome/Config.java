@@ -39,6 +39,12 @@ final class Config {
     static final String FAVORITE_TEAMS_KEY = "favorite_teams";
     /** Wallpaper set picked on the TV (Wallpapers modes); a theme push or "Follow theme" clears it. */
     static final String WALLPAPER_MODE_KEY = "wallpaper_mode";
+    /** Plain background colour picked on the TV (an ARGB int); cleared with the other look choices. */
+    static final String BACKGROUND_COLOR_KEY = "background_color";
+    /** Launcher language picked on the TV: "system", "ar" or "en"; wins over config.json "language". */
+    static final String LANGUAGE_KEY = "language";
+    /** Which strip cards show, picked on the TV: prayer, weather, football leagues, favourite clubs. */
+    static final String[] CARD_KEYS = {"card_prayer", "card_weather", "card_football", "card_clubs"};
     private static final String THEME_REVISION_NAME = "theme_revision";
     private static final String THEME_SIGNATURE_KEY = "theme_signature";
 
@@ -197,6 +203,7 @@ final class Config {
         if (chosenColumns >= 4 && chosenColumns <= 7) columns = chosenColumns;
         animations = choices.getBoolean("animations", animations);
         advancedEffects = choices.getBoolean("advanced_effects", advancedEffects);
+        if (choices.contains(BACKGROUND_COLOR_KEY)) background = 0xFF000000 | choices.getInt(BACKGROUND_COLOR_KEY, background);
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
         if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
         // A theme can also switch the wallpaper off while the file is still there.
@@ -255,9 +262,11 @@ final class Config {
             if (clubs.isEmpty()) return Interests.Settings.NONE;
             return new Interests.Settings("system", false, "", "", Double.NaN, Double.NaN, new ArrayList<>(),
                     new ArrayList<>(), new ArrayList<>(), new ArrayList<>(), Feeds.AVAILABLE, new ArrayList<>(),
-                    clubs, rotate);
+                    clubs, rotate).withCards(true, true, true, choices.getBoolean(CARD_KEYS[3], true));
         }
-        return new Interests.Settings(language(json), bool(json, "hijri_date", false),
+        String lang = choices.getString(LANGUAGE_KEY, "");
+        if (!"ar".equals(lang) && !"en".equals(lang) && !"system".equals(lang)) lang = language(json);
+        return new Interests.Settings(lang, bool(json, "hijri_date", false),
                 string(json, "prayer_city", ""), string(json, "prayer_city_en", ""),
                 number(json, "prayer_lat"), number(json, "prayer_lng"),
                 stringList(json, "sports_leagues", new ArrayList<>()),
@@ -266,7 +275,9 @@ final class Config {
                 stringList(json, "news_feeds_en", new ArrayList<>()),
                 // The offline build has no network, so the key cannot switch it on there.
                 Feeds.AVAILABLE && bool(json, "weather", true),
-                leagueGroups(json, "sports_cards"), clubs, rotate);
+                leagueGroups(json, "sports_cards"), clubs, rotate).withCards(
+                choices.getBoolean(CARD_KEYS[0], true), choices.getBoolean(CARD_KEYS[1], true),
+                choices.getBoolean(CARD_KEYS[2], true), choices.getBoolean(CARD_KEYS[3], true));
     }
 
     /** Team ids may be written as strings ("929") or numbers (929); both are read as text. */
@@ -307,6 +318,8 @@ final class Config {
      * whole screen, layout-ar included, comes up in that language. "system" leaves the TV's language.
      */
     static String language(Context ctx) {
+        String chosen = ctx.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE).getString(LANGUAGE_KEY, "");
+        if ("ar".equals(chosen) || "en".equals(chosen) || "system".equals(chosen)) return chosen;
         File dir = dir(ctx);
         JSONObject json = read(dir != null ? new File(dir, FILE_NAME) : null);
         return json == null ? "system" : language(json);
@@ -327,10 +340,10 @@ final class Config {
             // explicit theme push or reset by the updated tools.
             SharedPreferences.Editor editor = choices.edit();
             if (!"absent".equals(token)) editor.remove("columns").remove("animations")
-                    .remove("advanced_effects").remove(WALLPAPER_MODE_KEY);
+                    .remove("advanced_effects").remove(WALLPAPER_MODE_KEY).remove(BACKGROUND_COLOR_KEY);
             editor.putString(THEME_SIGNATURE_KEY, signature).commit();
         } else if (!seen.equals(signature)) {
-            choices.edit().remove("columns").remove("animations").remove("advanced_effects").remove(WALLPAPER_MODE_KEY)
+            choices.edit().remove("columns").remove("animations").remove("advanced_effects").remove(WALLPAPER_MODE_KEY).remove(BACKGROUND_COLOR_KEY)
                     .putString(THEME_SIGNATURE_KEY, signature).commit();
         }
     }

@@ -463,8 +463,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
             if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return true;
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-                // Back to the dock tile Up came from, not wherever the focus finder lands.
-                focusTile(lastFocused % COLUMNS);
+                // The strip cards under the bar, else back to the dock tile Up came from.
+                if (!focusNearestCard(v)) focusTile(lastFocused % COLUMNS);
                 return true;
             }
             int firstButton = btnInputs.getVisibility() == View.VISIBLE ? R.id.btnInputs : R.id.btnWifi;
@@ -960,6 +960,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             d.setColor(Glass.cardFill(c));
             d.setStroke(stroke, Glass.edge(c));
         }
+        // A strip card under focus keeps its white edge through every repaint (the club card swaps every 5 s).
+        View focusedCard = interestsStrip == null ? null : interestsStrip.getFocusedChild();
+        if (focusedCard != null && focusedCard.getBackground() instanceof GradientDrawable) {
+            ((GradientDrawable) focusedCard.getBackground()).setStroke(Math.round(2 * density), 0xFFFFFFFF);
+        }
     }
 
     /** Remote buttons mapped in config.json "app_keys" (default: the YouTube button, 190), while Home is in front. */
@@ -1038,7 +1043,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     rtlAppGrid, keyCode == KeyEvent.KEYCODE_DPAD_LEFT);
         }
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            if (position < COLUMNS) return false;          // dock row: let focus move to the top bar
+            if (position < COLUMNS) {
+                // Dock row: the strip cards first, the top bar when the strip shows nothing.
+                return focusNearestCard(getCurrentFocus());
+            }
             target = position - COLUMNS;
         } else {
             int lastRowStart = ((count - 1) / COLUMNS) * COLUMNS;
@@ -1148,26 +1156,35 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
     }
 
-    /** Rebuilds the strip, once a minute and after each fetch. Display only: nothing in it takes focus. */
+    /**
+     * Rebuilds the strip, once a minute and after each fetch. Its cards take focus between the dock and the top bar:
+     * OK on the club card shows the next club, on the rotating league or news card the next item, on the others
+     * Launcher settings (where each card can be switched off).
+     */
     private void updateInterests() {
         if (interestsStrip == null) return;
         boolean ar = arabic();
         glassCards.clear();
         List<View> cards = new ArrayList<>();
-        if (interestsCfg.prayer()) cards.add(prayerCard(ar));
+        int focusedCard = focusedCardIndex();
+        if (interestsCfg.prayer()) cards.add(onCardClick(prayerCard(ar), this::openLauncherSettings));
         Interests.Weather w = weather;
-        if (w != null) cards.add(weatherCard(w, ar));
+        if (w != null && interestsCfg.wantsWeather()) cards.add(onCardClick(weatherCard(w, ar), this::openLauncherSettings));
         // One match per league (a live one, else the next), shown in turn: a Champions League game that is live
         // tonight must not hide the Saudi league's next round, and the other way round.
         long now = System.currentTimeMillis();
-        if (!interestsCfg.sportsCards.isEmpty()) {
+        if (!interestsCfg.wantsMatches()) {
+            // Football switched off on the TV: no league card at all.
+        } else if (!interestsCfg.sportsCards.isEmpty()) {
             // sports_cards: one card per league group, side by side (e.g. the Saudi league and the big foreign ones).
             for (Interests.Match m : Interests.pickCards(matches, interestsCfg.sportsCards, interestsCfg.sportsTeams, now)) {
-                cards.add(matchCard(m, ar));
+                cards.add(onCardClick(matchCard(m, ar), this::openLauncherSettings));
             }
         } else {
             List<Interests.Match> picks = Interests.pickMatches(matches, interestsCfg.sportsTeams, now);
-            if (!picks.isEmpty()) cards.add(matchCard(picks.get(matchIndex++ % picks.size()), ar));
+            // OK on the rotating card shows the next league at once.
+            if (!picks.isEmpty()) cards.add(onCardClick(matchCard(picks.get(matchIndex++ % picks.size()), ar),
+                    this::updateInterests));
         }
         clubCard = null;
         if (interestsCfg.wantsClubs()) {
@@ -1175,18 +1192,20 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (!clubs.isEmpty()) cards.add(clubCard = clubCard(clubs, ar));
         }
         List<Interests.Headline> h = headlines;
-        if (!h.isEmpty()) cards.add(newsCard(h.get(headlineIndex++ % h.size()), ar));
+        if (!h.isEmpty()) cards.add(onCardClick(newsCard(h.get(headlineIndex++ % h.size()), ar), this::updateInterests));
         boolean rtl = getResources().getBoolean(R.bool.rtl_menu_bar);
         if (rtl) Collections.reverse(cards);
         interestsStrip.removeAllViews();
-        // Prayer 1.4 + match 1 + news 1 (+ weather 0.8 when it is on): the full strip. Fewer cards keep their size
-        // and leave the rest empty. The sum follows the setting, not the fetch, so a failed fetch moves nothing.
-        // With sports_cards: prayer 1.4 + one per match card + news 1 only when news is on.
-        float sum = interestsCfg.sportsCards.isEmpty() ? 3.4f
-                : 1.4f + interestsCfg.sportsCards.size() + (interestsCfg.wantsNews() ? 1f : 0f);
-        // The club card takes the match card's place when no league is set, else it adds one more share.
-        if (interestsCfg.wantsClubs() && interestsCfg.wantsMatches()) sum += 1f;
-        interestsStrip.setWeightSum(interestsCfg.wantsWeather() ? sum + WEATHER_WEIGHT : sum);
+        // Shares follow the settings, not the fetch, so a failed fetch moves nothing: prayer 1.4, weather 0.8, one per
+        // league card, one for the clubs, one for news. Never less than the classic strip (prayer, match, news, 3.4),
+        // so a lone card keeps its size instead of stretching across the screen.
+        float sum = 0f;
+        if (interestsCfg.prayer()) sum += 1.4f;
+        if (interestsCfg.wantsWeather()) sum += WEATHER_WEIGHT;
+        if (interestsCfg.wantsMatches()) sum += interestsCfg.sportsCards.isEmpty() ? 1f : interestsCfg.sportsCards.size();
+        if (interestsCfg.wantsClubs()) sum += 1f;
+        if (interestsCfg.wantsNews()) sum += 1f;
+        interestsStrip.setWeightSum(Math.max(sum, 3.4f));
         tintGlass(ambientColor);
         for (int i = 0; i < cards.size(); i++) {
             View c = cards.get(i);
@@ -1197,6 +1216,82 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         interestsStrip.setVisibility(cards.isEmpty() ? View.GONE : View.VISIBLE);
         reserveHeroBand(!cards.isEmpty());
+        // The strip is rebuilt every minute: a card that had focus hands it to the card now in its place.
+        if (focusedCard >= 0) {
+            if (!cards.isEmpty()) interestsStrip.getChildAt(Math.min(focusedCard, cards.size() - 1)).requestFocus();
+            else focusTile(lastFocused % COLUMNS);
+        }
+    }
+
+    // ---- strip cards and the D-pad: dock <-> cards <-> top bar --------------------------------------
+
+    private int focusedCardIndex() {
+        if (interestsStrip == null || !interestsStrip.hasFocus()) return -1;
+        for (int i = 0; i < interestsStrip.getChildCount(); i++) {
+            if (interestsStrip.getChildAt(i).hasFocus()) return i;
+        }
+        return -1;
+    }
+
+    private View onCardClick(View card, Runnable action) {
+        card.setOnClickListener(v -> action.run());
+        return card;
+    }
+
+    private void openLauncherSettings() {
+        startActivityForResult(new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST);
+    }
+
+    /** The strip card closest to {@code from} horizontally, focused; false when the strip shows nothing. */
+    private boolean focusNearestCard(View from) {
+        if (interestsStrip == null || interestsStrip.getVisibility() != View.VISIBLE
+                || interestsStrip.getChildCount() == 0) return false;
+        View best = interestsStrip.getChildAt(0);
+        for (int i = 1; i < interestsStrip.getChildCount(); i++) best = nearest(from, best, interestsStrip.getChildAt(i));
+        return best.requestFocus();
+    }
+
+    /** The top-bar button closest to {@code from} horizontally. */
+    private void focusNearestButton(View from) {
+        View best = btnWifi;
+        for (View b : new View[]{btnInputs, findViewById(R.id.btnSettings)}) {
+            if (b != null && b.getVisibility() == View.VISIBLE) best = nearest(from, best, b);
+        }
+        best.requestFocus();
+    }
+
+    private static View nearest(View from, View a, View b) {
+        if (from == null) return a;
+        float x = centreX(from);
+        return Math.abs(centreX(b) - x) < Math.abs(centreX(a) - x) ? b : a;
+    }
+
+    private static float centreX(View v) {
+        int[] at = new int[2];
+        v.getLocationOnScreen(at);
+        return at[0] + v.getWidth() / 2f;
+    }
+
+    /** Focus look and arrow keys of a strip card: Up to the top bar, Down to the dock, no wrap at the ends. */
+    private void makeCardFocusable(LinearLayout c) {
+        c.setFocusable(true);
+        c.setClickable(true);
+        // A white edge only, no zoom: the outer cards sit on the strip's edge, where a zoom would be clipped.
+        c.setOnFocusChangeListener((v, focused) -> tintGlass(ambientColor));
+        c.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
+                focusNearestButton(v);
+                return true;
+            }
+            if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                focusTile(lastFocused % COLUMNS);
+                return true;
+            }
+            int at = interestsStrip.indexOfChild(v);
+            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) return at == 0;
+            return keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && at == interestsStrip.getChildCount() - 1;
+        });
     }
 
     private View prayerCard(boolean ar) {
@@ -1276,6 +1371,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             TextView league = (TextView) c.getChildAt(1);
             league.setText(league.getText() + count);
         }
+        // OK on the club card skips to the next club, and the 5-second timer starts again from there.
+        c.setOnClickListener(v -> {
+            handler.removeCallbacks(clubTick);
+            clubTick.run();
+        });
         return c;
     }
 
@@ -1291,9 +1391,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         glassCards.remove(old.getBackground());
         View next = clubCard(clubs, arabic());
         next.setLayoutParams(lp);
+        boolean hadFocus = old.hasFocus();
         interestsStrip.removeViewAt(at);
         interestsStrip.addView(next, at);
         clubCard = next;
+        if (hadFocus) next.requestFocus();
         tintGlass(ambientColor);
         if (animations && !reducedMotion) {
             next.setAlpha(0f);
@@ -1347,7 +1449,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // MATCH_PARENT inside the wrap_content strip: LinearLayout measures every card to the tallest one, so the
         // row reads as one band instead of boxes of four different heights.
         c.setLayoutParams(new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.MATCH_PARENT, weight));
-        c.setFocusable(false);
+        makeCardFocusable(c);
         c.addView(cardText(meta, 13, live ? R.color.theme_red : R.color.theme_dim, true));
         if (sub != null) c.addView(cardText(sub, 13, R.color.theme_dim, true));
         TextView t = cardText(title, 16, R.color.theme_sand, false);

@@ -48,7 +48,7 @@ final class Language {
         return base.createConfigurationContext(c);
     }
 
-    private static String appLocaleTag(Context base) {
+    static String appLocaleTag(Context base) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return null;
         LocaleManager manager = base.getSystemService(LocaleManager.class);
         if (manager == null) return null;
