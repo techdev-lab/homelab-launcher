@@ -129,7 +129,7 @@
     <string name="text_size_small">Small</string>
     <string name="text_size_medium">Medium</string>
     <string name="text_size_large">Large</string>
-    <string name="text_size_hint">The cards on the home screen: small fits 5 in a row, medium 4, large 3. The rest move to the next row.</string>
+    <string name="text_size_hint">The cards on the home screen: small shows 5, medium 4, large 3. When there are more, the last place shows the rest in turn.</string>
     <string name="prayer_method_unknown">Unknown prayer method: %1$s</string>
     <string name="prayer_method_label">Prayer times</string>
     <string name="prayer_method_choice">Method: %1$s</string>

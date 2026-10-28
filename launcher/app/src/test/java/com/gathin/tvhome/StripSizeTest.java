@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
@@ -32,16 +31,16 @@ public class StripSizeTest {
     }
 
     @Test
-    public void rowsKeepOrderAndDropNothing() {
-        List<String> five = Arrays.asList("prayer", "clubs", "league", "weather", "news");
-        assertEquals(Collections.singletonList(five), StripSize.rows(five, 5));
-        List<List<String>> large = StripSize.rows(five, 3);
-        assertEquals(2, large.size());
-        assertEquals(Arrays.asList("prayer", "clubs", "league"), large.get(0));
-        assertEquals(Arrays.asList("weather", "news"), large.get(1));
-        assertEquals(2, StripSize.rows(five, 4).size());
-        assertEquals(0, StripSize.rows(Collections.<String>emptyList(), 3).size());
-        assertEquals(5, StripSize.rows(five, 0).size());
+    public void oneRowAndTheRestTakeTurnsInTheLastPlace() {
+        List<String> five = Arrays.asList("prayer", "clubs", "ksa", "europe", "weather");
+        assertEquals(five, StripSize.visible(five, 5, 7));
+        assertTrue(!StripSize.shared(5, 5) && StripSize.shared(5, 3));
+        assertEquals(Arrays.asList("prayer", "clubs", "ksa"), StripSize.visible(five, 3, 0));
+        assertEquals(Arrays.asList("prayer", "clubs", "europe"), StripSize.visible(five, 3, 1));
+        assertEquals(Arrays.asList("prayer", "clubs", "weather"), StripSize.visible(five, 3, 2));
+        assertEquals(Arrays.asList("prayer", "clubs", "ksa"), StripSize.visible(five, 3, 3));
+        assertEquals(Arrays.asList("prayer", "clubs", "ksa", "weather"), StripSize.visible(five, 4, 1));
+        assertEquals(Arrays.asList("prayer", "clubs", "europe"), StripSize.visible(five, 3, -2));
     }
 
     @Test

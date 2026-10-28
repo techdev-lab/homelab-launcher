@@ -45,7 +45,7 @@ The method is **Umm al-Qura** (Fajr 18.5°, Isha 90 minutes after Maghrib, 120 i
 | `sports_teams` | `["Al Hilal"]` | Only matches with one of these teams (case-insensitive, either side). Empty keeps all. |
 | `favorite_teams` | `["929", "817", "382"]` | Your clubs, up to 10, by ESPN team id. One extra card shows each club's live or next two matches (within 21 days) in any competition, one match at a time, with a gold star; any league card with one of these clubs gets the star too. Clubs picked on the TV (Launcher settings > Favourite clubs) take priority; "Clear" there goes back to this list. |
 | `club_rotate_seconds` | `5` (default) | Seconds per match on the club card, 3 to 60. |
-| `text_size` | `small` (default), `medium`, `large` | Text size of the home screen's cards: 5, 4 or 3 cards in a row, the rest on the next row. The TV's choice (Launcher settings > Text size) wins and a theme push does not clear it. |
+| `text_size` | `small` (default), `medium`, `large` | Text size of the home screen's cards: 5, 4 or 3 places in the one row; the last place shows the remaining cards in turn. The TV's choice (Launcher settings > Text size) wins and a theme push does not clear it. |
 
 **Finding a team id.** The picker on the TV covers 136 clubs. For any other club, open
 `https://site.api.espn.com/apis/site/v2/sports/soccer/<league>/teams` (for example `ksa.1`) and use the `id` next to the

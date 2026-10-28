@@ -64,6 +64,22 @@ public class ClubsTest {
     }
 
     @Test
+    public void derbyCopiesDoNotHideTheNextMatch() {
+        // Al Hilal and Al Fateh both picked: their league match comes once from each schedule. Al Hilal's AFC match
+        // must still be its second match (on the TV the two copies filled both places).
+        String fateh = "13033";
+        Interests.Match derby = m("ksa.1", HILAL, fateh, Interests.Match.PRE, NOW + 72 * HOUR);
+        Interests.Match afc = m("afc.champions", HILAL, "790", Interests.Match.PRE, NOW + 6 * 24 * HOUR);
+        Interests.Match fatehNext = m("ksa.1", "21827", fateh, Interests.Match.PRE, NOW + 8 * 24 * HOUR);
+        java.util.List<Interests.Match> all = Arrays.asList(derby, afc, derby, fatehNext);
+        java.util.List<Interests.Match> picks = Interests.pickClubs(all, Arrays.asList(HILAL, fateh), NOW);
+        assertEquals(3, picks.size());
+        assertEquals("ksa.1", picks.get(0).code);
+        assertEquals("afc.champions", picks.get(1).code);
+        assertEquals("21827", picks.get(2).homeId);
+    }
+
+    @Test
     public void starFollowsTheTeamIdOnEitherSide() {
         List<String> favs = Arrays.asList(HILAL, NASSR);
         assertTrue(Interests.involvesFavorite(m("ksa.1", HILAL, "13033", Interests.Match.PRE, NOW), favs));

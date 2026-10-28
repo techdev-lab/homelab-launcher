@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -223,6 +222,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private final Runnable minuteTick = new Runnable() {
         @Override
         public void run() {
+            keepLanguage();
             updateGreeting();
             updateWifiLabel();
             sky.update();
@@ -257,19 +257,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     };
 
-    /** config.json "language": "ar" or "en" sets the launcher's language (layout-ar included) over the TV's. */
+    /**
+     * The launcher's language (layout-ar included) over the TV's: config.json "language" or the TV choice, else the
+     * launcher's own Android language (Launcher settings or cmd locale set-app-locales). Same rule as ClockDream.
+     */
     @Override
     protected void attachBaseContext(Context base) {
-        String lang = Config.language(base);
-        if (!"system".equals(lang)) {
-            Locale locale = new Locale(lang);
-            // TextClock (the Gregorian date) formats with the process default, not the context's locale.
-            Locale.setDefault(locale);
-            Configuration c = new Configuration(base.getResources().getConfiguration());
-            c.setLocale(locale);
-            base = base.createConfigurationContext(c);
-        }
-        super.attachBaseContext(base);
+        super.attachBaseContext(Language.wrap(base));
     }
 
     @Override
@@ -601,6 +595,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         if (rebuildOnResume) reloadApps(true);
         rebuildOnResume = false;
+        keepLanguage();
         updateGreeting();
         updateWifiLabel();
         updateInputsButton();
@@ -610,6 +605,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (Feeds.AVAILABLE && (interestsCfg.wantsMatches() || interestsCfg.wantsNews()
                 || interestsCfg.wantsWeather() || interestsCfg.wantsClubs())) handler.post(feedTick);
         if (interestsCfg.wantsClubs()) handler.postDelayed(clubTick, interestsCfg.clubRotateSeconds * 1000L);
+        handler.postDelayed(stripTick, STRIP_TURN_MS);
         if (festive && diya != null) {
             diya.start();
             LocalDate today = LocalDate.now();
@@ -685,6 +681,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         handler.removeCallbacks(minuteTick);
         handler.removeCallbacks(feedTick);
         handler.removeCallbacks(clubTick);
+        handler.removeCallbacks(stripTick);
         if (diya != null) diya.stop();
         // Nothing of ours stays on screen over another app.
         if (openPopup != null) openPopup.dismiss();
@@ -713,6 +710,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public void onBackPressed() {
         // Home screen: Back goes nowhere.
+    }
+
+    /**
+     * TextClock (the clock and the Gregorian date) formats with the process default locale, and Android puts the TV's
+     * language back there (ClockDream found the same): an Arabic home screen showed "WEDNESDAY 28 OCTOBER" and Latin
+     * digits on the TV in 2.9.0 testing. Put the screen's language back and make the clocks format again.
+     */
+    private void keepLanguage() {
+        Locale want = getResources().getConfiguration().getLocales().get(0);
+        if (want.equals(Locale.getDefault())) return;
+        Locale.setDefault(want);
+        for (int id : new int[]{R.id.clock, R.id.ampm, R.id.date}) {
+            View v = findViewById(id);
+            if (v instanceof android.widget.TextClock) {
+                android.widget.TextClock c = (android.widget.TextClock) v;
+                c.setFormat12Hour(c.getFormat12Hour());
+                c.setFormat24Hour(c.getFormat24Hour());
+            }
+        }
     }
 
     // ---- glass highlight -------------------------------------------------------------------------
@@ -1118,7 +1134,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * Rebuilds the strip, once a minute and after each fetch. Its cards take focus between the dock and the top bar:
      * OK on the club card shows the next club match, on the rotating league or news card the next item, on the
      * others Launcher settings (where each card can be switched off). The text size (Launcher settings) sets how
-     * many cards share a row: 5, 4 or 3; the rest wrap to the next row, none is dropped.
+     * many places the one row has: 5, 4 or 3; when there are more cards, the last place shows the rest in turn
+     * (every {@link #STRIP_TURN_MS}, or OK on it).
      */
     private void updateInterests() {
         if (interestsStrip == null) return;
@@ -1127,7 +1144,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         int focusedCard = focusedCardIndex();
         long now = System.currentTimeMillis();
         // Order: prayer, the favourite clubs, the leagues, weather, news. The clubs come before the leagues so the
-        // viewer's own teams are the first football card, and a large text size wraps the least wanted cards.
+        // viewer's own teams are the first football card, and a large text size rotates the least wanted ones.
         List<View> cards = new ArrayList<>();
         if (interestsCfg.prayer()) cards.add(onCardClick(prayerCard(ar), this::openLauncherSettings));
         clubCard = null;
@@ -1158,7 +1175,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         interestsStrip.removeAllViews();
         int perRow = StripSize.perRow(textSize);
         boolean rtl = getResources().getBoolean(R.bool.rtl_menu_bar);
-        List<List<View>> rows = StripSize.rows(cards, perRow);
+        stripShared = StripSize.shared(cards.size(), perRow);
+        cards = StripSize.visible(cards, perRow, stripTurn);
+        if (stripShared) {
+            // The shared last place: the same width whichever card has its turn, and OK shows the next one.
+            View last = cards.get(cards.size() - 1);
+            ((LinearLayout.LayoutParams) last.getLayoutParams()).weight = 1f;
+            if (last != clubCard) last.setOnClickListener(v -> nextStripTurn());
+        }
+        List<List<View>> rows = Collections.singletonList(cards);
         tintGlass(ambientColor);
         for (int r = 0; r < rows.size(); r++) {
             List<View> row = new ArrayList<>(rows.get(r));
@@ -1192,6 +1217,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (!shown.isEmpty()) shown.get(Math.min(focusedCard, shown.size() - 1)).requestFocus();
             else focusTile(lastFocused % COLUMNS);
         }
+    }
+
+    /** Seconds a card keeps the shared last place of the strip before the next one takes it. */
+    private static final long STRIP_TURN_MS = 8_000L;
+    /** Which of the cards that share the last place is shown; counts up. */
+    private int stripTurn;
+    /** True while some cards share the last place (more cards than the text size has places). */
+    private boolean stripShared;
+    private final Runnable stripTick = new Runnable() {
+        @Override
+        public void run() {
+            if (stripShared) nextStripTurn();
+            handler.postDelayed(this, STRIP_TURN_MS);
+        }
+    };
+
+    private void nextStripTurn() {
+        stripTurn++;
+        updateInterests();
     }
 
     // ---- strip cards and the D-pad: dock <-> cards <-> top bar --------------------------------------
@@ -1334,7 +1378,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         StringBuilder all = new StringBuilder();
         for (int i : Prayer.FIVE) {
             if (all.length() > 0) all.append("  ");
-            all.append(names[i]).append(' ').append(Prayer.clock(t[i], twelve));
+            // A no-break space between name and time: a narrow card wraps between prayers, never inside one
+            // (at Large, "Maghrib" ended one line and its time began the next).
+            all.append(names[i]).append('\u00A0').append(Prayer.clock(t[i], twelve));
         }
         LinearLayout c = card(meta, false, title, big, 1.4f);
         // Up to two lines: the five times do not fit one line in a lone prayer card on every font and locale

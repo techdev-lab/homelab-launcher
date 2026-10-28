@@ -124,7 +124,7 @@
     <string name="text_size_small">صغير</string>
     <string name="text_size_medium">متوسط</string>
     <string name="text_size_large">كبير</string>
-    <string name="text_size_hint">بطاقات الشاشة الرئيسية: الصغير يعرض ٥ في الصف، والمتوسط ٤، والكبير ٣. والباقي ينزل للصف التالي.</string>
+    <string name="text_size_hint">بطاقات الشاشة الرئيسية: الصغير يعرض ٥، والمتوسط ٤، والكبير ٣. ولو زادت، آخر مكان يعرض الباقي بالتناوب.</string>
     <string name="prayer_method_unknown">طريقة حساب الصلاة غير معروفة: %1$s</string>
     <string name="prayer_method_label">مواقيت الصلاة</string>
     <string name="prayer_method_choice">طريقة الحساب: %1$s</string>

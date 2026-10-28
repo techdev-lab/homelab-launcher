@@ -54,7 +54,7 @@ A fresh install starts on **Serene**. Got a Google TV for the children? Pick **K
 
 - **Prayer methods:** 14 methods and Hanafi Asr, picked on the TV; and the **Egyptian, UAE, Qatari and Moroccan leagues** (next kick-off).
 - **Your clubs stand out:** a gold star on every match of your favourite clubs, and each club's next two matches, so Al Hilal's AFC Champions League Elite game shows next to the league one.
-- **Text size** on the TV: Small, Medium or Large (5, 4 or 3 cards in a row).
+- **Text size** on the TV: Small, Medium or Large (5, 4 or 3 cards; the rest take turns in the last place).
 - A short kick-off line that no longer gets cut or reversed in Arabic, and a new font, **IBM Plex Sans Arabic**.
 - Module cards and Move mode, which never worked with the remote, are gone.
 
@@ -217,7 +217,7 @@ MIT License, see [LICENSE](LICENSE).
 
 - **طرق حساب الصلاة:** 14 طريقة والعصر الحنفي من التلفزيون؛ و**الدوري المصري والإماراتي والقطري والمغربي** (المباراة الجاية).
 - **أنديتك واضحة:** نجمة ذهبية على كل مباراة لأنديتك المفضلة، ومباراتين لكل نادٍ، فتطلع مباراة الهلال في النخبة الآسيوية جنب مباراة الدوري.
-- **حجم النص** من التلفزيون: صغير أو متوسط أو كبير (٥ أو ٤ أو ٣ بطاقات في الصف).
+- **حجم النص** من التلفزيون: صغير أو متوسط أو كبير (٥ أو ٤ أو ٣ بطاقات، والباقي يتناوب في آخر مكان).
 - سطر موعد المباراة صار قصير وما يتقص ولا ينقلب بالعربي، وخط جديد **IBM Plex Sans Arabic**.
 - شلنا «بطاقات الوحدات» و«وضع النقل» لأنها ما كانت تشتغل بالريموت.
 

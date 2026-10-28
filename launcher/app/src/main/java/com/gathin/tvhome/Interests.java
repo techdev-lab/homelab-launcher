@@ -282,7 +282,12 @@ final class Interests {
                 boolean live = Match.LIVE.equals(m.state);
                 boolean soon = Match.PRE.equals(m.state) && m.startMillis >= now - 5 * 60_000L
                         && m.startMillis <= now + CLUB_LOOKAHEAD_DAYS * 24 * 3_600_000L;
-                if (live || soon) mine.add(m);
+                if (!live && !soon) continue;
+                // A derby between two favourites arrives twice (once from each club's schedule): one copy only, or
+                // the copies would take both of the club's places and hide its next match (seen on the TV, 2.9.0).
+                boolean dup = false;
+                for (Match o : mine) dup |= sameMatch(o, m);
+                if (!dup) mine.add(m);
             }
             mine.sort((a, b) -> {
                 boolean la = Match.LIVE.equals(a.state), lb = Match.LIVE.equals(b.state);
