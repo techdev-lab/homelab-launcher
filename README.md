@@ -91,11 +91,11 @@ Install it like any sideloaded app: `adb install HomeLab-Launcher-<version>.apk`
 | | |
 |---|---|
 | **Arabic and English, end to end** | Follows the TV's language, or its own: pick it in *Launcher settings*. In Arabic the whole screen is Arabic, right to left, including app names, league names and 156 team names, and the screensaver follows the same language. In English it is fully English. |
-| **Prayer times, offline** | Umm al-Qura method, computed on the TV from the coordinates you set. No network and no location lookup: the city is typed into the config. Checked against an independent source to within 2 minutes. |
+| **Prayer times, offline** | 14 calculation methods (Umm al-Qura by default, Egyptian, Gulf, Dubai, Qatar, Kuwait, Jordan, Morocco, Algeria, Tunisia, Turkey, Muslim World League, ISNA, Karachi) and standard or Hanafi Asr, picked on the TV. Computed on the TV from the coordinates you set: no network and no location lookup. Every method is checked against api.aladhan.com to within 2 minutes; `prayer_adjust` shifts a time by a few minutes if your printed calendar differs. |
 | **Hijri date** | Umm al-Qura calendar from the platform's ICU, next to the Gregorian date. |
-| **Football cards** | One card per league group, side by side, e.g. the Saudi Pro League and "the big European leagues". A live match first, otherwise the next kick-off within 7 days. |
+| **Football cards** | One card per league group, side by side, e.g. the Saudi Pro League and "the big European leagues". A live match first, otherwise the next kick-off within 7 days. The **Egyptian, UAE, Qatari and Moroccan leagues** work too (next kick-off, no live score). Matches of your favourite clubs carry a gold star. |
 | **Wallpapers** | Three built-in sets, **HomeLab**, **Serene** and **Kids**, changing every few minutes, or a plain colour; picked on the TV. Your own pictures still work through the config. |
-| **Settings on the TV** | Hold OK on the Settings button: language, apps per row, wallpapers, which cards show, text size, favourite clubs, motion. No computer needed. |
+| **Settings on the TV** | Hold OK on the Settings button: language, apps per row, wallpapers, which cards show, text size, prayer method and Asr, favourite clubs, motion. No computer needed. |
 | **Favourite clubs** | Pick up to 10 clubs with the remote (Al Hilal, Al Nassr, Man City...). One card shows each club's live or next two matches in any competition, league, cup or continental, one every 5 seconds, and every match of your clubs gets a gold star. |
 | **Weather** | Current conditions for the same city (Open-Meteo, free, no key). |
 | **Your dock** | Four apps of your choice on top (YouTube, Netflix, Shahid, Jellyfin, an IPTV player, anything), the rest in a grid. |
@@ -159,7 +159,7 @@ docs/               install guide, config reference, design notes, the build sto
 
 | Permission or component | Build | What it is for |
 |---|---|---|
-| `INTERNET` | online only | Football (ESPN public scoreboard), weather (Open-Meteo) and the RSS feeds you configure. HTTPS only, 8-second timeouts, a 768 KB response cap, redirects not followed. |
+| `INTERNET` | online only | Football (ESPN public scoreboard, and TheSportsDB's free API for the Egyptian, UAE, Qatari and Moroccan leagues), weather (Open-Meteo) and the RSS feeds you configure. HTTPS only, 8-second timeouts, a 768 KB response cap, redirects not followed. |
 | `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` | both | The Wi-Fi pill. |
 | `ACCESS_FINE_LOCATION` | both | Android 10 and later only let an app read the Wi-Fi network name with it. No code in the app calls a location API; the city for prayer times and weather is typed into the config. |
 | Accessibility services (`HomeKeyService`, `InputKeyService`) | both, opt-in | Make the remote's Home and Input buttons work after the stock launcher is disabled. They see key events only, not window content, and stay off until you enable them. |
@@ -254,11 +254,11 @@ MIT License, see [LICENSE](LICENSE).
 | | |
 |---|---|
 | **عربي وإنجليزي بالكامل** | يتبع لغة التلفزيون، أو لغته الخاصة: تختارها من *إعدادات المشغّل*. بالعربي الشاشة كلها عربي من اليمين لليسار، حتى أسماء التطبيقات (يوتيوب، شاهد، جيليفين…) والدوريات و156 فريقاً، وشاشة التوقف تتبع نفس اللغة. بالإنجليزي كلها إنجليزي. |
-| **مواقيت الصلاة بدون إنترنت** | بطريقة أم القرى، تنحسب على الجهاز من إحداثيات مدينتك. بدون تحديد موقع: تكتب المدينة في الإعدادات. فرقها عن مصدر مستقل أقل من دقيقتين. |
+| **مواقيت الصلاة بدون إنترنت** | 14 طريقة حساب (أم القرى الافتراضية، والمصرية، والخليج، ودبي، وقطر، والكويت، والأردن، والمغرب، والجزائر، وتونس، وتركيا، ورابطة العالم الإسلامي، وأمريكا الشمالية، وكراتشي) والعصر على مذهب الجمهور أو الحنفي، تختارها من التلفزيون. تنحسب على الجهاز من إحداثيات مدينتك، بدون إنترنت وبدون تحديد موقع. كل طريقة فرقها عن api.aladhan.com أقل من دقيقتين، و`prayer_adjust` يعدّل الوقت دقائق لو تقويم بلدك يفرق. |
 | **التاريخ الهجري** | تقويم أم القرى، جنب الميلادي. |
-| **بطاقات الكورة** | بطاقة لكل مجموعة دوريات جنب بعض، مثلاً: الدوري السعودي، والدوريات الأوروبية الكبرى. المباشر أولاً، وإلا أقرب مباراة خلال 7 أيام. |
+| **بطاقات الكورة** | بطاقة لكل مجموعة دوريات جنب بعض، مثلاً: الدوري السعودي، والدوريات الأوروبية الكبرى. المباشر أولاً، وإلا أقرب مباراة خلال 7 أيام. و**الدوري المصري والإماراتي والقطري والمغربي** صارت تشتغل (المباراة الجاية، بدون نتيجة مباشرة). ومباريات أنديتك المفضلة عليها نجمة ذهبية. |
 | **الخلفيات** | ثلاث مجموعات داخل التطبيق، **هوم لاب** و**سكينة** و**أطفال**، تتبدّل كل كم دقيقة، أو لون سادة؛ تختارها من التلفزيون. صورك الخاصة تشتغل من ملف الإعدادات. |
-| **الإعدادات من التلفزيون** | ضغطة مطوّلة على زر الإعدادات: اللغة، عدد التطبيقات في الصف، الخلفيات، أي البطاقات تظهر، حجم النص، الأندية المفضلة، الحركة. بدون كمبيوتر. |
+| **الإعدادات من التلفزيون** | ضغطة مطوّلة على زر الإعدادات: اللغة، عدد التطبيقات في الصف، الخلفيات، أي البطاقات تظهر، حجم النص، طريقة حساب الصلاة والعصر، الأندية المفضلة، الحركة. بدون كمبيوتر. |
 | **أنديتك المفضلة** | تختار حتى 10 أندية بالريموت (الهلال، النصر، مانشستر سيتي…). بطاقة وحدة تعرض مباراتين لكل نادٍ (المباشرة أو الجاية) في أي بطولة: الدوري أو الكأس أو النخبة الآسيوية أو أبطال أوروبا، مباراة كل 5 ثواني، وكل مباراة لأنديتك عليها نجمة ذهبية. |
 | **الطقس** | لنفس المدينة (Open-Meteo، مجاني وبدون مفتاح). |
 | **شريط تطبيقاتك** | أربع تطبيقات تختارها فوق (يوتيوب، نتفليكس، شاهد، جيليفين، برنامج IPTV، أي شي)، والباقي تحت في شبكة. |
@@ -299,7 +299,7 @@ MIT License, see [LICENSE](LICENSE).
 
 ### أسماء الدوريات اللي تشتغل
 
-`ksa.1` دوري روشن · `ksa.kings.cup` كأس الملك · `afc.champions` أبطال آسيا · `caf.champions` أبطال أفريقيا · `caf.confed` الكونفدرالية · `global.gulf_cup` كأس الخليج · `uefa.champions` أبطال أوروبا · `eng.1` الإنجليزي · `esp.1` الإسباني · `ita.1` الإيطالي · `ger.1` الألماني · `fra.1` الفرنسي · `fifa.worldq.afc` و`fifa.worldq.caf` تصفيات كأس العالم.
+`ksa.1` دوري روشن · `ksa.kings.cup` كأس الملك · `afc.champions` أبطال آسيا · `caf.champions` أبطال أفريقيا · `caf.confed` الكونفدرالية · `global.gulf_cup` كأس الخليج · `uefa.champions` أبطال أوروبا · `eng.1` الإنجليزي · `esp.1` الإسباني · `ita.1` الإيطالي · `ger.1` الألماني · `fra.1` الفرنسي · `fifa.worldq.afc` و`fifa.worldq.caf` تصفيات كأس العالم · `tsdb.4829` الدوري المصري · `tsdb.4678` الدوري الإماراتي · `tsdb.4663` دوري نجوم قطر · `tsdb.4520` البطولة المغربية.
 
 **الدوريات العربية:** الدوري المصري والإماراتي والقطري والمغربي صارت تجي من مصدر ثاني مجاني (TheSportsDB): المباراة الجاية فقط، بدون نتيجة مباشرة. الكويتي والأردني والتونسي والجزائري لسه ما لقينا لها مصدر.
 
@@ -311,7 +311,7 @@ MIT License, see [LICENSE](LICENSE).
 
 | الصلاحية أو المكوّن | النسخة | وش تسوي |
 |---|---|---|
-| `INTERNET` | online فقط | الكورة (مصدر ESPN العام) والطقس (Open-Meteo) وخلاصات RSS اللي تضبطها. HTTPS فقط، مهلة 8 ثواني، حد 768 كيلوبايت للرد، وما تُتبع التحويلات. |
+| `INTERNET` | online فقط | الكورة (مصدر ESPN العام، وTheSportsDB المجاني للدوري المصري والإماراتي والقطري والمغربي) والطقس (Open-Meteo) وخلاصات RSS اللي تضبطها. HTTPS فقط، مهلة 8 ثواني، حد 768 كيلوبايت للرد، وما تُتبع التحويلات. |
 | `ACCESS_NETWORK_STATE` و`ACCESS_WIFI_STATE` | النسختين | شريحة الواي فاي. |
 | `ACCESS_FINE_LOCATION` | النسختين | أندرويد 10 وما فوق ما يخلي التطبيق يقرأ اسم شبكة الواي فاي إلا بها. التطبيق ما يستدعي أي واجهة موقع؛ المدينة تكتبها في الإعدادات. |
 | خدمات إمكانية الوصول (`HomeKeyService` و`InputKeyService`) | النسختين، اختيارية | تشغّل زرّي Home وInput في الريموت بعد إيقاف اللانشر الأصلي. ترى ضغطات الأزرار فقط، مو محتوى الشاشة، وتبقى مطفية لين تفعّلها. |
