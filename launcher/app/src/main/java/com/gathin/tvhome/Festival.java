@@ -48,7 +48,7 @@ final class Festival {
                 return NONE;
             }
         }
-        String g = greeting == null ? "" : Cards.cleanLabel(greeting, "");
+        String g = greeting == null ? "" : Labels.clean(greeting, "");
         return new Festival(n, end, g, parseColor(accent));
     }
 

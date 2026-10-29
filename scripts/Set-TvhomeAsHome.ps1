@@ -54,7 +54,8 @@ function Get-CurrentWifiOwner {
     $ssid = $null; $owner = $null
     foreach ($l in $lines) {
         if ($l -match '^\s*mPerId=') { break }
-        if ($l -match '^\s*(?:- \w+ )?ID: \d+ SSID: "(.*?)" ') { $ssid = $Matches[1]; continue }
+        # Android 14 lists a saved network as "- <Type> ID: n SSID:" or "* ID: n SSID:", depending on the build.
+        if ($l -match '^\s*(?:(?:- \w+|\*) )?ID: \d+ SSID: "(.*?)" ') { $ssid = $Matches[1]; continue }
         if ($ssid -and $l -match 'cname=(\S+)') { if ($ssid -eq $cur -and -not $owner) { $owner = $Matches[1] }; $ssid = $null }
     }
     return @{ Ssid = $cur; Owner = $owner }
@@ -89,7 +90,9 @@ check ((sh "pm list packages -e $Launcherx") -match 'launcherx') 'launcherx enab
 $setupEnabled = (sh "pm list packages -e $Setup") -match 'setupwraith'
 say ("  [INFO] setupwraith enabled: $setupEnabled")
 check ((sh "ls /sdcard/Android/data/$Tvhome/files/config.json 2>&1") -notmatch 'No such file') 'config.json present on the TV'
-check ((sh "ls /sdcard/Android/data/$Tvhome/files/wallpapers 2>&1") -notmatch 'No such file') 'wallpapers folder present'
+# Since 2.7 the HomeLab, Serene and Kids sets are built into the APK: pushed pictures are only for "rotate".
+$pushedWalls = (sh "ls /sdcard/Android/data/$Tvhome/files/wallpapers 2>&1") -notmatch 'No such file'
+say ("  [INFO] pushed wallpapers folder: $pushedWalls (not needed for the built-in sets)")
 $wifi = Get-CurrentWifiOwner
 check ($null -ne $wifi.Ssid) 'TV is on Wi-Fi'
 if ($wifi.Ssid) {

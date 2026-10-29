@@ -11,7 +11,6 @@
   "background_color": "#0B0B0C",
   "columns": 4,
   "fill_dock": true,
-  "module_cards": true,
   "animations": true,
   "reduced_motion": false,
   "sky_intensity": 0,
@@ -23,11 +22,16 @@
   "prayer_city_en": "Dubai",
   "prayer_lat": 25.2048,
   "prayer_lng": 55.2708,
+  "prayer_method": "dubai",
+  "asr_method": "standard",
   "weather": true,
   "sports_leagues": [
-    "afc.champions"
+    "tsdb.4678"
   ],
   "sports_cards": [
+    [
+      "tsdb.4678"
+    ],
     [
       "afc.champions",
       "global.gulf_cup"

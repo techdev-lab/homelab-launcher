@@ -5,7 +5,6 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
@@ -18,7 +17,6 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.provider.Settings;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,9 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +40,7 @@ import java.util.Set;
 
 /**
  * App tiles. The first {@link MainActivity#COLUMNS} positions are the pinned dock (favourites, fixed order,
- * then empty slots up to a full row, see {@link DockSlots}), then the module cards the owner chose to show
- * (by label), the rest is alphabetical.
+ * then empty slots up to a full row, see {@link DockSlots}), the rest is alphabetical.
  */
 public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
 
@@ -54,13 +49,10 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
 
         /** Called for a D-pad direction key on a tile. Return true when handled (focus stays put). */
         boolean onTileVerticalKey(int position, int keyCode);
-
-        /** A tile moved in move mode: re-focus it at its new position. */
-        void onTileMoved(int position);
     }
 
     static final class Entry {
-        static final int APP = 0, HOME_SETTINGS = 1, CARD = 2, EMPTY = 3;
+        static final int APP = 0, HOME_SETTINGS = 1, EMPTY = 3;
 
         final int kind;
         final String label;
@@ -68,24 +60,20 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         final String pkg;
         final Drawable banner;
         final Drawable icon;
-        /** Text under the tile when it is focused in the grid: the label, plus the caption for a card. */
-        final String name;
-        /** Ambient glow colour; 0 until sampled from the banner, or the card's accent from the start. */
+        /** Ambient glow colour; 0 until sampled from the banner. */
         int ambient;
 
         Entry(String label, ComponentName component, Drawable banner, Drawable icon) {
-            this(APP, label, component, banner, icon, null, 0);
+            this(APP, label, component, banner, icon);
         }
 
-        Entry(int kind, String label, ComponentName component, Drawable banner, Drawable icon, String caption, int accent) {
+        Entry(int kind, String label, ComponentName component, Drawable banner, Drawable icon) {
             this.kind = kind;
             this.label = label;
             this.component = component;
             this.pkg = component.getPackageName();
             this.banner = banner;
             this.icon = icon;
-            this.name = caption == null ? label : label + " \u00B7 " + caption;
-            this.ambient = accent;
         }
     }
 
@@ -131,18 +119,11 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
     /** Calmer motion for weak GPUs (config.xml, reduced_motion): no overshoot, shorter fades. */
     private final boolean reducedMotion;
     private final List<Entry> items = new ArrayList<>();
-    /** Pref keys for the saved order. Versioned: v1 held package names, this holds component keys. */
-    private static final String ORDER_KEY = "custom_order_v2", ORDER_COLUMNS_KEY = "custom_order_columns";
     /**
-     * Saved tile order (component keys), null until the owner reorders. NOT final: saveOrder() refreshes it,
-     * otherwise the next reload() in this process (every return from an app) rebuilds the default order.
+     * Pref keys of the tile order Move mode used to save (removed in 2.9: it never worked with the physical remote).
+     * A saved order would still override dock_apps, so it is cleared once.
      */
-    private List<String> customOrder;
-    private final SharedPreferences prefs;
-    /** The grid is mirrored in RTL locales (res/values/bools.xml, rtl_app_grid): so is a move. */
-    private final boolean rtlGrid;
-    /** Move mode: the tile being moved, or RecyclerView.NO_POSITION. */
-    private int movingPos = RecyclerView.NO_POSITION;
+    private static final String OLD_ORDER_KEY = "custom_order_v2", OLD_ORDER_COLUMNS_KEY = "custom_order_columns";
 
     AppAdapter(Context ctx, TileListener listener, int dockSize, Config cfg) {
         this.ctx = ctx;
@@ -155,18 +136,15 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         this.advancedEffects = cfg.animations && cfg.advancedEffects;
         this.showHomeSettings = cfg.showHomeSettingsShortcut;
         this.reducedMotion = cfg.reducedMotion;
-        this.rtlGrid = ctx.getResources().getBoolean(R.bool.rtl_app_grid);
-        this.prefs = ctx.getSharedPreferences(Config.SETTINGS_NAME, Context.MODE_PRIVATE);
-        this.customOrder = loadOrder();
+        android.content.SharedPreferences prefs = ctx.getSharedPreferences(Config.SETTINGS_NAME, Context.MODE_PRIVATE);
+        if (prefs.contains(OLD_ORDER_KEY) || prefs.contains(OLD_ORDER_COLUMNS_KEY)) {
+            prefs.edit().remove(OLD_ORDER_KEY).remove(OLD_ORDER_COLUMNS_KEY).apply();
+        }
         // Tiles keep their identity across reload(), so a focused tile stays on its app instead of
         // its view being rebound to whatever app now sits in that slot.
         setHasStableIds(true);
     }
 
-    /**
-     * Rebuilds the tiles. A shown module card stands in for every tile of its package (same component,
-     * so focus follows it); hidden_apps wins over a card, and a card's package in dock_apps takes that slot.
-     */
     /** Labels by package that replace the app's own (NamesAr on the Arabic screen); empty keeps every label. */
     private Map<String, String> labelOverrides = Collections.emptyMap();
 
@@ -174,34 +152,23 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         labelOverrides = overrides != null ? overrides : Collections.emptyMap();
     }
 
-    void reload(List<Cards.Card> cards) {
-        // The tiles are about to be rebuilt, so any half-finished move is over: never leave the grid in
-        // move mode, where every arrow swaps tiles instead of moving focus.
-        movingPos = RecyclerView.NO_POSITION;
+    /** Rebuilds the tiles: dock_apps in their order, then every other TV app alphabetically. */
+    void reload() {
         PackageManager pm = ctx.getPackageManager();
         Intent probe = new Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LEANBACK_LAUNCHER);
         List<ResolveInfo> found = pm.queryIntentActivities(probe, 0);
-        Map<String, Cards.Card> cardByPkg = new HashMap<>();
-        for (Cards.Card c : cards) cardByPkg.put(c.pkg, c);
         List<Entry> fresh = new ArrayList<>();
         for (ResolveInfo ri : found) {
             if (ri.activityInfo == null) continue;
             String pkg = ri.activityInfo.packageName;
             if (pkg.equals(ctx.getPackageName()) || hidden.contains(pkg)) continue;
             ComponentName component = new ComponentName(pkg, ri.activityInfo.name);
-            Cards.Card card = cardByPkg.get(pkg);
-            if (card != null && !card.component.equals(component)) continue;   // the card stands in for this tile
             Drawable banner = loadBanner(pm, ri);
             Drawable icon = ri.loadIcon(pm);
-            if (card != null) {
-                fresh.add(new Entry(Entry.CARD, card.label, component, banner, icon, card.caption, card.accent));
-            } else {
-                // Same cleaner as the card prompt: an app label with a bidi override or line separator must not
-                // redraw the tile name as something else (#117).
-                String name = labelOverrides.get(pkg);
-                if (name == null) name = String.valueOf(ri.loadLabel(pm));
-                fresh.add(new Entry(Cards.cleanLabel(name, pkg), component, banner, icon));
-            }
+            // A label with a bidi override or line separator must not redraw the tile name as something else (#117).
+            String name = labelOverrides.get(pkg);
+            if (name == null) name = String.valueOf(ri.loadLabel(pm));
+            fresh.add(new Entry(Labels.clean(name, pkg), component, banner, icon));
         }
         Collections.sort(fresh, (a, b) -> {
             int fa = favourites.indexOf(a.pkg), fb = favourites.indexOf(b.pkg);
@@ -210,9 +177,6 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
                 if (fb < 0) return -1;
                 return Integer.compare(fa, fb);
             }
-            // Cards come right after the configured dock apps, before the alphabetical grid.
-            boolean ca = a.kind == Entry.CARD, cb = b.kind == Entry.CARD;
-            if (ca != cb) return ca ? -1 : 1;
             return a.label.compareToIgnoreCase(b.label);
         });
         // Retain the optional Default-home tile until dependent tile-ordering work is merged.
@@ -220,134 +184,18 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
                 && pm.resolveActivity(new Intent(Settings.ACTION_HOME_SETTINGS), 0) != null) {
             fresh.add(new Entry(Entry.HOME_SETTINGS, ctx.getString(R.string.home_settings),
                     new ComponentName(ctx, HomeSettingsActivity.class), null,
-                    ctx.getDrawable(R.drawable.ic_home_settings), null, 0));
+                    ctx.getDrawable(R.drawable.ic_home_settings)));
         }
-        if (customOrder != null) {
-            // A saved reorder overrides the dock list: the first dockSize tiles are the dock.
-            Collections.sort(fresh, (a, b) -> {
-                int ia = customOrder.indexOf(a.component.flattenToShortString());
-                int ib = customOrder.indexOf(b.component.flattenToShortString());
-                if (ia == ib) return 0;
-                if (ia < 0) return 1;
-                if (ib < 0) return -1;
-                return Integer.compare(ia, ib);
-            });
-            docked = Math.min(dockSize, fresh.size());
-            emptySlots = 0;
-        } else {
-            docked = 0;
-            while (docked < fresh.size() && favourites.contains(fresh.get(docked).pkg)) docked++;
-            emptySlots = DockSlots.empty(docked, dockSize, fresh.size(), fillDock);
-            for (int i = 0; i < emptySlots; i++) {
-                fresh.add(docked + i, new Entry(Entry.EMPTY, "", new ComponentName(ctx, "empty-dock-slot-" + i),
-                        null, null, null, 0));
-            }
+        docked = 0;
+        while (docked < fresh.size() && favourites.contains(fresh.get(docked).pkg)) docked++;
+        emptySlots = DockSlots.empty(docked, dockSize, fresh.size(), fillDock);
+        for (int i = 0; i < emptySlots; i++) {
+            fresh.add(docked + i, new Entry(Entry.EMPTY, "", new ComponentName(ctx, "empty-dock-slot-" + i),
+                    null, null));
         }
         items.clear();
         items.addAll(fresh);
         notifyDataSetChanged();
-    }
-
-    /**
-     * The saved order, or null. A saved order is a full row of dock slots wide: once the column count
-     * changes (launcher settings, or a theme push) its first dockSize entries are no longer the dock it
-     * was saved as, so it is dropped rather than silently moving grid apps into the dock.
-     */
-    private List<String> loadOrder() {
-        if (prefs.getInt(ORDER_COLUMNS_KEY, dockSize) != dockSize) return null;
-        String s = prefs.getString(ORDER_KEY, "");
-        if (s == null || s.isEmpty()) return null;
-        List<String> out = new ArrayList<>();
-        for (String pkg : s.split(",")) {
-            pkg = pkg.trim();
-            if (!pkg.isEmpty()) out.add(pkg);
-        }
-        return out.isEmpty() ? null : out;
-    }
-
-    boolean isMoving() {
-        return movingPos != RecyclerView.NO_POSITION;
-    }
-
-    private void enterMove(int pos) {
-        if (pos < 0 || pos >= items.size()) return;
-        movingPos = pos;
-        Log.d("TvHome.Move", "enterMove pos=" + pos);
-        Toast.makeText(ctx, "Move mode: use arrows, then OK to save", Toast.LENGTH_LONG).show();
-    }
-
-    private void finishMove() {
-        movingPos = RecyclerView.NO_POSITION;
-        saveOrder();
-        Log.d("TvHome.Move", "finishMove");
-        Toast.makeText(ctx, "Order saved", Toast.LENGTH_LONG).show();
-    }
-
-    /** Leaving Home saves an unfinished move silently, so arrows never swap tiles on the way back. */
-    void endMoveIfActive() {
-        if (movingPos == RecyclerView.NO_POSITION) return;
-        movingPos = RecyclerView.NO_POSITION;
-        saveOrder();
-    }
-
-    /** Forgets the saved order; the tiles fall back to dock_apps then alphabetical on the next build. */
-    void resetOrder() {
-        prefs.edit().remove(ORDER_KEY).remove(ORDER_COLUMNS_KEY).apply();
-        customOrder = null;
-    }
-
-    /**
-     * Swaps the tile being moved one step toward a D-pad direction. The position comes from movingPos,
-     * not from the holder: notifyItemChanged leaves adapter positions valid, but a holder read during a
-     * pending layout can still report NO_POSITION and the press would be dropped.
-     */
-    void move(int keyCode) {
-        int pos = movingPos;
-        if (pos < 0 || pos >= items.size()) return;
-        int delta;
-        // Left and Right are physical directions; in a mirrored grid the index runs the other way.
-        if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) delta = rtlGrid ? 1 : -1;
-        else if (keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) delta = rtlGrid ? -1 : 1;
-        else if (keyCode == KeyEvent.KEYCODE_DPAD_UP) delta = -dockSize;
-        else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) delta = dockSize;
-        else return;
-        int to = pos + delta;
-        if (to < 0 || to >= items.size() || to == pos) return;
-        // A module card is an ordinary tile to move past; an empty dock slot and the Default-home tile
-        // hold no app and have no place in the saved order, so they stay where reload() put them.
-        int kind = items.get(to).kind;
-        if (kind == Entry.EMPTY || kind == Entry.HOME_SETTINGS) return;
-        Collections.swap(items, pos, to);
-        movingPos = to;
-        Log.d("TvHome.Move", "move " + pos + " -> " + to);
-        // Rebind exactly these two tiles. notifyDataSetChanged would invalidate every adapter position
-        // until the next layout, which drops the next arrow press and sends focusTile down its
-        // smooth-scroll fallback; notifyItemMoved would not rebind at all, leaving each tile's click
-        // listener bound to the app it used to show and its dock label on the wrong side of the dock.
-        notifyItemChanged(pos);
-        notifyItemChanged(to);
-        if (listener != null) listener.onTileMoved(to);
-    }
-
-    /**
-     * Writes the order of every tile that stands for an app, cards included: a card left out would be
-     * sorted to the end of the grid on the next build and would silently drop out of the dock. The key
-     * is the component, the same identity getItemId and positionOf use, so two leanback activities of
-     * one package stay apart.
-     */
-    private void saveOrder() {
-        StringBuilder sb = new StringBuilder();
-        List<String> order = new ArrayList<>();
-        for (Entry e : items) {
-            if (e.kind != Entry.APP && e.kind != Entry.CARD) continue;
-            String key = e.component.flattenToShortString();
-            order.add(key);
-            if (sb.length() > 0) sb.append(',');
-            sb.append(key);
-        }
-        prefs.edit().putString(ORDER_KEY, sb.toString()).putInt(ORDER_COLUMNS_KEY, dockSize).apply();
-        // Keep the in-memory copy in step: the next reload() runs in this same process.
-        customOrder = order.isEmpty() ? null : order;
     }
 
     private Drawable loadBanner(PackageManager pm, ResolveInfo ri) {
@@ -397,12 +245,11 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
             h.banner.setImageDrawable(null);
             h.icon.setImageDrawable(null);
             h.card.setOnClickListener(null);
-            h.card.setOnLongClickListener(null);
             return;
         }
         h.card.setVisibility(View.VISIBLE);
         h.card.setFocusable(true);
-        h.name.setText(e.name);
+        h.name.setText(e.label);
         h.name.setVisibility(position < dockSize ? View.INVISIBLE : View.VISIBLE);   // the dock has no labels
         boolean focused = h.card.isFocused();   // a rebind after reload() can hit the focused tile
         h.name.setAlpha(focused ? 1f : 0f);
@@ -425,18 +272,10 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
             h.label.setText(e.label);
             h.label.setVisibility(View.VISIBLE);
         }
-        h.card.setOnClickListener(v -> {
-            if (movingPos != RecyclerView.NO_POSITION) finishMove();
-            else launch(e);
-        });
-        h.card.setOnLongClickListener(v -> {
-            if (movingPos != RecyclerView.NO_POSITION) finishMove();
-            else if (e.kind == Entry.APP || e.kind == Entry.CARD) enterMove(h.getBindingAdapterPosition());
-            return true;
-        });
+        h.card.setOnClickListener(v -> launch(e));
     }
 
-    /** Opens the tile's activity by explicit component, with no extras: a card can name nothing else. */
+    /** Opens the tile's activity by explicit component, with no extras. */
     private void launch(Entry e) {
         if (e.kind == Entry.HOME_SETTINGS) {
             ctx.startActivity(new Intent(ctx, HomeSettingsActivity.class)
@@ -499,7 +338,7 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         return !animations ? 1f : advancedEffects ? 1.12f : 1.10f;
     }
 
-    /** A vivid colour sampled from the app's banner (or icon), cached per entry; a card's accent when it set one. */
+    /** A vivid colour sampled from the app's banner (or icon), cached per entry. */
     int ambientColorAt(int position) {
         if (position < 0 || position >= items.size()) return 0xFF444444;
         Entry e = items.get(position);
@@ -590,20 +429,6 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
 
             card.setOnKeyListener((view, keyCode, event) -> {
                 if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
-                if (adapter.isMoving()) {
-                    if (keyCode == KeyEvent.KEYCODE_DPAD_CENTER || keyCode == KeyEvent.KEYCODE_ENTER
-                            || keyCode == KeyEvent.KEYCODE_BACK) {
-                        adapter.finishMove();
-                        return true;
-                    }
-                    if (keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN
-                            || keyCode == KeyEvent.KEYCODE_DPAD_LEFT || keyCode == KeyEvent.KEYCODE_DPAD_RIGHT) {
-                        // One tile per press: a held arrow auto-repeats and would fling the tile across the grid.
-                        if (event.getRepeatCount() == 0) adapter.move(keyCode);
-                        return true;
-                    }
-                    return true;
-                }
                 if (keyCode != KeyEvent.KEYCODE_DPAD_UP && keyCode != KeyEvent.KEYCODE_DPAD_DOWN
                         && keyCode != KeyEvent.KEYCODE_DPAD_LEFT && keyCode != KeyEvent.KEYCODE_DPAD_RIGHT) return false;
                 int pos = getBindingAdapterPosition();

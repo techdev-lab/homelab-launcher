@@ -53,13 +53,56 @@ final class Interests {
         /** Card switches from Launcher settings: a card that is off never shows, whatever config.json says. */
         boolean showPrayer = true, showWeather = true, showSports = true, showClubs = true;
 
-        /** This settings object with the TV's card switches applied. */
+        /** "prayer_method" as written (TV choice, else config.json); shown on the prayer card when it names none. */
+        String prayerMethodKey = Prayer.UMM_AL_QURA.key;
+        /** The method in force, or null when {@link #prayerMethodKey} names no method: no times are made up then. */
+        Prayer.Method prayerMethod = Prayer.UMM_AL_QURA;
+        /** {@link Prayer#ASR_STANDARD} or {@link Prayer#ASR_HANAFI} ("asr_method"). */
+        int asrFactor = Prayer.ASR_STANDARD;
+        /** "prayer_adjust": the viewer's own minutes per time, {FAJR..ISHA}, each at most 30 either way. */
+        int[] prayerAdjust = new int[6];
+
+        /** A copy of every field; the with* methods change the copy, never this object (NONE is shared). */
+        private Settings copy() {
+            Settings s = new Settings(language, hijriDate, prayerCity, prayerCityEn, prayerLat, prayerLng,
+                    sportsLeagues, sportsTeams, newsFeeds, newsFeedsEn, this.weather, sportsCards, favoriteTeams,
+                    clubRotateSeconds);
+            s.showPrayer = showPrayer;
+            s.showWeather = showWeather;
+            s.showSports = showSports;
+            s.showClubs = showClubs;
+            s.prayerMethodKey = prayerMethodKey;
+            s.prayerMethod = prayerMethod;
+            s.asrFactor = asrFactor;
+            s.prayerAdjust = prayerAdjust.clone();
+            return s;
+        }
+
+        /** A copy with the TV's card switches applied. */
         Settings withCards(boolean prayer, boolean weather, boolean sports, boolean clubs) {
-            showPrayer = prayer;
-            showWeather = weather;
-            showSports = sports;
-            showClubs = clubs;
-            return this;
+            Settings s = copy();
+            s.showPrayer = prayer;
+            s.showWeather = weather;
+            s.showSports = sports;
+            s.showClubs = clubs;
+            return s;
+        }
+
+        /** A copy with the prayer method (by key), the Asr factor and the manual minutes. */
+        Settings withPrayer(String methodKey, int asr, int[] adjust) {
+            Settings s = copy();
+            s.prayerMethodKey = methodKey;
+            s.prayerMethod = Prayer.method(methodKey);
+            s.asrFactor = asr == Prayer.ASR_HANAFI ? Prayer.ASR_HANAFI : Prayer.ASR_STANDARD;
+            s.prayerAdjust = adjust != null && adjust.length == 6 ? adjust.clone() : new int[6];
+            return s;
+        }
+
+        /** The six times for that date at the prayer place, or null when the method is unknown (see prayerMethod). */
+        double[] prayerTimes(int year, int month, int day, double tzHours, boolean ramadan) {
+            if (prayerMethod == null) return null;
+            return Prayer.times(year, month, day, prayerLat, prayerLng, tzHours, ramadan, prayerMethod, asrFactor,
+                    prayerAdjust);
         }
 
         Settings(String language, boolean hijriDate, String prayerCity, String prayerCityEn, double prayerLat,
@@ -219,28 +262,79 @@ final class Interests {
         return clubIds(java.util.Arrays.asList(joined.split(",")));
     }
 
-    /** One match for each club that has something to show, in the clubs' order; a derby shows once. */
+    /**
+     * Matches per club on the club card: the live or next one and the one after, so a continental or cup match
+     * two days after a league match is not hidden behind it (Al Hilal: league on Saturday, AFC on Tuesday).
+     */
+    static final int CLUB_MATCHES = 2;
+
+    /**
+     * Up to {@link #CLUB_MATCHES} matches for each club that has something to show, a live one first, then the next
+     * kick-offs within {@link #CLUB_LOOKAHEAD_DAYS}; clubs in their order, each club's matches by time. A derby
+     * between two favourites shows once.
+     */
     static List<Match> pickClubs(List<Match> all, List<String> teamIds, long now) {
         List<Match> out = new java.util.ArrayList<>();
         for (String id : teamIds) {
-            Match next = null, live = null;
+            List<Match> mine = new java.util.ArrayList<>();
             for (Match m : all) {
                 if (!id.equals(m.homeId) && !id.equals(m.awayId)) continue;
-                if (Match.LIVE.equals(m.state)) {
-                    live = m;
-                    break;
-                }
-                if (Match.PRE.equals(m.state) && m.startMillis >= now - 5 * 60_000L
-                        && m.startMillis <= now + CLUB_LOOKAHEAD_DAYS * 24 * 3_600_000L
-                        && (next == null || m.startMillis < next.startMillis)) next = m;
+                boolean live = Match.LIVE.equals(m.state);
+                boolean soon = Match.PRE.equals(m.state) && m.startMillis >= now - 5 * 60_000L
+                        && m.startMillis <= now + CLUB_LOOKAHEAD_DAYS * 24 * 3_600_000L;
+                if (!live && !soon) continue;
+                // A derby between two favourites arrives twice (once from each club's schedule): one copy only, or
+                // the copies would take both of the club's places and hide its next match (seen on the TV, 2.9.0).
+                boolean dup = false;
+                for (Match o : mine) dup |= sameMatch(o, m);
+                if (!dup) mine.add(m);
             }
-            Match pick = live != null ? live : next;
-            if (pick == null) continue;
-            boolean seen = false;
-            for (Match o : out) seen |= sameMatch(o, pick);
-            if (!seen) out.add(pick);
+            mine.sort((a, b) -> {
+                boolean la = Match.LIVE.equals(a.state), lb = Match.LIVE.equals(b.state);
+                if (la != lb) return la ? -1 : 1;
+                return Long.compare(a.startMillis, b.startMillis);
+            });
+            int taken = 0;
+            for (Match pick : mine) {
+                if (taken == CLUB_MATCHES) break;
+                boolean seen = false;
+                for (Match o : out) seen |= sameMatch(o, pick);
+                if (!seen) out.add(pick);
+                taken++;
+            }
         }
         return out;
+    }
+
+    /** True when either side of the match is one of the favourite clubs, by ESPN id (names differ by language). */
+    static boolean involvesFavorite(Match m, List<String> teamIds) {
+        return (!m.homeId.isEmpty() && teamIds.contains(m.homeId)) || (!m.awayId.isEmpty() && teamIds.contains(m.awayId));
+    }
+
+    /** Left-to-right isolate and its end (U+2066, U+2069): a time or date keeps its order inside an Arabic line. */
+    static final char LRI = '\u2066', PDI = '\u2069';
+
+    /**
+     * The kick-off line of a match card, short enough for the narrowest card: the full day name, day/month and the
+     * clock on the Arabic screen ("Thursday 29/10, 9:17 PM" in Arabic words and digits), "Thu 29 Oct, 9:17 PM" on
+     * the English one, with a middle dot between date and clock. The date and the clock sit in left-to-right
+     * isolates, so a right-to-left line can never reverse "21:17" or cut it into "...:17"; the AM/PM word stays
+     * outside the isolate, where the line's own direction places it. One locale formats every part, so the digits
+     * match.
+     */
+    static String whenText(long millis, Locale loc, java.util.TimeZone tz, boolean twentyFour) {
+        boolean ar = "ar".equals(loc.getLanguage());
+        String day = format(ar ? "EEEE" : "EEE", loc, tz, millis);
+        String date = format(ar ? "d/M" : "d MMM", loc, tz, millis);
+        String clock = format(twentyFour ? "H:mm" : "h:mm", loc, tz, millis);
+        String marker = twentyFour ? "" : " " + format("a", loc, tz, millis);
+        return day + " " + LRI + date + PDI + " \u00B7 " + LRI + clock + PDI + marker;
+    }
+
+    private static String format(String pattern, Locale loc, java.util.TimeZone tz, long millis) {
+        java.text.SimpleDateFormat f = new java.text.SimpleDateFormat(pattern, loc);
+        f.setTimeZone(tz);
+        return f.format(new java.util.Date(millis));
     }
 
     /** The same fixture seen from two sources (a club schedule and a scoreboard): competition and both team ids. */
@@ -383,6 +477,45 @@ final class Interests {
     static String espnDay(long now, int plusDays) {
         return java.time.Instant.ofEpochMilli(now).atZone(java.time.ZoneOffset.UTC).toLocalDate()
                 .plusDays(plusDays).format(java.time.format.DateTimeFormatter.BASIC_ISO_DATE);
+    }
+
+    /**
+     * TheSportsDB league codes, "tsdb.4829": the leagues ESPN does not carry (Egypt 4829, UAE 4678, Qatar 4663,
+     * Morocco 4520). Its free API gives the next fixtures but no live scores.
+     */
+    static final String TSDB_PREFIX = "tsdb.";
+
+    static boolean isTsdb(String code) {
+        if (code == null || !code.startsWith(TSDB_PREFIX)) return false;
+        String id = code.substring(TSDB_PREFIX.length());
+        return id.matches("[0-9]{1,7}");
+    }
+
+    /**
+     * A TheSportsDB event status as one of ours: not started is {@link Match#PRE}, playing {@link Match#LIVE},
+     * finished {@link Match#POST}; postponed, cancelled, abandoned or anything unknown is "", which no card shows.
+     */
+    static String tsdbState(String status) {
+        String s = status == null ? "" : status.trim().toUpperCase(Locale.ROOT);
+        switch (s) {
+            case "":
+            case "NS":
+            case "TBD":
+            case "NOT STARTED":
+                return Match.PRE;
+            case "1H": case "HT": case "2H": case "ET": case "BT": case "P": case "LIVE": case "INT":
+                return Match.LIVE;
+            case "FT": case "AET": case "PEN": case "AOT": case "AP": case "MATCH FINISHED":
+                return Match.POST;
+            default:
+                return "";
+        }
+    }
+
+    /** TheSportsDB's {@code ?d=} value, yyyy-MM-dd in UTC, {@code plusDays} after {@code now}. */
+    static String tsdbDay(long now, int plusDays) {
+        return java.time.Instant.ofEpochMilli(now).atZone(java.time.ZoneOffset.UTC).toLocalDate()
+                .plusDays(plusDays).toString();
     }
 
     static Match pickMatch(List<Match> all, List<String> teams, long now) {

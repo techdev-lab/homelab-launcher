@@ -43,6 +43,12 @@ final class Config {
     static final String BACKGROUND_COLOR_KEY = "background_color";
     /** Launcher language picked on the TV: "system", "ar" or "en"; wins over config.json "language". */
     static final String LANGUAGE_KEY = "language";
+    /** Strip text size picked on the TV (StripSize): kept across theme pushes, like the clubs. */
+    static final String TEXT_SIZE_KEY = "text_size";
+    /** Prayer method and Asr convention picked on the TV (Prayer.METHODS keys, "standard"/"hanafi"); win over config. */
+    static final String PRAYER_METHOD_KEY = "prayer_method", ASR_KEY = "asr_method";
+    /** The six names "prayer_adjust" takes, in Prayer's order. */
+    static final String[] PRAYER_TIME_KEYS = {"fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"};
     /** Which strip cards show, picked on the TV: prayer, weather, football leagues, favourite clubs. */
     static final String[] CARD_KEYS = {"card_prayer", "card_weather", "card_football", "card_clubs"};
     private static final String THEME_REVISION_NAME = "theme_revision";
@@ -62,7 +68,6 @@ final class Config {
     final boolean advancedEffects;
     final int rowsBelowDock;
     final boolean shamsiDate;
-    final boolean moduleCards;
     /** Calmer motion for weak GPUs (config.xml, reduced_motion): stiff spring, short fades, no replay. */
     final boolean reducedMotion;
     final String vpnApp;
@@ -98,15 +103,18 @@ final class Config {
     final int wallpaperMinutes;
     /** The wallpaper mode in force (Wallpapers.mode): plain, fixed, rotate, homelab or serene. */
     final String wallpaperMode;
+    /** Text size of the interests strip (StripSize): small, medium or large. */
+    final String textSize;
 
     private Config(List<String> dockApps, boolean fillDock, List<String> hiddenApps, String liveTvPackage,
                    String liveTvAction, String sourcePanelService, String sourcePanelAction, String inputAction,
                    int columns, int rowsBelowDock, boolean animations, boolean advancedEffects,
-                   boolean shamsiDate, boolean moduleCards, boolean reducedMotion, String vpnApp,
+                   boolean shamsiDate, boolean reducedMotion, String vpnApp,
                    boolean showHomeSettingsShortcut, int backgroundColor, int skyIntensity,
                    int[] settingsKeycodes, boolean settingsKeyPanel, File wallpaper, boolean overlayApplied,
                    Festival festival, Interests.Settings interests, Map<Integer, String> appKeys,
-                   List<File> wallpapers, int wallpaperMinutes, String wallpaperMode) {
+                   List<File> wallpapers, int wallpaperMinutes, String wallpaperMode,
+                   String textSize) {
         this.dockApps = Collections.unmodifiableList(dockApps);
         this.fillDock = fillDock;
         this.hiddenApps = Collections.unmodifiableList(hiddenApps);
@@ -120,7 +128,6 @@ final class Config {
         this.animations = animations;
         this.advancedEffects = advancedEffects;
         this.shamsiDate = shamsiDate;
-        this.moduleCards = moduleCards;
         this.reducedMotion = reducedMotion;
         this.vpnApp = vpnApp;
         this.showHomeSettingsShortcut = showHomeSettingsShortcut;
@@ -136,6 +143,7 @@ final class Config {
         this.wallpapers = Collections.unmodifiableList(wallpapers);
         this.wallpaperMinutes = wallpaperMinutes;
         this.wallpaperMode = wallpaperMode;
+        this.textSize = textSize;
     }
 
     /** The folder the theme tools push into; null when external storage is unavailable. */
@@ -158,7 +166,6 @@ final class Config {
         boolean animations = res.getBoolean(R.bool.animations);
         boolean advancedEffects = res.getBoolean(R.bool.advanced_effects);
         boolean shamsi = res.getBoolean(R.bool.shamsi_date);
-        boolean moduleCards = res.getBoolean(R.bool.module_cards);
         boolean reducedMotion = res.getBoolean(R.bool.reduced_motion);
         String vpn = res.getString(R.string.vpn_app).trim();
         boolean homeSettings = res.getBoolean(R.bool.show_home_settings_shortcut);
@@ -186,7 +193,6 @@ final class Config {
             animations = bool(json, "animations", animations);
             advancedEffects = bool(json, "advanced_effects", advancedEffects);
             shamsi = bool(json, "shamsi_date", shamsi);
-            moduleCards = bool(json, "module_cards", moduleCards);
             reducedMotion = bool(json, "reduced_motion", reducedMotion);
             vpn = string(json, "vpn_app", vpn);
             homeSettings = bool(json, "show_home_settings_shortcut", homeSettings);
@@ -221,9 +227,10 @@ final class Config {
 
         return new Config(dock, fillDock, hidden, liveTv, liveTvAction, panelService, panelAction, inputAction,
                 Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
-                shamsi, moduleCards, reducedMotion, vpn, homeSettings, background,
+                shamsi, reducedMotion, vpn, homeSettings, background,
                 Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, wallpaper, applied,
-                festival, interests(json, choices), appKeys(json), rotation, wallMinutes, wallMode);
+                festival, interests(json, choices), appKeys(json), rotation, wallMinutes, wallMode,
+                StripSize.pick(choices.getString(TEXT_SIZE_KEY, ""), json == null ? "" : string(json, "text_size", "")));
     }
 
     /** Default: the YouTube button. A theme's "app_keys" object replaces the whole map ({} turns it off). */
@@ -277,7 +284,31 @@ final class Config {
                 Feeds.AVAILABLE && bool(json, "weather", true),
                 leagueGroups(json, "sports_cards"), clubs, rotate).withCards(
                 choices.getBoolean(CARD_KEYS[0], true), choices.getBoolean(CARD_KEYS[1], true),
-                choices.getBoolean(CARD_KEYS[2], true), choices.getBoolean(CARD_KEYS[3], true));
+                choices.getBoolean(CARD_KEYS[2], true), choices.getBoolean(CARD_KEYS[3], true))
+                .withPrayer(prayerMethod(json, choices), Prayer.asrFactor(choices.getString(ASR_KEY,
+                        string(json, "asr_method", "standard"))), prayerAdjust(json));
+    }
+
+    /**
+     * The method key in force: the TV's choice when it names a method, else config.json "prayer_method" as written
+     * (an unknown name is kept so the prayer card can say so), else Umm al-Qura.
+     */
+    private static String prayerMethod(JSONObject json, SharedPreferences choices) {
+        String tv = choices.getString(PRAYER_METHOD_KEY, "");
+        if (Prayer.method(tv) != null) return tv;
+        String theme = string(json, "prayer_method", "");
+        return theme.isEmpty() ? Prayer.UMM_AL_QURA.key : theme;
+    }
+
+    /** "prayer_adjust": {"fajr": 2, "isha": -1, ...}; whole minutes, anything else is ignored (Prayer clamps to 30). */
+    static int[] prayerAdjust(JSONObject json) {
+        int[] out = new int[6];
+        JSONObject o = json == null ? null : json.optJSONObject("prayer_adjust");
+        for (int i = 0; o != null && i < PRAYER_TIME_KEYS.length; i++) {
+            Object v = o.opt(PRAYER_TIME_KEYS[i]);
+            if (v instanceof Integer || v instanceof Long) out[i] = (int) Math.max(-60, Math.min(60, ((Number) v).longValue()));
+        }
+        return out;
     }
 
     /** Team ids may be written as strings ("929") or numbers (929); both are read as text. */

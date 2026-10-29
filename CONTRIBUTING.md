@@ -3,8 +3,8 @@
 Thank you for helping. The most useful contributions right now:
 
 1. **Arabic team names for more leagues.** Add entries to `launcher/app/src/main/assets/names_ar.json` under `"teams"`, keyed by the ESPN team id from `https://site.api.espn.com/apis/site/v2/sports/soccer/<league>/teams`, and the league under `"leagues"`. Do not change existing entries without a reason in the PR.
-2. **A free football source for Arab domestic leagues** (Egypt, UAE, Qatar, Morocco...). It must be HTTPS, keyless or free, and allowed for this use.
-3. **A `prayer_method` option** for countries that use another official method. Add a unit test against an independent source, like `PrayerTest`.
+2. **A free football source for the Arab leagues still missing** (Kuwait, Jordan, Tunisia, Algeria) or for live scores of Egypt, UAE, Qatar and Morocco (TheSportsDB's free API gives the next kick-off only). It must be HTTPS, keyless or free, and allowed for this use.
+3. **A prayer method that is missing** (see `Prayer.METHODS`). Add it with a row in `PrayerMethodsTest` from an independent source.
 4. **Testing on other devices** (Chromecast HD, Google TV Streamer, other Android TV boxes). Report what worked and what did not.
 
 ## Rules

@@ -11,7 +11,6 @@
   "background_color": "#0B0B0C",
   "columns": 4,
   "fill_dock": true,
-  "module_cards": true,
   "animations": true,
   "reduced_motion": false,
   "sky_intensity": 0,
@@ -23,6 +22,8 @@
   "prayer_city_en": "Riyadh",
   "prayer_lat": 24.7136,
   "prayer_lng": 46.6753,
+  "prayer_method": "umm_al_qura",
+  "asr_method": "standard",
   "weather": true,
   "sports_leagues": [
     "ksa.1"

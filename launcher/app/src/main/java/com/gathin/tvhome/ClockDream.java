@@ -29,8 +29,8 @@ import java.util.TimeZone;
 /**
  * Screensaver: the launcher's thin clock over a slow ambient glow, with the Hijri date, the next prayer and a
  * hairline that fills once a minute. The block glides (no jump, no fade) to a new spot every 20 seconds and the
- * glow follows it and slowly changes colour, so nothing burns in. Arabic on an Arabic screen, in Readex Pro like
- * the home screen's cards. No network, no images: cheap enough for a 1 GB TV.
+ * glow follows it and slowly changes colour, so nothing burns in. Arabic on an Arabic screen, in IBM Plex Sans
+ * Arabic like the home screen's cards. No network, no images: cheap enough for a 1 GB TV.
  */
 public class ClockDream extends DreamService {
 
@@ -117,14 +117,15 @@ public class ClockDream extends DreamService {
         colorIndex = random.nextInt(PALETTE.length);
         setGlow(PALETTE[colorIndex]);
 
-        Typeface readex = getResources().getFont(R.font.readex_pro);
+        Typeface plex = getResources().getFont(R.font.plex_arabic);
+        Typeface plexLight = getResources().getFont(R.font.plex_arabic_light);
         // The date is the block's second child in every dream_clock layout (the clock row is the first).
         View date = ((LinearLayout) content).getChildAt(1);
         if (date instanceof TextView && arabic) {
-            ((TextView) date).setTypeface(readex);
+            ((TextView) date).setTypeface(plex);
             ((TextView) date).setLetterSpacing(0f);
         }
-        addExtras((LinearLayout) content, readex);
+        addExtras((LinearLayout) content, plexLight);
     }
 
     /** The hairline, the Hijri date and the next prayer, under the clock and date of the layout. */
@@ -148,7 +149,6 @@ public class ClockDream extends DreamService {
     private TextView line(Typeface font, float sp, int color, int gravity) {
         TextView t = new TextView(this);
         t.setTypeface(font);
-        t.setFontVariationSettings("'wght' 300");
         t.setTextSize(TypedValue.COMPLEX_UNIT_SP, sp);
         t.setTextColor(color);
         t.setGravity(gravity);
@@ -243,9 +243,9 @@ public class ClockDream extends DreamService {
         Calendar now = Calendar.getInstance();
         boolean ramadan = Hijri.isRamadan(Hijri.today());
         double tz = TimeZone.getDefault().getOffset(now.getTimeInMillis()) / 3_600_000.0;
-        double lat = settings.prayerLat, lng = settings.prayerLng;
-        double[] t = Prayer.times(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
-                now.get(Calendar.DAY_OF_MONTH), lat, lng, tz, ramadan);
+        double[] t = settings.prayerTimes(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
+                now.get(Calendar.DAY_OF_MONTH), tz, ramadan);
+        if (t == null) return getString(R.string.prayer_method_unknown, settings.prayerMethodKey);
         double nowH = now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE) / 60.0
                 + now.get(Calendar.SECOND) / 3600.0;
         String[] names = getResources().getStringArray(R.array.prayer_names);
@@ -257,8 +257,10 @@ public class ClockDream extends DreamService {
         } else {
             Calendar tm = (Calendar) now.clone();
             tm.add(Calendar.DAY_OF_MONTH, 1);
-            double fajr = Prayer.times(tm.get(Calendar.YEAR), tm.get(Calendar.MONTH) + 1,
-                    tm.get(Calendar.DAY_OF_MONTH), lat, lng, tz, ramadan)[Prayer.FAJR];
+            // Tomorrow's own UTC offset, expressed on today's clock (see MainActivity.prayerCard).
+            double tzTomorrow = TimeZone.getDefault().getOffset(tm.getTimeInMillis()) / 3_600_000.0;
+            double fajr = Prayer.onTodaysClock(settings.prayerTimes(tm.get(Calendar.YEAR), tm.get(Calendar.MONTH) + 1,
+                    tm.get(Calendar.DAY_OF_MONTH), tzTomorrow, ramadan)[Prayer.FAJR], tz, tzTomorrow);
             name = names[Prayer.FAJR];
             left = Prayer.countdown(nowH, fajr + 24);
         }

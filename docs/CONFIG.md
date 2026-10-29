@@ -29,6 +29,9 @@ Start from `config/config.example.json` or a city in `config/examples/`.
 | `prayer_city` | the city name in Arabic | Name shown on the Arabic screen. The files in `config/` have examples. |
 | `prayer_city_en` | `"Makkah"` | Name shown on the English screen. |
 | `prayer_lat`, `prayer_lng` | `21.4225`, `39.8262` | Decimal degrees. `0, 0` turns the prayer card off. |
+| `prayer_method` | `umm_al_qura` (default), `egypt`, `gulf`, `dubai`, `qatar`, `kuwait`, `jordan`, `morocco`, `algeria`, `tunisia`, `turkey`, `mwl`, `isna`, `karachi` | The calculation method, as api.aladhan.com defines it (angles and its fixed minute offsets); each one is tested against aladhan to within 2 minutes. A name the launcher does not know shows "Unknown prayer method" on the card instead of times. Launcher settings > Prayer times picks it on the TV, and that choice wins. A method gives that method's times: they can differ by a few minutes from a country's printed calendar. |
+| `asr_method` | `standard` (default) or `hanafi` | Asr when the shadow is the object's length (standard) or twice it (Hanafi). Also on the TV. |
+| `prayer_adjust` | `{"fajr": 2, "isha": -1}` | Your own minutes per time (`fajr`, `sunrise`, `dhuhr`, `asr`, `maghrib`, `isha`), at most 30 either way. |
 | `weather` | `true` (default in the online build) | Open-Meteo for the same coordinates (sent at 2 decimals, about 1 km). |
 
 The method is **Umm al-Qura** (Fajr 18.5°, Isha 90 minutes after Maghrib, 120 in Ramadan, Asr shadow factor 1). It was checked against an independent source to within 2 minutes. Where your country's official method differs, expect a few minutes of difference.
@@ -40,18 +43,19 @@ The method is **Umm al-Qura** (Fajr 18.5°, Isha 90 minutes after Maghrib, 120 i
 | `sports_cards` | `[["ksa.1"], ["uefa.champions", "eng.1", "esp.1", "ita.1", "ger.1"]]` | One card per group, side by side. Each card shows a live match of its group, otherwise the next kick-off within 7 days. Up to 4 groups of 8 leagues. |
 | `sports_leagues` | `["ksa.1"]` | Without `sports_cards`: one card that rotates through these leagues every minute. |
 | `sports_teams` | `["Al Hilal"]` | Only matches with one of these teams (case-insensitive, either side). Empty keeps all. |
-| `favorite_teams` | `["929", "817", "382"]` | Your clubs, up to 10, by ESPN team id. One extra card shows each club's live or next match (within 21 days) in any competition, one club at a time. Clubs picked on the TV (Launcher settings > Favourite clubs) take priority; "Clear" there goes back to this list. |
-| `club_rotate_seconds` | `5` (default) | Seconds per club on the club card, 3 to 60. |
+| `favorite_teams` | `["929", "817", "382"]` | Your clubs, up to 10, by ESPN team id. One extra card shows each club's live or next two matches (within 21 days) in any competition, one match at a time, with a gold star; any league card with one of these clubs gets the star too. Clubs picked on the TV (Launcher settings > Favourite clubs) take priority; "Clear" there goes back to this list. |
+| `club_rotate_seconds` | `5` (default) | Seconds per match on the club card, 3 to 60. |
+| `text_size` | `small` (default), `medium`, `large` | Text size of the home screen's cards: 5, 4 or 3 places in the one row; the last place shows the remaining cards in turn. The TV's choice (Launcher settings > Text size) wins and a theme push does not clear it. |
 
 **Finding a team id.** The picker on the TV covers 136 clubs. For any other club, open
 `https://site.api.espn.com/apis/site/v2/sports/soccer/<league>/teams` (for example `ksa.1`) and use the `id` next to the
 club's name. A few common ones: Al Hilal `929`, Al Nassr `817`, Al Ittihad `2276`, Al Ahli `8346`, Man City `382`,
 Real Madrid `86`, Barcelona `83`, Liverpool `364`, Arsenal `359`, Al Ain `7128`, Al Sadd `7135`.
 
-ESPN has no domestic data for the Egyptian, Moroccan, UAE or Qatari leagues, so clubs from those leagues show only their
-continental matches (AFC or CAF Champions League), and nothing between tournaments.
+ESPN has no domestic data for the Egyptian, Moroccan, UAE or Qatari leagues, so the favourite-clubs card shows clubs
+from those leagues only in their continental matches. Their **leagues** come from a second source (below).
 
-League codes are ESPN's. Checked to work:
+League codes are ESPN's, except the `tsdb.` ones. Checked to work:
 
 | Code | League | Code | League |
 |---|---|---|---|
@@ -63,7 +67,20 @@ League codes are ESPN's. Checked to work:
 | `ger.1` | Bundesliga | `fifa.worldq.afc` / `fifa.worldq.caf` | World Cup qualifiers |
 | `fra.1` | Ligue 1 | | |
 
-Not available from this source (checked): the Egyptian, UAE, Qatari, Moroccan, Kuwaiti, Jordanian, Tunisian and Algerian domestic leagues.
+**Arab domestic leagues** come from [TheSportsDB](https://www.thesportsdb.com)'s free API (its documented public key, so
+nothing secret is in the app). They show the **next kick-off only, no live scores** (live scores are a paid feature
+there), refreshed at most once an hour and spaced so a TV stays far below the free limit of 30 requests a minute. A
+postponed or cancelled match is never shown as upcoming. Checked on 2026-10-28:
+
+| Code | League |
+|---|---|
+| `tsdb.4829` | Egyptian Premier League |
+| `tsdb.4678` | UAE Pro League |
+| `tsdb.4663` | Qatar Stars League |
+| `tsdb.4520` | Moroccan Botola Pro |
+
+Example: `"sports_cards": [["ksa.1"], ["tsdb.4829", "tsdb.4678", "tsdb.4663", "tsdb.4520"]]` gives the Saudi league and
+one card for the four Arab leagues. Still not available (no free source checked yet): Kuwait, Jordan, Tunisia, Algeria.
 
 ## News (online build only, off in the examples)
 
@@ -80,7 +97,6 @@ Not available from this source (checked): the Egyptian, UAE, Qatari, Moroccan, K
 | `wallpaper_interval_min` | `1` to `240` (default 5) | Minutes per picture, for `rotate` and for the built-in sets. |
 | `background_color` | `"#0B0B0C"` | Behind everything. |
 | `animations`, `reduced_motion` | `true` / `false` | Turn effects down on slow TVs. |
-| `module_cards` | `true` | Allow app cards. |
 | `sky_intensity` | `0` to `100` | Optional time-of-day sky behind the screen; 0 hides it. |
 | `shamsi_date`, `festival` | | Inherited from the upstream launcher; off in the examples. |
 

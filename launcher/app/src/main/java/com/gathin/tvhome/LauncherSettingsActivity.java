@@ -35,11 +35,16 @@ public final class LauncherSettingsActivity extends Activity {
     private String wallMode;
     private int backgroundColor;
     private boolean[] cards;
+    private String textSize;
+    private String prayerMethod;
+    private int asrFactor;
+    private TextView prayerMethodChoice;
     private float density;
 
     /** One row of choices: the views in screen order and the value each one stands for. */
     private final List<TextView> languageViews = new ArrayList<>(), wallViews = new ArrayList<>(),
-            colourViews = new ArrayList<>(), cardViews = new ArrayList<>(), motionViews = new ArrayList<>();
+            colourViews = new ArrayList<>(), cardViews = new ArrayList<>(), motionViews = new ArrayList<>(),
+            textSizeViews = new ArrayList<>(), asrViews = new ArrayList<>();
 
     private static final String[] LANGUAGES = {"system", "ar", "en"};
     private static final String[] WALL_SETS = {Wallpapers.HOMELAB, Wallpapers.SERENE, Wallpapers.KIDS};
@@ -68,6 +73,9 @@ public final class LauncherSettingsActivity extends Activity {
         backgroundColor = config.backgroundColor;
         Interests.Settings s = config.interests;
         cards = new boolean[]{s.showPrayer, s.showWeather, s.showSports, s.showClubs};
+        textSize = config.textSize;
+        prayerMethod = s.prayerMethodKey;
+        asrFactor = s.asrFactor;
 
         int[] ids = {R.id.columns4, R.id.columns5, R.id.columns6, R.id.columns7};
         for (int i = 0; i < ids.length; i++) {
@@ -135,6 +143,35 @@ public final class LauncherSettingsActivity extends Activity {
             cardViews.add(c);
         }
         fill(R.id.cardsRow, cardViews);
+
+        int[] sizeNames = {R.string.text_size_small, R.string.text_size_medium, R.string.text_size_large};
+        for (int i = 0; i < StripSize.ALL.length; i++) {
+            final String size = StripSize.ALL[i];
+            textSizeViews.add(chip(getString(sizeNames[i]), v -> {
+                if (size.equals(textSize)) return;
+                textSize = size;
+                // The viewer's choice, like the clubs: a theme push does not clear it.
+                choices.edit().putString(Config.TEXT_SIZE_KEY, size).apply();
+                changed();
+            }));
+        }
+        fill(R.id.textSizeRow, textSizeViews);
+
+        prayerMethodChoice = findViewById(R.id.prayerMethodChoice);
+        prayerMethodChoice.setOnClickListener(v -> choosePrayerMethod());
+        int[] asrNames = {R.string.asr_standard, R.string.asr_hanafi};
+        int[] asrValues = {Prayer.ASR_STANDARD, Prayer.ASR_HANAFI};
+        for (int i = 0; i < asrNames.length; i++) {
+            final int factor = asrValues[i];
+            asrViews.add(chip(getString(asrNames[i]), v -> {
+                if (factor == asrFactor) return;
+                asrFactor = factor;
+                // Like the clubs: the viewer's choice, kept when a theme is pushed.
+                choices.edit().putString(Config.ASR_KEY, factor == Prayer.ASR_HANAFI ? "hanafi" : "standard").apply();
+                changed();
+            }));
+        }
+        fill(R.id.asrRow, asrViews);
 
         int[] motionNames = {R.string.motion_calm, R.string.motion_lively, R.string.motion_off};
         for (int i = 0; i < MOTIONS.length; i++) {
@@ -237,10 +274,35 @@ public final class LauncherSettingsActivity extends Activity {
                     && (Wallpapers.PLAIN_COLOURS[i] & 0xFFFFFF) == (backgroundColor & 0xFFFFFF));
         }
         for (int i = 0; i < cards.length; i++) cardViews.get(i).setSelected(cards[i]);
+        for (int i = 0; i < StripSize.ALL.length; i++) textSizeViews.get(i).setSelected(StripSize.ALL[i].equals(textSize));
+        asrViews.get(0).setSelected(asrFactor != Prayer.ASR_HANAFI);
+        asrViews.get(1).setSelected(asrFactor == Prayer.ASR_HANAFI);
+        int m = methodIndex(prayerMethod);
+        prayerMethodChoice.setText(getString(R.string.prayer_method_choice,
+                m >= 0 ? getResources().getStringArray(R.array.prayer_method_names)[m] : prayerMethod));
         for (int i = 0; i < MOTIONS.length; i++) motionViews.get(i).setSelected(MOTIONS[i].equals(motion()));
         followThemeChoice.setSelected(!hasOnTvChoices());
         clubsChoice.setText(getString(R.string.favorite_clubs_state,
                 Config.load(this).interests.favoriteTeams.size(), Interests.MAX_CLUBS));
+    }
+
+    /** The list of methods in Prayer.METHODS order; OK on one saves it and closes the list. */
+    private void choosePrayerMethod() {
+        String[] names = getResources().getStringArray(R.array.prayer_method_names);
+        new AlertDialog.Builder(this)
+                .setTitle(R.string.prayer_method_label)
+                .setSingleChoiceItems(names, methodIndex(prayerMethod), (dialog, which) -> {
+                    prayerMethod = Prayer.METHODS[which].key;
+                    choices.edit().putString(Config.PRAYER_METHOD_KEY, prayerMethod).apply();
+                    dialog.dismiss();
+                    changed();
+                })
+                .show();
+    }
+
+    private static int methodIndex(String key) {
+        for (int i = 0; i < Prayer.METHODS.length; i++) if (Prayer.METHODS[i].key.equals(key)) return i;
+        return -1;
     }
 
     private boolean hasOnTvChoices() {

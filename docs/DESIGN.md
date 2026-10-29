@@ -53,13 +53,11 @@ Google TV has two Home owners: `launcherx` (stock home) and `setupwraith` (setup
 ## Known issues
 
 - The on-TV "deadman" rollback timer in `Set-TvhomeAsHome.ps1` did not survive a dropped ADB link on Android 14. Keep the rollback command ready.
-- Prayer method is Umm al-Qura only.
-- Most Arab domestic leagues are not available from the current football source.
-- Move Mode (long-press reordering, inherited code) does not work with the physical remote and is not maintained.
+- Prayer methods follow api.aladhan.com's definitions; they are not checked against each country's printed calendar.
+- The Egyptian, UAE, Qatari and Moroccan leagues (TheSportsDB free API) show the next kick-off only, no live scores.
 
 ## Roadmap (not started)
 
-- `prayer_method` key (Egyptian, Muslim World League, ISNA, Karachi...).
-- A second football source for Arab domestic leagues.
+- Live scores for the Arab domestic leagues (needs a paid source or one that allows it).
 - More Arabic team names (community contributions to `names_ar.json`).
 - Signed release builds attached to GitHub Releases.

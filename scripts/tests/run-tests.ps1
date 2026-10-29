@@ -1,7 +1,7 @@
 # run-tests.ps1: runs Set-TvhomeAsHome.ps1 against a FAKE Mi TV (fakeadb.py), no device and no network.
 # Scenarios: dry run, missing confirmation, success with app keys, set-home ignored (must roll back),
 # network owned by setupwraith or owner unreadable (must abort with no change), rollback dry run and executed,
-# HomeKeyService never binds (must roll back packages and accessibility).
+# HomeKeyService never binds (must roll back packages and accessibility), built-in wallpapers with no pushed folder.
 #   powershell -ExecutionPolicy Bypass -File .\tests\run-tests.ps1
 # Needs: python on PATH. No APK and no device.
 $here = $PSScriptRoot
@@ -33,6 +33,8 @@ Run 'network owned by setupwraith: aborts before any change' 'setup_owns_wifi' @
     param($o, $w, $s) $w.Count -eq 0 -and $o -match 'Pre-checks failed' }
 Run 'owner of the network in use unreadable: aborts before any change' 'owner_unknown' @('-Execute', '-ConfirmText', 'CONFIRM HOME tv') {
     param($o, $w, $s) $w.Count -eq 0 -and $o -match 'Pre-checks failed' }
+Run 'built-in wallpapers (no pushed folder) and "* ID:" network lines: dry run passes the checks' 'builtin_walls' @() {
+    param($o, $w, $s) $w.Count -eq 0 -and $o -match 'DRY RUN' -and $o -notmatch 'Pre-checks failed' -and $o -match 'owned by: android.uid.system' }
 Run 'rollback dry run changes nothing' 'normal' @('-Rollback') { param($o, $w, $s) $w.Count -eq 0 }
 Run 'rollback executed re-enables both packages' 'normal' @('-Rollback', '-ConfirmText', 'CONFIRM ROLLBACK tv') {
     param($o, $w, $s) $s.enabled.Count -eq 2 -and $s.home -like '*launcherx' }

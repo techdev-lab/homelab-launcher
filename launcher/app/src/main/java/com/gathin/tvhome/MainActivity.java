@@ -3,7 +3,6 @@ package com.gathin.tvhome;
 import android.animation.ArgbEvaluator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -11,7 +10,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
-import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
@@ -48,7 +46,6 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.SoundEffectConstants;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
@@ -71,11 +68,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Set;
 import java.util.TimeZone;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -159,8 +154,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** App of the last focused tile, so focus follows it when the app list changes. */
     private static String lastFocusedKey;
     private float density;
-    /** Module cards (res/values/config.xml, module_cards): discovered on resume, shown only after the owner's Show. */
-    private boolean moduleCards;
     /** Calmer motion for weak GPUs (config.xml, reduced_motion): stiff spring, short fades, no replay. */
     private boolean reducedMotion;
     /** Festive skin from the theme (see Festival); applied while it is active today. */
@@ -172,17 +165,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private int greetingColor;
     /** The day the petal shower last played, so it greets the first Home of each day only. */
     private static LocalDate lastPetalShower;
-    /** hidden_apps as the adapter sees them (config.xml or a theme's config.json): a hidden app gets no card either. */
-    private Set<String> hiddenApps = Collections.emptySet();
-    private List<Cards.Card> cards = Collections.emptyList();
-    /** The grid has been laid out and focused since the last resume; the card prompt waits for this. */
-    private boolean tilesReady;
-    private Dialog cardPrompt;
-    /** Set when a decision could not be saved: no more prompts until the next resume, instead of asking in a loop. */
-    private boolean promptsPaused;
+    /** Text size of the strip (StripSize): sets the cards per row and the size of their text. */
+    private String textSize = StripSize.SMALL;
     /** Rebuild the tiles on resume: Home was fully hidden by an app, or Home was pressed. Not after a side panel such as Wi-Fi settings. */
     private boolean rebuildOnResume = true;
-    /** The Inputs or Module cards dropdown while one is open, so onPause can close it. */
+    /** The Inputs dropdown while it is open, so onPause can close it. */
     private PopupWindow openPopup;
 
     private final Handler handler = new Handler(Looper.getMainLooper());
@@ -235,6 +222,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private final Runnable minuteTick = new Runnable() {
         @Override
         public void run() {
+            keepLanguage();
             updateGreeting();
             updateWifiLabel();
             sky.update();
@@ -269,19 +257,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     };
 
-    /** config.json "language": "ar" or "en" sets the launcher's language (layout-ar included) over the TV's. */
+    /**
+     * The launcher's language (layout-ar included) over the TV's: config.json "language" or the TV choice, else the
+     * launcher's own Android language (Launcher settings or cmd locale set-app-locales). Same rule as ClockDream.
+     */
     @Override
     protected void attachBaseContext(Context base) {
-        String lang = Config.language(base);
-        if (!"system".equals(lang)) {
-            Locale locale = new Locale(lang);
-            // TextClock (the Gregorian date) formats with the process default, not the context's locale.
-            Locale.setDefault(locale);
-            Configuration c = new Configuration(base.getResources().getConfiguration());
-            c.setLocale(locale);
-            base = base.createConfigurationContext(c);
-        }
-        super.attachBaseContext(base);
+        super.attachBaseContext(Language.wrap(base));
     }
 
     @Override
@@ -335,8 +317,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         interestsStrip = findViewById(R.id.interests);
         appKeys = cfg.appKeys;
         vpnApp = cfg.vpnApp;
-        moduleCards = cfg.moduleCards;
-        hiddenApps = new HashSet<>(cfg.hiddenApps);
+        textSize = cfg.textSize;
 
         grid = findViewById(R.id.grid);
         rtlAppGrid = getResources().getBoolean(R.bool.rtl_app_grid);
@@ -451,8 +432,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             return true;
         });
         btnSettings.setOnClickListener(v -> open(systemIntent(Settings.ACTION_SETTINGS)));
+        // Hold OK: the launcher's own settings (a plain click stays the TV's Settings).
         btnSettings.setOnLongClickListener(v -> {
-            showSettingsMenu();
+            openLauncherSettings();
             return true;
         });
 
@@ -464,7 +446,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return true;
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
                 // The strip cards under the bar, else back to the dock tile Up came from.
-                if (!focusNearestCard(v)) focusTile(lastFocused % COLUMNS);
+                if (!focusNearestCard(v, false)) focusTile(lastFocused % COLUMNS);
                 return true;
             }
             int firstButton = btnInputs.getVisibility() == View.VISIBLE ? R.id.btnInputs : R.id.btnWifi;
@@ -611,12 +593,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             recreate();
             return;
         }
-        promptsPaused = false;
-        if (rebuildOnResume) {
-            tilesReady = false;
-            reloadApps(true);
-        }
+        if (rebuildOnResume) reloadApps(true);
         rebuildOnResume = false;
+        keepLanguage();
         updateGreeting();
         updateWifiLabel();
         updateInputsButton();
@@ -626,6 +605,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (Feeds.AVAILABLE && (interestsCfg.wantsMatches() || interestsCfg.wantsNews()
                 || interestsCfg.wantsWeather() || interestsCfg.wantsClubs())) handler.post(feedTick);
         if (interestsCfg.wantsClubs()) handler.postDelayed(clubTick, interestsCfg.clubRotateSeconds * 1000L);
+        handler.postDelayed(stripTick, STRIP_TURN_MS);
         if (festive && diya != null) {
             diya.start();
             LocalDate today = LocalDate.now();
@@ -642,7 +622,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (requestCode == LAUNCHER_SETTINGS_REQUEST && resultCode == RESULT_OK) recreate();
     }
 
-    /** Rebuilds the tiles (and the module cards), then puts focus back where it was. */
+    /** Rebuilds the tiles, then puts focus back where it was. */
     private void reloadApps(boolean animate) {
         // Capture the app before rebinding can move focus and overwrite its key.
         final String returnKey = lastFocusedKey;
@@ -667,24 +647,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             lastFocused = Math.max(0, Math.min(pos >= 0 ? pos : returnSlot, adapter.getItemCount() - 1));
             lastFocusedKey = adapter.keyAt(lastFocused);
             if (pos < 0) hideHero();
-            // A newly installed app may have brought a card with it.
-            tilesReady = true;
-            showCardPrompt();
         }
     }
 
-    /**
-     * Rebuilds the tiles; the module cards the owner chose to show stand in for their app's tile.
-     * Every step into the card code runs under CardFeature: if it fails, the tiles are the ordinary
-     * ones and cards stay off for this process.
-     */
+    /** Rebuilds the tiles, keeping the remembered focus: rebinding can move focus to the first tile. */
     private void reloadTiles() {
-        // Read these before reload(): rebinding can move focus to the first tile and overwrite them.
         final String returnKey = lastFocusedKey;
         final int returnSlot = lastFocused;
-        final List<Cards.Card> none = Collections.emptyList();
-        cards = moduleCards ? CardFeature.run(() -> Cards.discover(this, hiddenApps, Cards.load(Cards.storeFile(this))), none) : none;
-        adapter.reload(cards.isEmpty() ? none : CardFeature.run(() -> Cards.shown(cards), none));
+        adapter.reload();
         lastFocusedKey = returnKey;
         lastFocused = returnSlot;
     }
@@ -699,26 +669,21 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.post(() -> {
             int pos = adapter.positionOf(returnKey);
             focusTile(pos >= 0 ? pos : returnSlot);
-            tilesReady = true;
-            showCardPrompt();
         });
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        // An unfinished move must not survive leaving Home: save it and leave move mode, so the
-        // arrows move focus again instead of swapping tiles on the way back.
-        adapter.endMoveIfActive();
         stopAmbientAnimation();
         heroName.animate().cancel();
         ambient.animate().cancel();
         handler.removeCallbacks(minuteTick);
         handler.removeCallbacks(feedTick);
         handler.removeCallbacks(clubTick);
+        handler.removeCallbacks(stripTick);
         if (diya != null) diya.stop();
-        // Nothing of ours stays on screen over another app; an undecided prompt simply returns next time.
-        if (cardPrompt != null) cardPrompt.dismiss();
+        // Nothing of ours stays on screen over another app.
         if (openPopup != null) openPopup.dismiss();
     }
 
@@ -727,12 +692,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onStop();
         unregisterReceiver(packageReceiver);
         rebuildOnResume = true;
-    }
-
-    @Override
-    public void onWindowFocusChanged(boolean hasFocus) {
-        super.onWindowFocusChanged(hasFocus);
-        if (hasFocus) showCardPrompt();
     }
 
     @Override
@@ -751,6 +710,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public void onBackPressed() {
         // Home screen: Back goes nowhere.
+    }
+
+    /**
+     * TextClock (the clock and the Gregorian date) formats with the process default locale, and Android puts the TV's
+     * language back there (ClockDream found the same): an Arabic home screen showed "WEDNESDAY 28 OCTOBER" and Latin
+     * digits on the TV in 2.9.0 testing. Put the screen's language back and make the clocks format again.
+     */
+    private void keepLanguage() {
+        Locale want = getResources().getConfiguration().getLocales().get(0);
+        if (want.equals(Locale.getDefault())) return;
+        Locale.setDefault(want);
+        for (int id : new int[]{R.id.clock, R.id.ampm, R.id.date}) {
+            View v = findViewById(id);
+            if (v instanceof android.widget.TextClock) {
+                android.widget.TextClock c = (android.widget.TextClock) v;
+                c.setFormat12Hour(c.getFormat12Hour());
+                c.setFormat24Hour(c.getFormat24Hour());
+            }
+        }
     }
 
     // ---- glass highlight -------------------------------------------------------------------------
@@ -961,7 +939,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             d.setStroke(stroke, Glass.edge(c));
         }
         // A strip card under focus keeps its white edge through every repaint (the club card swaps every 5 s).
-        View focusedCard = interestsStrip == null ? null : interestsStrip.getFocusedChild();
+        View focusedCard = focusedStripCard();
         if (focusedCard != null && focusedCard.getBackground() instanceof GradientDrawable) {
             ((GradientDrawable) focusedCard.getBackground()).setStroke(Math.round(2 * density), 0xFFFFFFFF);
         }
@@ -1045,7 +1023,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
             if (position < COLUMNS) {
                 // Dock row: the strip cards first, the top bar when the strip shows nothing.
-                return focusNearestCard(getCurrentFocus());
+                if (!focusNearestCard(getCurrentFocus(), true)) focusNearestButton(getCurrentFocus());
+                return true;
             }
             target = position - COLUMNS;
         } else {
@@ -1058,11 +1037,6 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         grid.playSoundEffect(keyCode == KeyEvent.KEYCODE_DPAD_UP
                 ? SoundEffectConstants.NAVIGATION_UP : SoundEffectConstants.NAVIGATION_DOWN);
         return true;
-    }
-
-    @Override
-    public void onTileMoved(int position) {
-        grid.post(() -> focusTile(position));
     }
 
     private void focusTile(int position) {
@@ -1158,79 +1132,135 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     /**
      * Rebuilds the strip, once a minute and after each fetch. Its cards take focus between the dock and the top bar:
-     * OK on the club card shows the next club, on the rotating league or news card the next item, on the others
-     * Launcher settings (where each card can be switched off).
+     * OK on the club card shows the next club match, on the rotating league or news card the next item, on the
+     * others Launcher settings (where each card can be switched off). The text size (Launcher settings) sets how
+     * many places the one row has: 5, 4 or 3; when there are more cards, the last place shows the rest in turn
+     * (every {@link #STRIP_TURN_MS}, or OK on it).
      */
     private void updateInterests() {
         if (interestsStrip == null) return;
         boolean ar = arabic();
         glassCards.clear();
-        List<View> cards = new ArrayList<>();
         int focusedCard = focusedCardIndex();
-        if (interestsCfg.prayer()) cards.add(onCardClick(prayerCard(ar), this::openLauncherSettings));
-        Interests.Weather w = weather;
-        if (w != null && interestsCfg.wantsWeather()) cards.add(onCardClick(weatherCard(w, ar), this::openLauncherSettings));
-        // One match per league (a live one, else the next), shown in turn: a Champions League game that is live
-        // tonight must not hide the Saudi league's next round, and the other way round.
         long now = System.currentTimeMillis();
-        if (!interestsCfg.wantsMatches()) {
-            // Football switched off on the TV: no league card at all.
-        } else if (!interestsCfg.sportsCards.isEmpty()) {
-            // sports_cards: one card per league group, side by side (e.g. the Saudi league and the big foreign ones).
-            for (Interests.Match m : Interests.pickCards(matches, interestsCfg.sportsCards, interestsCfg.sportsTeams, now)) {
-                cards.add(onCardClick(matchCard(m, ar), this::openLauncherSettings));
-            }
-        } else {
-            List<Interests.Match> picks = Interests.pickMatches(matches, interestsCfg.sportsTeams, now);
-            // OK on the rotating card shows the next league at once.
-            if (!picks.isEmpty()) cards.add(onCardClick(matchCard(picks.get(matchIndex++ % picks.size()), ar),
-                    this::updateInterests));
-        }
+        // Order: prayer, the favourite clubs, the leagues, weather, news. The clubs come before the leagues so the
+        // viewer's own teams are the first football card, and a large text size rotates the least wanted ones.
+        List<View> cards = new ArrayList<>();
+        if (interestsCfg.prayer()) cards.add(onCardClick(prayerCard(ar), this::openLauncherSettings));
         clubCard = null;
         if (interestsCfg.wantsClubs()) {
             List<Interests.Match> clubs = Interests.pickClubs(clubMatches, interestsCfg.favoriteTeams, now);
             if (!clubs.isEmpty()) cards.add(clubCard = clubCard(clubs, ar));
         }
+        // One match per league (a live one, else the next), shown in turn: a Champions League game that is live
+        // tonight must not hide the Saudi league's next round, and the other way round.
+        if (!interestsCfg.wantsMatches()) {
+            // Football switched off on the TV: no league card at all.
+        } else if (!interestsCfg.sportsCards.isEmpty()) {
+            // sports_cards: one card per league group, side by side (e.g. the Saudi league and the big foreign ones).
+            for (Interests.Match m : Interests.pickCards(matches, interestsCfg.sportsCards, interestsCfg.sportsTeams, now)) {
+                cards.add(onCardClick(matchCard(m, ar, ""), this::openLauncherSettings));
+            }
+        } else {
+            List<Interests.Match> picks = Interests.pickMatches(matches, interestsCfg.sportsTeams, now);
+            // OK on the rotating card shows the next league at once.
+            if (!picks.isEmpty()) cards.add(onCardClick(matchCard(picks.get(matchIndex++ % picks.size()), ar, ""),
+                    this::updateInterests));
+        }
+        Interests.Weather w = weather;
+        if (w != null && interestsCfg.wantsWeather()) cards.add(onCardClick(weatherCard(w, ar), this::openLauncherSettings));
         List<Interests.Headline> h = headlines;
         if (!h.isEmpty()) cards.add(onCardClick(newsCard(h.get(headlineIndex++ % h.size()), ar), this::updateInterests));
-        boolean rtl = getResources().getBoolean(R.bool.rtl_menu_bar);
-        if (rtl) Collections.reverse(cards);
+
         interestsStrip.removeAllViews();
-        // Shares follow the settings, not the fetch, so a failed fetch moves nothing: prayer 1.4, weather 0.8, one per
-        // league card, one for the clubs, one for news. Never less than the classic strip (prayer, match, news, 3.4),
-        // so a lone card keeps its size instead of stretching across the screen.
-        float sum = 0f;
-        if (interestsCfg.prayer()) sum += 1.4f;
-        if (interestsCfg.wantsWeather()) sum += WEATHER_WEIGHT;
-        if (interestsCfg.wantsMatches()) sum += interestsCfg.sportsCards.isEmpty() ? 1f : interestsCfg.sportsCards.size();
-        if (interestsCfg.wantsClubs()) sum += 1f;
-        if (interestsCfg.wantsNews()) sum += 1f;
-        interestsStrip.setWeightSum(Math.max(sum, 3.4f));
+        int perRow = StripSize.perRow(textSize);
+        boolean rtl = getResources().getBoolean(R.bool.rtl_menu_bar);
+        stripShared = StripSize.shared(cards.size(), perRow);
+        cards = StripSize.visible(cards, perRow, stripTurn);
+        if (stripShared) {
+            // The shared last place: the same width whichever card has its turn, and OK shows the next one.
+            View last = cards.get(cards.size() - 1);
+            ((LinearLayout.LayoutParams) last.getLayoutParams()).weight = 1f;
+            if (last != clubCard) last.setOnClickListener(v -> nextStripTurn());
+        }
+        List<List<View>> rows = Collections.singletonList(cards);
         tintGlass(ambientColor);
-        for (int i = 0; i < cards.size(); i++) {
-            View c = cards.get(i);
-            LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) c.getLayoutParams();
-            // The gap sits between cards only, so the outer card lines up with the header's edge.
-            if (i > 0) lp.leftMargin = (int) (16 * density);
-            interestsStrip.addView(c);
+        for (int r = 0; r < rows.size(); r++) {
+            List<View> row = new ArrayList<>(rows.get(r));
+            LinearLayout line = new LinearLayout(this);
+            line.setOrientation(LinearLayout.HORIZONTAL);
+            line.setBaselineAligned(false);
+            // A short last row hugs the reading side, under the first card of the row above.
+            line.setGravity(rtl ? Gravity.RIGHT : Gravity.LEFT);
+            float weights = 0f;
+            for (View c : row) weights += ((LinearLayout.LayoutParams) c.getLayoutParams()).weight;
+            // Never less than a full row of plain cards, so a lone card keeps its width instead of stretching.
+            line.setWeightSum(StripSize.rowWeightSum(weights, perRow));
+            if (rtl) Collections.reverse(row);
+            for (int i = 0; i < row.size(); i++) {
+                View c = row.get(i);
+                LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) c.getLayoutParams();
+                // The gap sits between cards only, so the outer card lines up with the header's edge.
+                lp.leftMargin = i > 0 ? (int) (16 * density) : 0;
+                line.addView(c);
+            }
+            LinearLayout.LayoutParams rowLp = new LinearLayout.LayoutParams(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (r > 0) rowLp.topMargin = (int) (12 * density);
+            interestsStrip.addView(line, rowLp);
         }
         interestsStrip.setVisibility(cards.isEmpty() ? View.GONE : View.VISIBLE);
         reserveHeroBand(!cards.isEmpty());
         // The strip is rebuilt every minute: a card that had focus hands it to the card now in its place.
         if (focusedCard >= 0) {
-            if (!cards.isEmpty()) interestsStrip.getChildAt(Math.min(focusedCard, cards.size() - 1)).requestFocus();
+            List<View> shown = stripCards();
+            if (!shown.isEmpty()) shown.get(Math.min(focusedCard, shown.size() - 1)).requestFocus();
             else focusTile(lastFocused % COLUMNS);
         }
     }
 
+    /** Seconds a card keeps the shared last place of the strip before the next one takes it. */
+    private static final long STRIP_TURN_MS = 8_000L;
+    /** Which of the cards that share the last place is shown; counts up. */
+    private int stripTurn;
+    /** True while some cards share the last place (more cards than the text size has places). */
+    private boolean stripShared;
+    private final Runnable stripTick = new Runnable() {
+        @Override
+        public void run() {
+            if (stripShared) nextStripTurn();
+            handler.postDelayed(this, STRIP_TURN_MS);
+        }
+    };
+
+    private void nextStripTurn() {
+        stripTurn++;
+        updateInterests();
+    }
+
     // ---- strip cards and the D-pad: dock <-> cards <-> top bar --------------------------------------
 
-    private int focusedCardIndex() {
-        if (interestsStrip == null || !interestsStrip.hasFocus()) return -1;
-        for (int i = 0; i < interestsStrip.getChildCount(); i++) {
-            if (interestsStrip.getChildAt(i).hasFocus()) return i;
+    /** Every card of the strip, row by row in screen order (left to right inside a row). */
+    private List<View> stripCards() {
+        List<View> out = new ArrayList<>();
+        if (interestsStrip == null) return out;
+        for (int r = 0; r < interestsStrip.getChildCount(); r++) {
+            ViewGroup row = (ViewGroup) interestsStrip.getChildAt(r);
+            for (int i = 0; i < row.getChildCount(); i++) out.add(row.getChildAt(i));
         }
-        return -1;
+        return out;
+    }
+
+    /** The strip card that has focus, or null. */
+    private View focusedStripCard() {
+        View f = getCurrentFocus();
+        if (f == null || interestsStrip == null || !(f.getParent() instanceof View)) return null;
+        return ((View) f.getParent()).getParent() == interestsStrip ? f : null;
+    }
+
+    private int focusedCardIndex() {
+        View f = focusedStripCard();
+        return f == null ? -1 : stripCards().indexOf(f);
     }
 
     private View onCardClick(View card, Runnable action) {
@@ -1242,12 +1272,21 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         startActivityForResult(new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST);
     }
 
-    /** The strip card closest to {@code from} horizontally, focused; false when the strip shows nothing. */
-    private boolean focusNearestCard(View from) {
+    /**
+     * The strip card closest to {@code from} horizontally, focused: in the last row when coming up from the dock,
+     * in the first row when coming down from the top bar. False when the strip shows nothing.
+     */
+    private boolean focusNearestCard(View from, boolean fromBelow) {
         if (interestsStrip == null || interestsStrip.getVisibility() != View.VISIBLE
                 || interestsStrip.getChildCount() == 0) return false;
-        View best = interestsStrip.getChildAt(0);
-        for (int i = 1; i < interestsStrip.getChildCount(); i++) best = nearest(from, best, interestsStrip.getChildAt(i));
+        return focusNearestIn((ViewGroup) interestsStrip.getChildAt(fromBelow ? interestsStrip.getChildCount() - 1 : 0),
+                from);
+    }
+
+    private boolean focusNearestIn(ViewGroup row, View from) {
+        if (row.getChildCount() == 0) return false;
+        View best = row.getChildAt(0);
+        for (int i = 1; i < row.getChildCount(); i++) best = nearest(from, best, row.getChildAt(i));
         return best.requestFocus();
     }
 
@@ -1272,7 +1311,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         return at[0] + v.getWidth() / 2f;
     }
 
-    /** Focus look and arrow keys of a strip card: Up to the top bar, Down to the dock, no wrap at the ends. */
+    /**
+     * Focus look and arrow keys of a strip card: Up to the row above or the top bar, Down to the row below or the
+     * dock, no wrap at a row's ends.
+     */
     private void makeCardFocusable(LinearLayout c) {
         c.setFocusable(true);
         c.setClickable(true);
@@ -1280,17 +1322,24 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         c.setOnFocusChangeListener((v, focused) -> tintGlass(ambientColor));
         c.setOnKeyListener((v, keyCode, event) -> {
             if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+            ViewGroup row = (ViewGroup) v.getParent();
+            int r = interestsStrip.indexOfChild(row);
             if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-                focusNearestButton(v);
+                if (r > 0) focusNearestIn((ViewGroup) interestsStrip.getChildAt(r - 1), v);
+                else focusNearestButton(v);
                 return true;
             }
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
-                focusTile(lastFocused % COLUMNS);
+                if (r >= 0 && r < interestsStrip.getChildCount() - 1) {
+                    focusNearestIn((ViewGroup) interestsStrip.getChildAt(r + 1), v);
+                } else {
+                    focusTile(lastFocused % COLUMNS);
+                }
                 return true;
             }
-            int at = interestsStrip.indexOfChild(v);
+            int at = row.indexOfChild(v);
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) return at == 0;
-            return keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && at == interestsStrip.getChildCount() - 1;
+            return keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && at == row.getChildCount() - 1;
         });
     }
 
@@ -1298,9 +1347,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         Calendar now = Calendar.getInstance();
         boolean ramadan = Hijri.isRamadan(Hijri.today());
         double tz = TimeZone.getDefault().getOffset(now.getTimeInMillis()) / 3_600_000.0;
-        double lat = interestsCfg.prayerLat, lng = interestsCfg.prayerLng;
-        double[] t = Prayer.times(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
-                now.get(Calendar.DAY_OF_MONTH), lat, lng, tz, ramadan);
+        double[] t = interestsCfg.prayerTimes(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
+                now.get(Calendar.DAY_OF_MONTH), tz, ramadan);
+        String city = interestsCfg.city(ar);
+        String meta = getString(R.string.prayer_times) + (city.isEmpty() ? "" : " · " + city);
+        if (t == null) {
+            // A method name the launcher does not know: say so instead of quietly using another method.
+            return card(meta, false, getString(R.string.prayer_method_unknown, interestsCfg.prayerMethodKey), null, 1.4f);
+        }
         double nowH = now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE) / 60.0
                 + now.get(Calendar.SECOND) / 3600.0;
         String[] names = getResources().getStringArray(R.array.prayer_names);
@@ -1311,42 +1365,47 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             title = getString(R.string.prayer_in, names[next]);
             big = Prayer.countdown(nowH, t[next]);
         } else {
-            // After Isha: tomorrow's Fajr, counted across midnight.
+            // After Isha: tomorrow's Fajr, counted across midnight, with tomorrow's UTC offset (a clock change
+            // at midnight, as in Egypt or Morocco, must not move it by an hour).
             Calendar tm = (Calendar) now.clone();
             tm.add(Calendar.DAY_OF_MONTH, 1);
-            double fajr = Prayer.times(tm.get(Calendar.YEAR), tm.get(Calendar.MONTH) + 1,
-                    tm.get(Calendar.DAY_OF_MONTH), lat, lng, tz, ramadan)[Prayer.FAJR];
+            double tzTomorrow = TimeZone.getDefault().getOffset(tm.getTimeInMillis()) / 3_600_000.0;
+            double fajr = Prayer.onTodaysClock(interestsCfg.prayerTimes(tm.get(Calendar.YEAR), tm.get(Calendar.MONTH) + 1,
+                    tm.get(Calendar.DAY_OF_MONTH), tzTomorrow, ramadan)[Prayer.FAJR], tz, tzTomorrow);
             title = getString(R.string.prayer_in, names[Prayer.FAJR]);
             big = Prayer.countdown(nowH, fajr + 24);
         }
         StringBuilder all = new StringBuilder();
         for (int i : Prayer.FIVE) {
             if (all.length() > 0) all.append("  ");
-            all.append(names[i]).append(' ').append(Prayer.clock(t[i], twelve));
+            // A no-break space between name and time: a narrow card wraps between prayers, never inside one
+            // (at Large, "Maghrib" ended one line and its time began the next).
+            all.append(names[i]).append('\u00A0').append(Prayer.clock(t[i], twelve));
         }
-        String city = interestsCfg.city(ar);
-        String meta = getString(R.string.prayer_times) + (city.isEmpty() ? "" : " · " + city);
         LinearLayout c = card(meta, false, title, big, 1.4f);
         // Up to two lines: the five times do not fit one line in a lone prayer card on every font and locale
         // (Mi TV, en-GB, cut off at "Isha…"), and a wrapped line beats a missing prayer.
         TextView times = cardText(all.toString(), 13, R.color.theme_dim, false);
-        times.setMaxLines(2);
+        // Five or four cards in a row leave the prayer card narrow: a third line beats a missing prayer.
+        times.setMaxLines(StripSize.perRow(textSize) > 3 ? 3 : 2);
         times.setEllipsize(TextUtils.TruncateAt.END);
         c.addView(times);
         return c;
     }
 
-    /** Four lines: when (or LIVE and the minute), the league, the two teams, then the score once it has one. */
-    private View matchCard(Interests.Match m, boolean ar) {
+    /**
+     * Four lines: when (or LIVE and the minute), the league, the two teams, then the score once it has one. A match
+     * with one of the favourite clubs gets a gold star before the league, on the league cards too.
+     */
+    private View matchCard(Interests.Match m, boolean ar, String prefix) {
         boolean live = Interests.Match.LIVE.equals(m.state);
         String when;
         if (live) when = getString(R.string.match_live) + " " + m.clock;
         else {
-            // Day, date and time: the next match can be days away (Interests.pickMatch).
+            // Day, date and time, short and with the clock isolated: the next match can be days away.
             Locale loc = getResources().getConfiguration().getLocales().get(0);
-            String pattern = android.text.format.DateFormat.getBestDateTimePattern(loc,
-                    android.text.format.DateFormat.is24HourFormat(this) ? "EEEdMMMHHmm" : "EEEdMMMhmma");
-            when = new java.text.SimpleDateFormat(pattern, loc).format(new java.util.Date(m.startMillis));
+            when = Interests.whenText(m.startMillis, loc, TimeZone.getDefault(),
+                    android.text.format.DateFormat.is24HourFormat(this));
         }
         String big = live || Interests.Match.POST.equals(m.state) ? m.homeScore + " – " + m.awayScore : null;
         String league = m.league, home = m.home, away = m.away;
@@ -1357,22 +1416,30 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             home = NamesAr.or(n.teams, m.homeId, home);
             away = NamesAr.or(n.teams, m.awayId, away);
         }
-        return card(when, live, league, home + "  ×  " + away, big, 1f);
+        CharSequence sub = prefix + league;
+        if (Interests.involvesFavorite(m, interestsCfg.favoriteTeams)) {
+            SpannableString starred = new SpannableString(STAR + sub);
+            starred.setSpan(new android.text.style.ForegroundColorSpan(getColor(R.color.theme_gold)), 0, 1,
+                    Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            sub = starred;
+        }
+        return card(when, live, sub, home + "  ×  " + away, big, 1f);
     }
 
-    /** The favourite club whose turn it is: the match card's four lines, the league line says where and which club. */
+    /** Marks a match of a favourite club: a black star and a space, before the league line. */
+    private static final String STAR = "★ ";
+
+    /**
+     * The favourite clubs' match whose turn it is (each club's next two, see Interests.pickClubs): the match card's
+     * four lines, with the position first so a viewer knows more follow. OK skips to the next one.
+     */
     private View clubCard(List<Interests.Match> clubs, boolean ar) {
         int i = Math.floorMod(clubIndex, clubs.size());
         Interests.Match m = clubs.get(i);
         // The position goes first: a long league name is cut at the end, never the "3/8" a viewer looks for.
         String count = clubs.size() > 1 ? (i + 1) + "/" + clubs.size() + "  ·  " : "";
-        LinearLayout c = (LinearLayout) matchCard(m, ar);
-        // matchCard's second line is the league; add the position so a viewer knows more clubs follow.
-        if (!count.isEmpty() && c.getChildCount() > 1 && c.getChildAt(1) instanceof TextView) {
-            TextView league = (TextView) c.getChildAt(1);
-            league.setText(count + league.getText());
-        }
-        // OK on the club card skips to the next club, and the 5-second timer starts again from there.
+        View c = matchCard(m, ar, count);
+        // OK on the club card skips to the next match, and the timer starts again from there.
         c.setOnClickListener(v -> {
             handler.removeCallbacks(clubTick);
             clubTick.run();
@@ -1380,21 +1447,23 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         return c;
     }
 
-    /** Swaps only the club card (no strip rebuild), with a short fade, when there is more than one club to show. */
+    /** Swaps only the club card (no strip rebuild), with a short fade, when there is more than one match to show. */
     private void showClubCard() {
         View old = clubCard;
-        if (old == null || interestsStrip == null || old.getParent() != interestsStrip) return;
+        if (old == null || interestsStrip == null || !(old.getParent() instanceof LinearLayout)) return;
+        LinearLayout row = (LinearLayout) old.getParent();
+        if (row.getParent() != interestsStrip) return;
         List<Interests.Match> clubs = Interests.pickClubs(clubMatches, interestsCfg.favoriteTeams,
                 System.currentTimeMillis());
         if (clubs.size() < 2) return;
-        int at = interestsStrip.indexOfChild(old);
+        int at = row.indexOfChild(old);
         LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) old.getLayoutParams();
         glassCards.remove(old.getBackground());
         View next = clubCard(clubs, arabic());
         next.setLayoutParams(lp);
         boolean hadFocus = old.hasFocus();
-        interestsStrip.removeViewAt(at);
-        interestsStrip.addView(next, at);
+        row.removeViewAt(at);
+        row.addView(next, at);
         clubCard = next;
         if (hadFocus) next.requestFocus();
         tintGlass(ambientColor);
@@ -1437,7 +1506,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     /** As above with an optional second small line under the meta (the league on a match card). */
-    private LinearLayout card(String meta, boolean live, String sub, String title, String big, float weight) {
+    private LinearLayout card(String meta, boolean live, CharSequence sub, String title, String big, float weight) {
         LinearLayout c = new LinearLayout(this);
         c.setOrientation(LinearLayout.VERTICAL);
         GradientDrawable bg = new GradientDrawable();
@@ -1463,19 +1532,24 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     /**
-     * Readex Pro (OFL, google/fonts 8b0a1d0f) for the cards: one variable font with Arabic and Latin drawn as a
-     * pair, so an Arabic card and an English team name read as the same design. Outfit has no Arabic.
+     * IBM Plex Sans Arabic (OFL, google/fonts 9862abc0) for the cards: Arabic and Latin drawn as one family, so an
+     * Arabic card and an English team name read as the same design. Chosen in 2.9 over Readex Pro, Noto Kufi, Noto
+     * Sans Arabic, Tajawal, Cairo and Almarai by a side-by-side render: it is the narrowest of them at the same
+     * size, so the five prayer times fit a fifth of the screen. Light for the big numbers, Regular for the rest.
      */
-    private android.graphics.Typeface cardFont;
+    private android.graphics.Typeface cardFont, cardFontLight;
 
-    private TextView cardText(String s, float sp, int colorRes, boolean singleLine) {
+    private TextView cardText(CharSequence s, float sp, int colorRes, boolean singleLine) {
         TextView t = new TextView(this);
-        if (cardFont == null) cardFont = getResources().getFont(R.font.readex_pro);
-        t.setTypeface(cardFont);
+        if (cardFont == null) {
+            cardFont = getResources().getFont(R.font.plex_arabic);
+            cardFontLight = getResources().getFont(R.font.plex_arabic_light);
+        }
         // Big numbers light like the clock, everything else regular.
-        t.setFontVariationSettings(sp >= 24 ? "'wght' 300" : "'wght' 400");
+        t.setTypeface(sp >= 24 ? cardFontLight : cardFont);
         t.setText(s);
-        t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, sp);
+        // Small keeps the 2.8 sizes; medium and large scale every line of every card alike.
+        t.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, sp * StripSize.scale(textSize));
         t.setTextColor(getColor(colorRes));
         t.setGravity(getResources().getBoolean(R.bool.rtl_menu_bar) ? Gravity.RIGHT : Gravity.LEFT);
         // Each line takes its own direction from its first letter: an Arabic headline reads right to left
@@ -1839,218 +1913,5 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             action.run();
         });
         rows.addView(row);
-    }
-
-    // ---- launcher settings and module cards -------------------------------------------------------
-
-    /** Keep a normal Settings click for the TV; the launcher's choices live behind hold OK. */
-    private void showSettingsMenu() {
-        View anchor = findViewById(R.id.btnSettings);
-        View panel = getLayoutInflater().inflate(R.layout.popup_inputs, root, false);
-        LinearLayout rows = panel.findViewById(R.id.rows);
-        PopupWindow popup = glassPopup(panel, (int) (200 * density));
-        addSettingsMenuRow(rows, popup, R.string.launcher_settings, () -> startActivityForResult(
-                new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST));
-        if (moduleCards) addSettingsMenuRow(rows, popup, R.string.module_cards, this::showModuleCards);
-        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        popup.setWidth(Math.max((int) (200 * density), panel.getMeasuredWidth()));
-        // Hebrew puts Settings at the left of the header: grow the menu inward from it.
-        dropIn(popup, panel, anchor, getResources().getBoolean(R.bool.rtl_menu_bar)
-                ? Gravity.START : Gravity.END);
-        rows.getChildAt(0).requestFocus();
-    }
-
-    private void addSettingsMenuRow(LinearLayout rows, PopupWindow popup, int title, Runnable action) {
-        View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
-        row.findViewById(R.id.icon).setVisibility(View.GONE);
-        row.findViewById(R.id.dot).setVisibility(View.GONE);
-        row.findViewById(R.id.status).setVisibility(View.GONE);
-        ((TextView) row.findViewById(R.id.title)).setText(title);
-        row.setOnClickListener(v -> {
-            popup.dismiss();
-            action.run();
-        });
-        // The OK-up after opening the menu must not activate its first row.
-        final boolean[] pressed = {false};
-        row.setOnKeyListener((v, code, event) -> {
-            if (code != KeyEvent.KEYCODE_DPAD_CENTER && code != KeyEvent.KEYCODE_ENTER) return false;
-            if (event.getAction() == KeyEvent.ACTION_DOWN) {
-                if (event.getRepeatCount() == 0) pressed[0] = true;
-                return true;
-            }
-            boolean activate = pressed[0];
-            pressed[0] = false;
-            if (activate) {
-                popup.dismiss();
-                action.run();
-            }
-            return true;
-        });
-        rows.addView(row);
-    }
-
-    /**
-     * Asks about the next card that has no decision for its current signing key. One prompt at a
-     * time, only over a laid out grid with window focus (not under a popup or another app), and
-     * the next one follows as soon as this one is answered. Nothing is shown until the owner says Show.
-     */
-    private void showCardPrompt() {
-        if (!moduleCards || !tilesReady || promptsPaused || cardPrompt != null || !hasWindowFocus() || isFinishing()) return;
-        if (cards.isEmpty() || !CardFeature.working()) return;
-        CardFeature.run(() -> {
-            showCardPromptNow();
-            return null;
-        }, null);
-    }
-
-    private void showCardPromptNow() {
-        final Cards.Card card = Cards.firstPending(cards);
-        if (card == null) return;
-
-        View panel = getLayoutInflater().inflate(R.layout.dialog_card_prompt, root, false);
-        ((TextView) panel.findViewById(R.id.title)).setText(getString(R.string.card_prompt_title, card.appLabel));
-        ((TextView) panel.findViewById(R.id.body)).setText(card.state == Cards.State.RESIGNED
-                ? getString(R.string.card_prompt_resigned, card.appLabel)
-                : card.state == Cards.State.RELABELLED
-                ? getString(R.string.card_prompt_relabelled, card.appLabel)
-                : getString(R.string.card_prompt_body, card.appLabel));
-        TextView names = panel.findViewById(R.id.names);
-        if (Cards.fold(card.label).equals(Cards.fold(card.appLabel))) names.setVisibility(View.GONE);
-        else names.setText(getString(R.string.card_prompt_names, card.label, card.appLabel));
-        ((TextView) panel.findViewById(R.id.identity)).setText(
-                getString(R.string.card_prompt_identity, card.pkg, Cards.shortDigest(card.digest)));
-        TextView keep = panel.findViewById(R.id.btnKeep);
-        TextView show = panel.findViewById(R.id.btnShow);
-
-        final Dialog dialog = new Dialog(this);
-        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        dialog.setContentView(panel);
-        dialog.setCanceledOnTouchOutside(false);
-        Window w = dialog.getWindow();
-        if (w != null) {
-            w.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            w.setLayout((int) (440 * density), ViewGroup.LayoutParams.WRAP_CONTENT);
-            w.setDimAmount(0.6f);
-        }
-        // One decision per prompt: the buttons and Back (cancel) all end here.
-        final boolean[] decided = {false};
-        View.OnClickListener choose = v -> {
-            if (decided[0]) return;
-            decided[0] = true;
-            cardPrompt = null;
-            dialog.dismiss();
-            decideCard(card, v.getId() == R.id.btnShow);   // guards its own card calls; the tile reload stays outside
-            restoreFocus();   // the tiles changed under the prompt; this also chains the next prompt
-        };
-        keep.setOnClickListener(choose);
-        show.setOnClickListener(choose);
-        dialog.setOnCancelListener(d -> choose.onClick(keep));
-        dialog.setOnDismissListener(d -> {
-            if (cardPrompt == dialog) cardPrompt = null;
-        });
-        // Left and Right move between the two buttons; Up and Down stay put; the ends don't wrap.
-        View.OnKeyListener keys = (v, keyCode, event) -> {
-            if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
-            if (keyCode == KeyEvent.KEYCODE_DPAD_UP || keyCode == KeyEvent.KEYCODE_DPAD_DOWN) return true;
-            if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) return v.getId() == R.id.btnKeep;
-            return keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && v.getId() == R.id.btnShow;
-        };
-        keep.setOnKeyListener(keys);
-        show.setOnKeyListener(keys);
-        cardPrompt = dialog;
-        dialog.show();
-        keep.requestFocus();
-    }
-
-    /** Writes the owner's decision and rebuilds the tiles; focus is left where it is. */
-    private void decideCard(Cards.Card card, boolean show) {
-        boolean saved = CardFeature.run(() -> Cards.decide(Cards.storeFile(this), card, show), false);
-        if (!saved) {
-            Toast.makeText(this, R.string.card_not_saved, Toast.LENGTH_SHORT).show();
-            promptsPaused = true;
-        }
-        reloadTiles();
-    }
-
-    /** Dropdown under the Settings pill (hold OK): every discovered card, its package and key; OK toggles Shown and Hidden. */
-    private void showModuleCards() {
-        if (cards.isEmpty() || !CardFeature.working()) {
-            Toast.makeText(this, R.string.no_module_cards, Toast.LENGTH_SHORT).show();
-            return;
-        }
-        CardFeature.run(() -> {
-            showModuleCardsNow();
-            return null;
-        }, null);
-    }
-
-    private void showModuleCardsNow() {
-        View anchor = findViewById(R.id.btnSettings);
-        View panel = getLayoutInflater().inflate(R.layout.popup_cards, root, false);
-        LinearLayout rows = panel.findViewById(R.id.rows);
-        final PopupWindow popup = glassPopup(panel, (int) (400 * density));
-        List<Cards.Card> listed = new ArrayList<>(cards);
-        Collections.sort(listed, Cards::byLabel);
-        for (Cards.Card card : listed) {
-            View row = getLayoutInflater().inflate(R.layout.item_card_row, rows, false);
-            row.setTag(card.pkg);
-            ((TextView) row.findViewById(R.id.title)).setText(card.label);
-            TextView app = row.findViewById(R.id.app);
-            if (Cards.fold(card.label).equals(Cards.fold(card.appLabel))) app.setVisibility(View.GONE);
-            else app.setText(getString(R.string.card_app_name, card.appLabel));
-            ((TextView) row.findViewById(R.id.pkg)).setText(card.pkg);
-            ((TextView) row.findViewById(R.id.digest)).setText(Cards.longDigest(card.digest));
-            final String pkg = card.pkg;
-            row.setOnClickListener(v -> CardFeature.run(() -> {
-                // The list stays open; the decision is for the card as it is now, not as it was listed.
-                Cards.Card now = cardFor(pkg);
-                if (now == null) return null;
-                decideCard(now, now.state != Cards.State.SHOWN);
-                // Every row, not only this one: a toggle can move another card across the limit of 8.
-                updateCardStates(rows);
-                return null;
-            }, null));
-            rows.addView(row);
-        }
-        updateCardStates(rows);
-        // Scroll inside the panel instead of running off the bottom of a 720p screen.
-        panel.measure(View.MeasureSpec.UNSPECIFIED, View.MeasureSpec.UNSPECIFIED);
-        int[] at = new int[2];
-        anchor.getLocationInWindow(at);
-        int room = root.getHeight() - (at[1] + anchor.getHeight()) - (int) (34 * density);
-        popup.setHeight(Math.min(panel.getMeasuredHeight(), Math.max(room, (int) (120 * density))));
-        dropIn(popup, panel, anchor, Gravity.END);
-        rows.getChildAt(0).requestFocus();
-    }
-
-    private Cards.Card cardFor(String pkg) {
-        for (Cards.Card c : cards) if (c.pkg.equals(pkg)) return c;
-        return null;
-    }
-
-    /** Writes the state of every row in the Module cards list from the current card list. */
-    private void updateCardStates(LinearLayout rows) {
-        List<Cards.Card> drawn = Cards.shown(cards);
-        for (int i = 0; i < rows.getChildCount(); i++) {
-            View row = rows.getChildAt(i);
-            Cards.Card card = row.getTag() instanceof String ? cardFor((String) row.getTag()) : null;
-            ((TextView) row.findViewById(R.id.state)).setText(card != null ? stateText(card, drawn.contains(card)) : "");
-        }
-    }
-
-    /** The row's state: a card the owner set to Shown but which is beyond the eight drawn says so. */
-    private String stateText(Cards.Card card, boolean drawn) {
-        switch (card.state) {
-            case SHOWN:
-                return getString(drawn ? R.string.card_state_shown : R.string.card_state_over_limit);
-            case HIDDEN:
-                return getString(R.string.card_state_hidden);
-            case RESIGNED:
-                return getString(R.string.card_state_new_key);
-            case RELABELLED:
-                return getString(R.string.card_state_new_label);
-            default:
-                return getString(R.string.card_state_new);
-        }
     }
 }
