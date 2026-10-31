@@ -67,7 +67,7 @@
     <string name="ramadan_day">Ramadan · day %1$d</string>
     <string name="iftar_in">Iftar in</string>
     <string name="suhoor_ends_in">Suhoor ends in</string>
-    <string name="ramadan_times">Suhoor ends %1$s · Iftar %2$s</string>
+    <string name="ramadan_times">Suhoor ends %1$s\nIftar %2$s</string>
     <string-array name="prayer_names">
         <item>Fajr</item>
         <item>Sunrise</item>
