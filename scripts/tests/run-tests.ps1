@@ -17,7 +17,7 @@ function Run([string]$name, [string]$mode, [string[]]$argList, [scriptblock]$exp
     $env:FAKE_MODE = $mode
     $o = (& powershell -NoProfile -ExecutionPolicy Bypass -File $script @argList 2>&1 | Out-String)
     $calls = if (Test-Path $log) { Get-Content $log } else { @() }
-    $writes = @($calls | Where-Object { $_ -match 'disable-user|pm enable|set-home-activity|install|push|nohup|settings (put|delete)|touch' })
+    $writes = @($calls | Where-Object { $_ -match 'disable-user|pm enable|set-home-activity|install|push|nohup|kill|settings (put|delete)|touch' })
     $s = if (Test-Path $state) { Get-Content $state -Raw | ConvertFrom-Json } else { $null }
     $okk = & $expect $o $writes $s
     if ($okk) { $script:pass++ } else { $script:fail++ }
@@ -58,6 +58,10 @@ Run 'dry run changes nothing' 'normal' @() { param($o, $w, $s) $w.Count -eq 0 -a
 Run 'execute without the confirmation text changes nothing' 'normal' @('-Execute') { param($o, $w, $s) $w.Count -eq 0 -and $o -match 'Missing exact confirmation' }
 Run 'success: tvhome Home, launcherx and setupwraith disabled, deadman cancelled' 'normal' @('-Execute', '-ConfirmText', 'CONFIRM HOME tv', '-EnableAppKeys') {
     param($o, $w, $s) $s.home -eq 'com.gathin.tvhome' -and $s.enabled.Count -eq 0 -and $s.cancel -and $s.a11y -match 'HomeKeyService' -and $o -match 'DONE' }
+Run 'a timer from an earlier run is stopped before the new one starts' 'normal' @('-Execute', '-ConfirmText', 'CONFIRM HOME tv') {
+    param($o, $w, $s)
+    $k = @($w | Where-Object { $_ -match 'kill' }); $n = @($w | Where-Object { $_ -match 'nohup' })
+    $k.Count -ge 1 -and $n.Count -eq 1 -and ([array]::IndexOf($w, $k[0]) -lt [array]::IndexOf($w, $n[0])) }
 Run 'Android 11 dump (mResumedActivity only): the HOME key check still passes' 'android11' @('-Execute', '-ConfirmText', 'CONFIRM HOME tv', '-EnableAppKeys') {
     param($o, $w, $s) $s.home -eq 'com.gathin.tvhome' -and $s.enabled.Count -eq 0 -and $s.cancel -and $o -match 'DONE' -and $o -notmatch 'FAIL' }
 Run 'set-home ignored: rolls back to launcherx, deadman cancelled' 'sethome_ignored' @('-Execute', '-ConfirmText', 'CONFIRM HOME tv') {
