@@ -48,6 +48,8 @@ final class Config {
     static final String TEXT_SIZE_KEY = "text_size";
     /** Look options picked on the TV (DockStyle, TileShape, ClockStyle): kept across theme pushes, like the text size. */
     static final String DOCK_STYLE_KEY = "dock_style", TILE_CORNERS_KEY = "tile_corners", CLOCK_STYLE_KEY = "clock_style";
+    /** Apps hidden on the TV, a comma list (HiddenApps); wins over the theme's "hidden_apps", kept across theme pushes. */
+    static final String HIDDEN_APPS_KEY = "hidden_apps";
     /** Prayer method and Asr convention picked on the TV (Prayer.METHODS keys, "standard"/"hanafi"); win over config. */
     static final String PRAYER_METHOD_KEY = "prayer_method", ASR_KEY = "asr_method";
     /** The six names "prayer_adjust" takes, in Prayer's order. */
@@ -233,7 +235,10 @@ final class Config {
         Festival festival = json == null ? Festival.NONE : Festival.parse(string(json, "festival", ""),
                 string(json, "festival_until", ""), string(json, "greeting", ""), string(json, "accent_color", ""));
 
-        return new Config(dock, fillDock, hidden, liveTv, liveTvAction, panelService, panelAction, inputAction,
+        // Apps hidden on the TV (HiddenAppsActivity) win over the theme's list, like the clubs; no choice: the theme's list.
+        List<String> hiddenNow = HiddenApps.effective(
+                choices.contains(HIDDEN_APPS_KEY) ? choices.getString(HIDDEN_APPS_KEY, "") : null, hidden);
+        return new Config(dock, fillDock, hiddenNow, liveTv, liveTvAction, panelService, panelAction, inputAction,
                 Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
                 shamsi, reducedMotion, vpn, homeSettings, background,
                 Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, wallpaper, applied,

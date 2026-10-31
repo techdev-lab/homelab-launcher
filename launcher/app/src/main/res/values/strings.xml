@@ -97,6 +97,10 @@
     <string name="favorite_clubs_hint">Pick up to %1$d clubs. Home shows each club\'s next two matches in any competition (league, cup, continental), one every %2$d seconds, in the order you pick them, with a gold star.</string>
     <string name="clubs_clear">Clear (use the theme\'s clubs)</string>
     <string name="clubs_limit">Up to %d clubs. Remove one first.</string>
+    <string name="hidden_apps_state">Hidden apps (%1$d)</string>
+    <string name="hidden_apps_hint">OK on an app hides it or shows it again. A hidden app stays installed and still opens from anywhere else.</string>
+    <string name="hidden_apps_reset">Use the theme\'s list</string>
+    <string name="hidden_apps_row_hidden">%1$s · hidden</string>
     <string name="wallpapers_label">Wallpapers</string>
     <string name="wallpapers_homelab">HomeLab</string>
     <string name="wallpapers_serene">Serene</string>
