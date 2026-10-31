@@ -1,7 +1,12 @@
 # Remote and reliability options (design note, batch 2)
 
-Status: **PROPOSED, written before any code**, as `docs/DESIGN.md` asks. Three small changes found by reading the code and by
+Status: **IMPLEMENTED**, written before any code as `docs/DESIGN.md` asks. Three small changes found by reading the code and by
 the TV tests of 2.9 and the look options. Each keeps today's behaviour for anyone who changes nothing.
+
+Tested: all three by JVM tests (21 new), and on a Chromecast with Google TV 4K: the hidden-apps list (hide, show, reset, in
+Arabic) with the remote. Not yet tested on a TV: the ignored key (needs a physical remote and a pushed `config.json`) and the
+retry after a boot with no Wi-Fi (needs a reboot). The cards were seen to fill within 90 seconds of returning to Home after the
+TV had been asleep.
 
 ## 1. Remote buttons can be ignored (`app_keys`)
 

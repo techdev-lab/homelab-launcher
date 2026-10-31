@@ -10,9 +10,9 @@ Start from `config/config.example.json` or a city in `config/examples/`.
 |---|---|---|
 | `dock_apps` | `["com.google.android.youtube.tv", "net.mbc.shahidTV"]` | Package names for the top row, in order. Get yours from `adb shell pm list packages -3` or `scripts/Get-DeviceInventory.ps1`. |
 | `fill_dock` | `true` | Fill empty dock slots with other apps. |
-| `hidden_apps` | `["com.example.app"]` | Never shown. |
+| `hidden_apps` | `["com.example.app"]` | Never shown. Apps hidden on the TV (Launcher settings > Hidden apps) win over this list and a theme push does not clear them; "Use the theme's list" there goes back to it. The launcher itself cannot be hidden. |
 | `columns` | `4` | Grid columns. |
-| `app_keys` | `{"190": "com.google.android.youtube.tv"}` | Remote key code to app. Needs the HomeKeyService (see INSTALL.md step 6). 190 is the YouTube button. |
+| `app_keys` | `{"190": "com.google.android.youtube.tv"}` | Remote key code to app. Needs the HomeKeyService (see INSTALL.md step 6). 190 is the YouTube button. Use the word `ignore` instead of a package to swallow a button pressed by accident: `{"190": "ignore"}`. Home, Back, the arrows, OK and Power can never be mapped; an invalid entry is dropped and the others still work. |
 | `vpn_app` | `"com.wireguard.android"` | Shows a green **VPN** capsule in the Wi-Fi pill while a VPN is up, and a red one when this app is set but no VPN is up. |
 
 ## Language
