@@ -55,6 +55,24 @@
 
         <TextView style="@style/SettingsHint" android:text="@string/text_size_hint" />
 
+        <TextView style="@style/SettingsHeading" android:text="@string/dock_style_label" />
+
+        <LinearLayout android:id="@+id/dockStyleRow" style="@style/SettingsChoiceRow" />
+
+        <TextView style="@style/SettingsHint" android:text="@string/dock_style_hint" />
+
+        <TextView style="@style/SettingsHeading" android:text="@string/tile_corners_label" />
+
+        <LinearLayout android:id="@+id/tileCornersRow" style="@style/SettingsChoiceRow" />
+
+        <TextView style="@style/SettingsHint" android:text="@string/tile_corners_hint" />
+
+        <TextView style="@style/SettingsHeading" android:text="@string/clock_style_label" />
+
+        <LinearLayout android:id="@+id/clockStyleRow" style="@style/SettingsChoiceRow" />
+
+        <TextView style="@style/SettingsHint" android:text="@string/clock_style_hint" />
+
         <TextView style="@style/SettingsHeading" android:text="@string/prayer_method_label" />
 
         <TextView

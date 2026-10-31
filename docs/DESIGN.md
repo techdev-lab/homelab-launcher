@@ -68,4 +68,4 @@ narrowest token permissions. Every action in every workflow is pinned to a commi
 
 - Live scores for the Arab domestic leagues (needs a paid source or one that allows it).
 - More Arabic team names (community contributions to `names_ar.json`).
-- Signed release builds attached to GitHub Releases.
+- Look options on the TV (dock style, tile corners, clock style): proposed in `docs/LOOK_OPTIONS.md`, nothing implemented yet.

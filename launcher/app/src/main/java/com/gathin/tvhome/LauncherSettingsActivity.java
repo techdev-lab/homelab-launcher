@@ -36,6 +36,8 @@ public final class LauncherSettingsActivity extends Activity {
     private int backgroundColor;
     private boolean[] cards;
     private String textSize;
+    /** Look options (docs/LOOK_OPTIONS.md): the plate behind the dock, the tile corners and the header clock. */
+    private String dockStyle, tileCorners, clockStyle;
     private String prayerMethod;
     private int asrFactor;
     private TextView prayerMethodChoice;
@@ -44,7 +46,8 @@ public final class LauncherSettingsActivity extends Activity {
     /** One row of choices: the views in screen order and the value each one stands for. */
     private final List<TextView> languageViews = new ArrayList<>(), wallViews = new ArrayList<>(),
             colourViews = new ArrayList<>(), cardViews = new ArrayList<>(), motionViews = new ArrayList<>(),
-            textSizeViews = new ArrayList<>(), asrViews = new ArrayList<>();
+            textSizeViews = new ArrayList<>(), asrViews = new ArrayList<>(), dockStyleViews = new ArrayList<>(),
+            tileCornersViews = new ArrayList<>(), clockStyleViews = new ArrayList<>();
 
     private static final String[] LANGUAGES = {"system", "ar", "en"};
     private static final String[] WALL_SETS = {Wallpapers.HOMELAB, Wallpapers.SERENE, Wallpapers.KIDS};
@@ -74,6 +77,9 @@ public final class LauncherSettingsActivity extends Activity {
         Interests.Settings s = config.interests;
         cards = new boolean[]{s.showPrayer, s.showWeather, s.showSports, s.showClubs};
         textSize = config.textSize;
+        dockStyle = config.dockStyle;
+        tileCorners = config.tileCorners;
+        clockStyle = config.clockStyle;
         prayerMethod = s.prayerMethodKey;
         asrFactor = s.asrFactor;
 
@@ -156,6 +162,43 @@ public final class LauncherSettingsActivity extends Activity {
             }));
         }
         fill(R.id.textSizeRow, textSizeViews);
+
+        // The three look options: the viewer's choices, like the text size, so a theme push does not clear them.
+        int[] dockNames = {R.string.dock_style_band, R.string.dock_style_floating};
+        for (int i = 0; i < DockStyle.ALL.length; i++) {
+            final String style = DockStyle.ALL[i];
+            dockStyleViews.add(chip(getString(dockNames[i]), v -> {
+                if (style.equals(dockStyle)) return;
+                dockStyle = style;
+                choices.edit().putString(Config.DOCK_STYLE_KEY, style).apply();
+                changed();
+            }));
+        }
+        fill(R.id.dockStyleRow, dockStyleViews);
+
+        int[] cornerNames = {R.string.tile_corners_normal, R.string.tile_corners_soft};
+        for (int i = 0; i < TileShape.ALL.length; i++) {
+            final String shape = TileShape.ALL[i];
+            tileCornersViews.add(chip(getString(cornerNames[i]), v -> {
+                if (shape.equals(tileCorners)) return;
+                tileCorners = shape;
+                choices.edit().putString(Config.TILE_CORNERS_KEY, shape).apply();
+                changed();
+            }));
+        }
+        fill(R.id.tileCornersRow, tileCornersViews);
+
+        int[] clockNames = {R.string.clock_style_plain, R.string.clock_style_glass};
+        for (int i = 0; i < ClockStyle.ALL.length; i++) {
+            final String style = ClockStyle.ALL[i];
+            clockStyleViews.add(chip(getString(clockNames[i]), v -> {
+                if (style.equals(clockStyle)) return;
+                clockStyle = style;
+                choices.edit().putString(Config.CLOCK_STYLE_KEY, style).apply();
+                changed();
+            }));
+        }
+        fill(R.id.clockStyleRow, clockStyleViews);
 
         prayerMethodChoice = findViewById(R.id.prayerMethodChoice);
         prayerMethodChoice.setOnClickListener(v -> choosePrayerMethod());
@@ -275,6 +318,9 @@ public final class LauncherSettingsActivity extends Activity {
         }
         for (int i = 0; i < cards.length; i++) cardViews.get(i).setSelected(cards[i]);
         for (int i = 0; i < StripSize.ALL.length; i++) textSizeViews.get(i).setSelected(StripSize.ALL[i].equals(textSize));
+        for (int i = 0; i < DockStyle.ALL.length; i++) dockStyleViews.get(i).setSelected(DockStyle.ALL[i].equals(dockStyle));
+        for (int i = 0; i < TileShape.ALL.length; i++) tileCornersViews.get(i).setSelected(TileShape.ALL[i].equals(tileCorners));
+        for (int i = 0; i < ClockStyle.ALL.length; i++) clockStyleViews.get(i).setSelected(ClockStyle.ALL[i].equals(clockStyle));
         asrViews.get(0).setSelected(asrFactor != Prayer.ASR_HANAFI);
         asrViews.get(1).setSelected(asrFactor == Prayer.ASR_HANAFI);
         int m = methodIndex(prayerMethod);

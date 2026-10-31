@@ -182,7 +182,7 @@ No analytics, no accounts, no crash reporting, no remote configuration. The full
 
 ### Credits and license
 
-HomeLab Launcher is a fork of the `tvhome` launcher from [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (MIT), which is why the Android package is still `com.gathin.tvhome`. Fonts: Outfit and IBM Plex Sans Arabic, both SIL Open Font License 1.1. Data: ESPN public scoreboard, Open-Meteo. Details in [NOTICE.md](NOTICE.md).
+HomeLab Launcher is a fork of the `tvhome` launcher from [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (MIT), which is why the Android package is still `com.gathin.tvhome`. Fonts: Outfit and IBM Plex Sans Arabic, both SIL Open Font License 1.1. Data: ESPN public scoreboard, Open-Meteo. The glass dock and glass clock options were inspired by [tvOS Launcher](https://github.com/techgenius1/tvOS-Launcher) by techgenius (Apache-2.0); thank you. Details in [NOTICE.md](NOTICE.md).
 
 MIT License, see [LICENSE](LICENSE).
 
@@ -336,7 +336,7 @@ cd launcher
 
 ### الشكر والرخصة
 
-المشروع مبني على لانشر `tvhome` من مشروع [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (رخصة MIT)، ولهذا اسم الحزمة `com.gathin.tvhome`. الخطوط: Outfit وIBM Plex Sans Arabic (رخصة SIL OFL 1.1). البيانات: ESPN وOpen-Meteo. التفاصيل في [NOTICE.md](NOTICE.md).
+المشروع مبني على لانشر `tvhome` من مشروع [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (رخصة MIT)، ولهذا اسم الحزمة `com.gathin.tvhome`. الخطوط: Outfit وIBM Plex Sans Arabic (رخصة SIL OFL 1.1). البيانات: ESPN وOpen-Meteo. خيارا الرصيف الزجاجي والساعة الزجاجية مستوحيان من [tvOS Launcher](https://github.com/techgenius1/tvOS-Launcher) للمطوّر techgenius (رخصة Apache-2.0)، له الشكر. التفاصيل في [NOTICE.md](NOTICE.md).
 
 رخصة MIT، شوف [LICENSE](LICENSE).
 

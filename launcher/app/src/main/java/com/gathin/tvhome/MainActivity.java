@@ -21,6 +21,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
@@ -167,6 +168,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private static LocalDate lastPetalShower;
     /** Text size of the strip (StripSize): sets the cards per row and the size of their text. */
     private String textSize = StripSize.SMALL;
+    /** Look options (DockStyle, TileShape, ClockStyle, docs/LOOK_OPTIONS.md): the defaults are the 2.9 look. */
+    private String dockStyle = DockStyle.BAND, tileCorners = TileShape.NORMAL, clockStyle = ClockStyle.PLAIN;
+    private DockDecoration dockDecoration;
     /** Rebuild the tiles on resume: Home was fully hidden by an app, or Home was pressed. Not after a side panel such as Wi-Fi settings. */
     private boolean rebuildOnResume = true;
     /** The Inputs dropdown while it is open, so onPause can close it. */
@@ -318,6 +322,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         appKeys = cfg.appKeys;
         vpnApp = cfg.vpnApp;
         textSize = cfg.textSize;
+        dockStyle = cfg.dockStyle;
+        tileCorners = cfg.tileCorners;
+        clockStyle = cfg.clockStyle;
+        if (ClockStyle.capsule(clockStyle)) glassClock();
 
         grid = findViewById(R.id.grid);
         rtlAppGrid = getResources().getBoolean(R.bool.rtl_app_grid);
@@ -357,7 +365,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
         grid.setHasFixedSize(true);
         grid.setItemAnimator(null);
-        grid.addItemDecoration(new DockDecoration(COLUMNS, density));
+        dockDecoration = new DockDecoration(COLUMNS, density, dockStyle, TileShape.factor(tileCorners));
+        grid.addItemDecoration(dockDecoration);
         if (animations) {
             int enterAnim = reducedMotion ? R.anim.tile_enter_reduced : R.anim.tile_enter;
             float enterDelay = reducedMotion ? 0f : 0.06f;
@@ -753,7 +762,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             lp.height = (int) h;
             glass.setLayoutParams(lp);
             // GlassView draws its slab inset by pad, i.e. exactly over the zoomed tile: same corners as the tile.
-            glass.setRadius(AppAdapter.cornerRadius(card.getWidth(), density) * scale);
+            glass.setRadius(AppAdapter.cornerRadius(card.getWidth(), density, tileCorners) * scale);
         }
         glassTargetX = x;
         glassTargetY = y;
@@ -943,6 +952,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (focusedCard != null && focusedCard.getBackground() instanceof GradientDrawable) {
             ((GradientDrawable) focusedCard.getBackground()).setStroke(Math.round(2 * density), 0xFFFFFFFF);
         }
+        // The floating dock plate takes the same colour; the band ignores it.
+        if (dockDecoration != null && DockStyle.floating(dockStyle)) {
+            dockDecoration.setAmbient(c);
+            grid.invalidate();
+        }
+    }
+
+    /** Clock style "glass" (ClockStyle): the time sits on a capsule, tinted with the header pills by tintGlass. */
+    private void glassClock() {
+        TextView clock = findViewById(R.id.clock);
+        GradientDrawable capsule = new GradientDrawable();
+        capsule.setCornerRadius(60 * density);   // far above half the height: Android clamps it to a capsule
+        capsule.setColor(Glass.pillFill(-1));
+        capsule.setStroke(Math.max(1, Math.round(density)), Glass.edge(-1));
+        glassPills.add(capsule);
+        int inset = Math.round(ClockStyle.insetDp(clockStyle) * density);
+        clock.setBackground(new InsetDrawable(capsule, 0, inset, 0, inset));   // the capsule keeps clear of the greeting
+        int pad = Math.round(ClockStyle.padDp(clockStyle) * density);
+        clock.setPadding(pad, 0, pad, 0);   // sides only: the header keeps its height and the dock its place
     }
 
     /** Remote buttons mapped in config.json "app_keys" (default: the YouTube button, 190), while Home is in front. */

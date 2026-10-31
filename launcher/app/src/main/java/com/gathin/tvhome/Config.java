@@ -45,6 +45,8 @@ final class Config {
     static final String LANGUAGE_KEY = "language";
     /** Strip text size picked on the TV (StripSize): kept across theme pushes, like the clubs. */
     static final String TEXT_SIZE_KEY = "text_size";
+    /** Look options picked on the TV (DockStyle, TileShape, ClockStyle): kept across theme pushes, like the text size. */
+    static final String DOCK_STYLE_KEY = "dock_style", TILE_CORNERS_KEY = "tile_corners", CLOCK_STYLE_KEY = "clock_style";
     /** Prayer method and Asr convention picked on the TV (Prayer.METHODS keys, "standard"/"hanafi"); win over config. */
     static final String PRAYER_METHOD_KEY = "prayer_method", ASR_KEY = "asr_method";
     /** The six names "prayer_adjust" takes, in Prayer's order. */
@@ -105,6 +107,8 @@ final class Config {
     final String wallpaperMode;
     /** Text size of the interests strip (StripSize): small, medium or large. */
     final String textSize;
+    /** Plate behind the dock (DockStyle), tile corners (TileShape) and header clock (ClockStyle); the defaults are the 2.9 look. */
+    final String dockStyle, tileCorners, clockStyle;
 
     private Config(List<String> dockApps, boolean fillDock, List<String> hiddenApps, String liveTvPackage,
                    String liveTvAction, String sourcePanelService, String sourcePanelAction, String inputAction,
@@ -114,7 +118,7 @@ final class Config {
                    int[] settingsKeycodes, boolean settingsKeyPanel, File wallpaper, boolean overlayApplied,
                    Festival festival, Interests.Settings interests, Map<Integer, String> appKeys,
                    List<File> wallpapers, int wallpaperMinutes, String wallpaperMode,
-                   String textSize) {
+                   String textSize, String dockStyle, String tileCorners, String clockStyle) {
         this.dockApps = Collections.unmodifiableList(dockApps);
         this.fillDock = fillDock;
         this.hiddenApps = Collections.unmodifiableList(hiddenApps);
@@ -144,6 +148,9 @@ final class Config {
         this.wallpaperMinutes = wallpaperMinutes;
         this.wallpaperMode = wallpaperMode;
         this.textSize = textSize;
+        this.dockStyle = dockStyle;
+        this.tileCorners = tileCorners;
+        this.clockStyle = clockStyle;
     }
 
     /** The folder the theme tools push into; null when external storage is unavailable. */
@@ -230,7 +237,10 @@ final class Config {
                 shamsi, reducedMotion, vpn, homeSettings, background,
                 Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, wallpaper, applied,
                 festival, interests(json, choices), appKeys(json), rotation, wallMinutes, wallMode,
-                StripSize.pick(choices.getString(TEXT_SIZE_KEY, ""), json == null ? "" : string(json, "text_size", "")));
+                StripSize.pick(choices.getString(TEXT_SIZE_KEY, ""), json == null ? "" : string(json, "text_size", "")),
+                DockStyle.pick(choices.getString(DOCK_STYLE_KEY, ""), json == null ? "" : string(json, "dock_style", "")),
+                TileShape.pick(choices.getString(TILE_CORNERS_KEY, ""), json == null ? "" : string(json, "tile_corners", "")),
+                ClockStyle.pick(choices.getString(CLOCK_STYLE_KEY, ""), json == null ? "" : string(json, "clock_style", "")));
     }
 
     /** Default: the YouTube button. A theme's "app_keys" object replaces the whole map ({} turns it off). */

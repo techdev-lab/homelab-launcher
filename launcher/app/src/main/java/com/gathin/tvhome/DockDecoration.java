@@ -1,30 +1,51 @@
 package com.gathin.tvhome;
 
 import android.graphics.Canvas;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-/** Draws the tvOS style lighter band behind the first (dock) row and adds a gap below it. */
+/**
+ * Draws the plate behind the first (dock) row and adds a gap below it. {@link DockStyle#BAND} is the flat tvOS style
+ * band of 2.9 (the default); {@link DockStyle#FLOATING} is translucent glass in the colour of the focused app.
+ */
 public class DockDecoration extends RecyclerView.ItemDecoration {
 
     private final int dockSize;
     private final float density;
+    private final String style;
+    private final float radius;
     private final Paint band = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint edge = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF rect = new RectF();
+    /** Ambient colour of the focused app (0xRRGGBB); negative until there is one. Only the floating plate uses it. */
+    private int ambientRgb = -1;
+    private int shaderTop, shaderBottom;
+    private float shaderFrom = Float.NaN, shaderTo = Float.NaN;
 
-    DockDecoration(int dockSize, float density) {
+    /** {@code tileCornerFactor} is {@link TileShape#factor}: a softer tile corner makes the plate rounder in step. */
+    DockDecoration(int dockSize, float density, String style, float tileCornerFactor) {
         this.dockSize = dockSize;
         this.density = density;
-        band.setColor(0xFF141416);
+        this.style = style;
+        this.radius = DockStyle.radiusDp(style, tileCornerFactor) * density;
+        band.setColor(DockStyle.fillTop(style, -1));
         edge.setStyle(Paint.Style.STROKE);
         edge.setStrokeWidth(density);
-        edge.setColor(0x1FFFFFFF);
+        edge.setColor(DockStyle.edge(style, -1));
+    }
+
+    /** The colour the floating plate takes; the caller repaints the list. A no-op for the band. */
+    void setAmbient(int rgb) {
+        if (!DockStyle.floating(style)) return;
+        ambientRgb = rgb;
+        edge.setColor(DockStyle.edge(style, rgb));
     }
 
     @Override
@@ -58,10 +79,22 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
             }
         }
         if (!any) return;
-        float pad = 14 * density;
+        float pad = DockStyle.PAD_DP * density;
         rect.inset(-pad, -pad);
-        float radius = 26 * density;
+        if (DockStyle.floating(style)) glassFill();
         c.drawRoundRect(rect, radius, radius, band);
         c.drawRoundRect(rect, radius, radius, edge);
+    }
+
+    /** The glass gradient, rebuilt only when the plate moves or the colour changes. */
+    private void glassFill() {
+        int top = DockStyle.fillTop(style, ambientRgb), bottom = DockStyle.fillBottom(style, ambientRgb);
+        if (band.getShader() != null && top == shaderTop && bottom == shaderBottom
+                && rect.top == shaderFrom && rect.bottom == shaderTo) return;
+        shaderTop = top;
+        shaderBottom = bottom;
+        shaderFrom = rect.top;
+        shaderTo = rect.bottom;
+        band.setShader(new LinearGradient(0, rect.top, 0, rect.bottom, top, bottom, Shader.TileMode.CLAMP));
     }
 }
