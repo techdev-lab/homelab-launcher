@@ -1,7 +1,9 @@
 # Look options (design note)
 
-Status: **PROPOSED, nothing is implemented.** Written before any code, as `docs/DESIGN.md` asks. It describes three small
-settings that let a viewer choose between today's look and a more "glass" look, on the TV, from Launcher settings.
+Status: **IMPLEMENTED in the unreleased build, waiting for the TV test.** Written before any code, as `docs/DESIGN.md` asks. It
+describes three small settings that let a viewer choose between today's look and a more "glass" look, on the TV, from Launcher
+settings. Decisions taken: option 3 is the glass clock (not the clock size), built last and to be dropped if the Arabic or
+English screenshots show any shift; the order is 1, 2, 3.
 
 ## Goal
 
@@ -54,7 +56,8 @@ On the TV (one device step at a time, each with the owner's typed confirmation, 
 
 ## Rollback
 
-`install -r` of the frozen 2.9.0 APK. The three keys are ignored by older builds, and *Follow theme* clears the on-TV choices.
+`install -r` of the frozen 2.9.0 APK. The three keys are ignored by older builds. Picking the first value of each option again
+(Band, Normal, Plain) restores today's look; *Follow theme* does not touch these choices, like the text size.
 
 ## Inspiration and credit
 
@@ -69,8 +72,16 @@ thank-you line. If a later change does copy code from it, that file keeps the Ap
 Depth wallpapers (their images have no declared licence), a control panel, a recent-apps switcher, profiles, an icon changer, a
 button mapper, any extra permission (device admin, secure settings, notification listener), and any self-update.
 
-## Open decisions for the owner
+## Decisions
 
-1. Option 3: glass clock, or the safer `clock_size`.
-2. Whether the two screenshots of the reference launcher may be looked at (a web page in the browser, nothing is saved).
-3. The order of the options inside one batch (suggested: 1, then 2, then 3).
+1. Option 3: the glass clock (decided by the owner), with `clock_size` kept as the fallback if it shifts the header.
+2. The visual comparison with the reference launcher was not done (its page did not open in the in-app browser); the options
+   are judged on our own screenshots instead.
+3. The order of the options inside the batch: 1, then 2, then 3.
+
+## What was built
+
+`DockStyle`, `TileShape` and `ClockStyle` (pure classes, 16 JVM tests), `DockDecoration` (band or floating plate),
+`AppAdapter.cornerRadius` (soft corners), `MainActivity` (clock capsule, ambient colour for the plate, highlight radius),
+`Config` (three keys), three rows in Launcher settings with English and Arabic strings. The defaults draw with exactly the
+numbers of 2.9 (`DockStyleTest.bandKeepsTodaysNumbers`, `TileShapeTest.normalIsExactlyTodaysRadius`).

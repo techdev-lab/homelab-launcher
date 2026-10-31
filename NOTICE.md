@@ -4,6 +4,10 @@
 
 HomeLab Launcher is a fork of the `tvhome` launcher in [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv), MIT License, Copyright (c) 2026 Gathin. Forked from commit `e561b0551c57700397c6862e9513fc23ef601c02`. The Android package name `com.gathin.tvhome` is kept from upstream so existing installs upgrade in place.
 
+## Design inspiration
+
+The *Dock style* (floating glass) and *Clock style* (glass) options in Launcher settings were inspired by the public description of [tvOS Launcher](https://github.com/techgenius1/tvOS-Launcher) by techgenius, Apache License 2.0. Only its README was read. No code, image or wallpaper from it is in this project: the drawing is our own and uses the `Glass` colour arithmetic. If code from it is ever copied, that file will keep the Apache License 2.0 header, the licence text will be added, and this section will say what was changed.
+
 ## Fonts
 
 The fonts are not covered by the MIT License in [LICENSE](LICENSE). Outfit is copyright The Outfit Project Authors and IBM Plex Sans Arabic is copyright IBM Corp., both under the SIL Open Font License 1.1.

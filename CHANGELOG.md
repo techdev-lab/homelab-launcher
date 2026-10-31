@@ -2,6 +2,9 @@
 
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
+## Unreleased
+- **Look options** (Launcher settings): *Dock style* (the flat band, or floating glass that takes the colour of the focused app), *Tile corners* (normal or soft; the highlight and the dock plate follow) and *Clock style* (plain, or the time on a glass capsule). Every default is the 2.9 look, so an upgrade changes nothing until you pick. Also `"dock_style"`, `"tile_corners"` and `"clock_style"` in config.json; the TV's choice wins and a theme push does not clear it. The ideas came from the public description of tvOS Launcher (see NOTICE.md); no code or image was copied.
+
 ## 2.9.0 (2026-10-28)
 - **Your clubs stand out.** Every match card with one of your favourite clubs, on the league cards too, gets a gold star before the competition. The club card now shows each club's **next two** matches, so a continental or cup match two days after a league match is no longer hidden behind it (Al Hilal: Saudi Pro League on Saturday, AFC Champions League Elite on Tuesday). The club card is now the first football card. Matching is by ESPN team id, so it works in both languages.
 - **Text size** (Launcher settings > Text size): Small, Medium or Large: the home screen's one row of cards has 5, 4 or 3 places, and when there are more cards the last place shows the rest in turn (every 8 seconds, or OK on it). Every line of every card, the prayer card's included, grows with the size. A second row was tried on the TV and pushed the app dock off the screen. Small is the 2.8 look, so an upgrade changes nothing until you pick. Also `"text_size"` in config.json; the TV's choice wins and a theme push does not clear it.

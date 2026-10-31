@@ -118,6 +118,8 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
     private final boolean showHomeSettings;
     /** Calmer motion for weak GPUs (config.xml, reduced_motion): no overshoot, shorter fades. */
     private final boolean reducedMotion;
+    /** Tile corner shape (TileShape): normal is the 16 dp corner of 2.9. */
+    private final String tileCorners;
     private final List<Entry> items = new ArrayList<>();
     /**
      * Pref keys of the tile order Move mode used to save (removed in 2.9: it never worked with the physical remote).
@@ -136,6 +138,7 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         this.advancedEffects = cfg.animations && cfg.advancedEffects;
         this.showHomeSettings = cfg.showHomeSettingsShortcut;
         this.reducedMotion = cfg.reducedMotion;
+        this.tileCorners = cfg.tileCorners;
         android.content.SharedPreferences prefs = ctx.getSharedPreferences(Config.SETTINGS_NAME, Context.MODE_PRIVATE);
         if (prefs.contains(OLD_ORDER_KEY) || prefs.contains(OLD_ORDER_COLUMNS_KEY)) {
             prefs.edit().remove(OLD_ORDER_KEY).remove(OLD_ORDER_COLUMNS_KEY).apply();
@@ -388,9 +391,12 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         return Color.HSVToColor(hsv);
     }
 
-    /** Corner radius for a tile of this width: 16dp at the design width, proportionally less when smaller. */
-    static float cornerRadius(int tileWidthPx, float density) {
-        return 16f * density * Math.min(1f, tileWidthPx / (DESIGN_W_DP * density));
+    /**
+     * Corner radius for a tile of this width: 16dp at the design width (more for the soft shape, TileShape),
+     * proportionally less when smaller.
+     */
+    static float cornerRadius(int tileWidthPx, float density, String tileCorners) {
+        return TileShape.radiusPx(tileWidthPx, density, DESIGN_W_DP, tileCorners);
     }
 
     static final class Holder extends RecyclerView.ViewHolder {
@@ -422,7 +428,8 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
                 @Override
                 public void getOutline(View view, Outline outline) {
                     // 16dp at the design width, scaled down with the tile so small tiles keep the same shape.
-                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), cornerRadius(view.getWidth(), density));
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(),
+                            cornerRadius(view.getWidth(), density, Holder.this.adapter.tileCorners));
                 }
             });
             card.setClipToOutline(true);
