@@ -241,6 +241,25 @@
         </FrameLayout>
     </LinearLayout>
 
+    <!-- The dock as a column on the right edge (dock_position "right"; hidden otherwise). Placed under the top-bar
+         buttons in code (MainActivity.placeSideDock). Keep in step across layout, layout-ar and layout-iw. -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/dockList"
+        android:layout_width="156dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="right|top"
+        android:layout_marginRight="56dp"
+        android:layout_marginTop="120dp"
+        android:layout_marginBottom="20dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="14dp"
+        android:clipToPadding="false"
+        android:clipChildren="false"
+        android:overScrollMode="never"
+        android:scrollbars="none"
+        android:visibility="gone"
+        android:descendantFocusability="afterDescendants" />
+
     <!-- The single floating glass highlight that springs between tiles. -->
     <com.gathin.tvhome.GlassView
         android:id="@+id/glass"

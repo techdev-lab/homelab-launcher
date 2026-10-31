@@ -62,6 +62,7 @@ import androidx.dynamicanimation.animation.FloatPropertyCompat;
 import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
@@ -96,6 +97,22 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private AppAdapter adapter;
     private RecyclerView grid;
+    /** The right-hand dock column (dock_position "right", docs/LAYOUT_OPTIONS.md); hidden in the bottom layout. */
+    private RecyclerView dockList;
+    private boolean sideDock;
+    /** Columns of the grid beside the dock column. */
+    private int restCols;
+    private final RecyclerView.OnScrollListener glassFollow = new RecyclerView.OnScrollListener() {
+        @Override
+        public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
+            // The name of the focused dock app (right-hand layout) rides with its tile.
+            if (sideDock && rv == dockList && heroShown) heroName.setTranslationY(heroName.getTranslationY() - dy);
+            if (!glassShown) return;
+            glassTargetY -= dy;
+            glassScrollShift -= dy;
+            glass.setTranslationY(glass.getTranslationY() - dy);
+        }
+    };
     private FrameLayout root;
     private GlassView glass;
     private View ambient;
@@ -289,6 +306,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
         Config cfg = Config.load(this);
         COLUMNS = cfg.columns;
+        sideDock = DockPosition.side(cfg.dockPosition);
+        restCols = DockPosition.restColumns(COLUMNS);
         animations = cfg.animations;
         advancedEffects = cfg.animations && cfg.advancedEffects;
         reducedMotion = cfg.reducedMotion;
@@ -347,9 +366,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
 
         grid = findViewById(R.id.grid);
+        dockList = findViewById(R.id.dockList);
         rtlAppGrid = getResources().getBoolean(R.bool.rtl_app_grid);
         // Mirror only the app grid; the header and other locales keep their own layouts.
-        grid.setLayoutManager(new GridLayoutManager(this, COLUMNS) {
+        grid.setLayoutManager(new GridLayoutManager(this, sideDock ? restCols : COLUMNS) {
             @Override
             protected boolean isLayoutRTL() {
                 return rtlAppGrid;
@@ -368,7 +388,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             public boolean requestChildRectangleOnScreen(@NonNull RecyclerView parent, @NonNull View child,
                                                          @NonNull Rect rect, boolean immediate,
                                                          boolean focusedChildVisible) {
-                if (getPosition(child) < COLUMNS) return false;
+                if (!sideDock && getPosition(child) < COLUMNS) return false;
                 int top = child.getTop() + rect.top;
                 int bottom = top + rect.height();
                 int limitBottom = getHeight() - getPaddingBottom();
@@ -384,8 +404,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         });
         grid.setHasFixedSize(true);
         grid.setItemAnimator(null);
-        dockDecoration = new DockDecoration(COLUMNS, density, dockStyle, TileShape.factor(tileCorners));
-        grid.addItemDecoration(dockDecoration);
+        dockDecoration = new DockDecoration(COLUMNS, density, dockStyle, TileShape.factor(tileCorners), sideDock);
+        (sideDock ? dockList : grid).addItemDecoration(dockDecoration);
         if (animations) {
             int enterAnim = reducedMotion ? R.anim.tile_enter_reduced : R.anim.tile_enter;
             float enterDelay = reducedMotion ? 0f : 0.06f;
@@ -395,12 +415,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         adapter = new AppAdapter(this, this, COLUMNS, cfg);
         // Arabic screen: Arabic app names too (YouTube, Shahid… keep English labels on an Arabic system).
         if (arabic()) adapter.setLabelOverrides(NamesAr.get(this).apps);
-        grid.setAdapter(adapter);
+        if (sideDock) {
+            grid.setAdapter(adapter.restSlice(restCols));
+            setUpSideDock();
+        } else {
+            grid.setAdapter(adapter);
+        }
 
         // tvOS layout: push the dock row towards the bottom of the screen, leaving room for
         // rows_below_dock grid rows under it; the rest of the grid stays below until you press Down.
         int rowsBelowDock = cfg.rowsBelowDock;
-        grid.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
+        if (!sideDock) grid.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> {
             int h = b - t;
             // Item height follows the tile size, which follows the column count (AppAdapter.tileWidthPx).
             int inner = (r - l) - grid.getPaddingLeft() - grid.getPaddingRight();
@@ -413,16 +438,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             }
         });
 
-        // Keep the glass glued to its tile while the grid scrolls.
-        grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrolled(@NonNull RecyclerView rv, int dx, int dy) {
-                if (!glassShown) return;
-                glassTargetY -= dy;
-                glassScrollShift -= dy;
-                glass.setTranslationY(glass.getTranslationY() - dy);
-            }
-        });
+        // Keep the glass glued to its tile while the grid (or the dock column) scrolls.
+        grid.addOnScrollListener(glassFollow);
 
         // Liquid feel: soft springs on the highlight's position.
         springX = new SpringAnimation(glass, DynamicAnimation.TRANSLATION_X);
@@ -474,6 +491,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return true;
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
                 // The strip cards under the bar, else back to the dock tile Up came from.
+                if (sideDock) {
+                    runAction(SideNav.fromTopDown(aboveDockColumn(v), stripShown(), adapter.getItemCount(), COLUMNS), v, keyCode);
+                    return true;
+                }
                 if (!focusNearestCard(v, false)) focusTile(lastFocused % COLUMNS);
                 return true;
             }
@@ -598,6 +619,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (openLauncherSettingsIfAsked(intent)) return;
         if (intent == null || !intent.hasCategory(Intent.CATEGORY_HOME)) return;
         grid.scrollToPosition(0);
+        if (sideDock) dockList.scrollToPosition(0);
         lastFocused = 0;
         lastFocusedKey = adapter.getItemCount() > 0 ? adapter.keyAt(0) : null;
         rebuildOnResume = true;
@@ -656,7 +678,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // Capture the app before rebinding can move focus and overwrite its key.
         final String returnKey = lastFocusedKey;
         final int returnSlot = lastFocused;
-        final boolean restoreFocus = animate || grid.hasFocus();
+        final boolean restoreFocus = animate || grid.hasFocus() || (sideDock && dockList.hasFocus());
         if (restoreFocus) {
             glassShown = false;
             glass.setAlpha(0f);
@@ -805,6 +827,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             springY.animateToFinalPosition(y - glassScrollShift);
         }
         View item = (View) card.getParent();
+        if (sideDock && position < COLUMNS) {
+            // The dock column: keep the whole glass in view if it scrolls, and name the app beside it.
+            Rect wantRect = new Rect(0, -(int) pad * 2, item.getWidth(), item.getHeight() + (int) pad);
+            dockList.requestChildRectangleOnScreen(item, wantRect, reducedMotion);
+            showSideHero(position, card);
+            return;
+        }
         if (position < COLUMNS) {
             // Dock: park it at the bottom of the screen and show the top shelf for this app.
             int decoratedTop = item.getTop() - (int) (6 * density);
@@ -840,7 +869,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         ViewGroup.MarginLayoutParams lp = (ViewGroup.MarginLayoutParams) wrap.getLayoutParams();
         // Hero bottom = dock tiles' top - 14dp (glass) - HERO_GAP; the tiles start 10dp (grid padding) into the
         // wrapper. 6dp keeps it clear of the strip's cards.
-        int want = stripVisible
+        int want = stripVisible && !sideDock
                 ? (int) ((6 + 14 + HERO_GAP_DP - 10) * density) + heroName.getLineHeight()
                 : (int) (10 * density);
         if (lp.topMargin != want) {
@@ -976,7 +1005,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // The floating dock plate takes the same colour; the band ignores it.
         if (dockDecoration != null && DockStyle.floating(dockStyle)) {
             dockDecoration.setAmbient(c);
-            grid.invalidate();
+            (sideDock ? dockList : grid).invalidate();
         }
     }
 
@@ -1060,6 +1089,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     @Override
     public boolean onTileVerticalKey(int position, int keyCode) {
+        if (sideDock) return onSideKey(position, keyCode);
         int count = adapter.getItemCount();
         int target;
         // Horizontal: swallow the key at a row's ends so focus never wraps to the next row or
@@ -1095,7 +1125,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             return;
         }
         final int pos = adapter.focusablePosition(Math.max(0, Math.min(position, adapter.getItemCount() - 1)));
-        RecyclerView.ViewHolder vh = grid.findViewHolderForAdapterPosition(pos);
+        final RecyclerView list = listFor(pos);
+        final int rel = relPos(pos);
+        RecyclerView.ViewHolder vh = list.findViewHolderForAdapterPosition(rel);
         if (vh != null) {
             View card = vh.itemView.findViewById(R.id.card);
             // Already focused (e.g. back from an app): no focus change fires, so restore the glass by hand.
@@ -1105,24 +1137,244 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         // Not laid out yet: scroll there, then focus once the scroll settles.
         if (!animations) {
-            grid.scrollToPosition(pos);
-            grid.post(() -> {
-                RecyclerView.ViewHolder h = grid.findViewHolderForAdapterPosition(pos);
+            list.scrollToPosition(rel);
+            list.post(() -> {
+                RecyclerView.ViewHolder h = list.findViewHolderForAdapterPosition(rel);
                 if (h != null) h.itemView.findViewById(R.id.card).requestFocus();
             });
             return;
         }
-        grid.addOnScrollListener(new RecyclerView.OnScrollListener() {
+        list.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
             public void onScrollStateChanged(@NonNull RecyclerView rv, int newState) {
                 if (newState != RecyclerView.SCROLL_STATE_IDLE) return;
                 rv.removeOnScrollListener(this);
-                RecyclerView.ViewHolder h = rv.findViewHolderForAdapterPosition(pos);
+                RecyclerView.ViewHolder h = rv.findViewHolderForAdapterPosition(rel);
                 View target = h != null ? h.itemView.findViewById(R.id.card) : rv.getChildAt(0);
                 if (target != null) target.requestFocus();
             }
         });
-        grid.smoothScrollToPosition(pos);
+        list.smoothScrollToPosition(rel);
+    }
+
+    // ---- the right-hand dock column (docs/LAYOUT_OPTIONS.md) ------------------------------------
+
+    /** The list that shows the app at an absolute position. */
+    private RecyclerView listFor(int pos) {
+        return sideDock && pos < COLUMNS ? dockList : grid;
+    }
+
+    /** The position inside that list: the grid starts after the dock slots in the right-hand layout. */
+    private int relPos(int pos) {
+        return sideDock && pos >= COLUMNS ? pos - COLUMNS : pos;
+    }
+
+    /** Where focus goes when it comes down into the tiles from the strip with nothing better to aim at. */
+    private void focusContentEntry() {
+        if (sideDock) focusTile(adapter.getItemCount() > COLUMNS ? COLUMNS : 0);
+        else focusTile(lastFocused % COLUMNS);
+    }
+
+    private int stripPlaces() {
+        return sideDock ? StripSize.perRowSide(textSize) : StripSize.perRow(textSize);
+    }
+
+    private boolean stripShown() {
+        return interestsStrip != null && interestsStrip.getVisibility() == View.VISIBLE
+                && interestsStrip.getChildCount() > 0;
+    }
+
+    /** True when the view sits over the dock column, so Down from it lands on the dock. */
+    private boolean aboveDockColumn(View v) {
+        int[] at = new int[2];
+        dockList.getLocationOnScreen(at);
+        float x = centreX(v);
+        return x >= at[0] && x <= at[0] + dockList.getWidth();
+    }
+
+    private static float centreY(View v) {
+        int[] at = new int[2];
+        v.getLocationOnScreen(at);
+        return at[1] + v.getHeight() / 2f;
+    }
+
+    /** Dock column, grid and strip: sizes, the margins that keep clear of the column, and the name pill. */
+    private void setUpSideDock() {
+        dockList.setVisibility(View.VISIBLE);
+        dockList.setLayoutManager(new LinearLayoutManager(this));
+        dockList.setHasFixedSize(true);
+        dockList.setItemAnimator(null);
+        dockList.setAdapter(adapter.dockSlice(Math.round(DockPosition.TILE_W_DP * density)));
+        dockList.addOnScrollListener(glassFollow);
+        // The column is at the end of the reading side: right on English, left on the mirrored Arabic screen.
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) dockList.getLayoutParams();
+        lp.width = Math.round(DockPosition.columnWidthDp() * density);
+        int edge = Math.round(56 * density);
+        lp.gravity = (rtlAppGrid ? Gravity.LEFT : Gravity.RIGHT) | Gravity.TOP;
+        lp.leftMargin = rtlAppGrid ? edge : 0;
+        lp.rightMargin = rtlAppGrid ? 0 : edge;
+        dockList.setLayoutParams(lp);
+        // The strip and the grid stop short of the column.
+        int inset = Math.round((DockPosition.columnWidthDp() + 16) * density);
+        for (View v : new View[]{interestsStrip, (View) grid.getParent()}) {
+            ViewGroup.MarginLayoutParams m = (ViewGroup.MarginLayoutParams) v.getLayoutParams();
+            if (rtlAppGrid) m.leftMargin = inset;
+            else m.rightMargin = inset;
+            v.setLayoutParams(m);
+        }
+        // The name of the focused dock app sits in a small glass pill beside its tile, over the grid.
+        GradientDrawable pill = new GradientDrawable();
+        pill.setCornerRadius(18 * density);
+        // Opaque, so it stays readable over a card or a tile it overlaps; not tinted with the glass pills.
+        pill.setColor(0xF2161618);
+        pill.setStroke(Math.max(1, Math.round(density)), 0x33FFFFFF);
+        heroName.setBackground(pill);
+        // Placed by x and y alone: the Arabic layout gives this view an end margin and right gravity, which would move it
+        // when its text (and so its width) changes.
+        FrameLayout.LayoutParams hero = (FrameLayout.LayoutParams) heroName.getLayoutParams();
+        hero.gravity = Gravity.LEFT | Gravity.TOP;
+        hero.leftMargin = 0;
+        hero.rightMargin = 0;
+        hero.setMarginStart(0);
+        hero.setMarginEnd(0);
+        heroName.setLayoutParams(hero);
+        heroName.setGravity(Gravity.CENTER);
+        heroName.setTextSize(android.util.TypedValue.COMPLEX_UNIT_SP, 20);
+        int padH = Math.round(16 * density), padV = Math.round(7 * density);
+        heroName.setPadding(padH, padV, padH, padV);
+        heroName.setMaxWidth(Math.round(300 * density));
+        heroName.setEllipsize(TextUtils.TruncateAt.END);
+        heroName.bringToFront();
+        // Under the top-bar buttons, wherever this layout puts them.
+        root.getViewTreeObserver().addOnGlobalLayoutListener(this::placeSideDock);
+    }
+
+    private void placeSideDock() {
+        View pills = findViewById(R.id.topButtons);
+        if (pills == null || pills.getHeight() == 0) return;
+        int[] at = new int[2];
+        pills.getLocationInWindow(at);
+        FrameLayout.LayoutParams lp = (FrameLayout.LayoutParams) dockList.getLayoutParams();
+        int top = at[1] + pills.getHeight() + Math.round(6 * density);
+        if (lp.topMargin != top) {
+            lp.topMargin = top;
+            dockList.setLayoutParams(lp);
+        }
+    }
+
+    /** Places the pill left of the focused dock tile and shows the app's glow, as the top shelf does in the bottom layout. */
+    private void showSideHero(int position, View card) {
+        String label = adapter.labelAt(position);
+        int color = adapter.ambientColorAt(position);
+        heroName.setText(label);
+        heroName.measure(View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED),
+                View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED));
+        Rect tile = new Rect(0, 0, card.getWidth(), card.getHeight());
+        root.offsetDescendantRectToMyCoords(card, tile);
+        float gap = (DockStyle.PAD_DP + 6 + 10) * density;   // the plate's edge, then a little air
+        heroName.setTranslationX(0f);
+        // Beside the tile, on the grid's side: left of it on English, right of it on the mirrored screen.
+        heroName.setX(rtlAppGrid ? tile.right + gap : tile.left - gap - heroName.getMeasuredWidth());
+        heroName.setY(tile.exactCenterY() - heroName.getMeasuredHeight() / 2f);
+        if (!animations || reducedMotion) {
+            heroName.animate().cancel();
+            ambient.animate().cancel();
+            heroName.setAlpha(1f);
+            setAmbient(color);
+            ambient.setAlpha(1f);
+            heroShown = true;
+            return;
+        }
+        if (!heroShown) {
+            stopAmbientAnimation();
+            heroName.animate().cancel();
+            ambient.animate().cancel();
+            setAmbient(color);
+            heroName.animate().alpha(1f).setDuration(200).start();
+            ambient.animate().alpha(1f).setDuration(600).start();
+            heroShown = true;
+        } else {
+            heroName.animate().cancel();
+            heroName.setAlpha(1f);
+            if (advancedEffects) {
+                transitionAmbient(color);
+            } else if (color != ambientColor) {
+                ambient.animate().alpha(0.35f).setDuration(200).withEndAction(() -> {
+                    setAmbient(color);
+                    ambient.animate().alpha(1f).setDuration(500).start();
+                }).start();
+            }
+        }
+    }
+
+    /** An arrow key on a tile in the right-hand layout: every direction is decided by {@link SideNav}. */
+    private boolean onSideKey(int position, int keyCode) {
+        int dir;
+        if (keyCode == KeyEvent.KEYCODE_DPAD_UP) dir = SideNav.UP;
+        else if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) dir = SideNav.DOWN;
+        else if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) dir = SideNav.LEFT;
+        else dir = SideNav.RIGHT;
+        int count = adapter.getItemCount();
+        SideNav.Action a = position < COLUMNS
+                ? SideNav.dock(position, adapter.dockFilled(), count, COLUMNS, rtlAppGrid, dir)
+                : SideNav.grid(position, count, COLUMNS, restCols, rtlAppGrid, dir);
+        runAction(a, getCurrentFocus(), keyCode);
+        return true;
+    }
+
+    /** Carries out what {@link SideNav} decided, with the real views to measure "nearest" on. */
+    private void runAction(SideNav.Action a, View from, int keyCode) {
+        switch (a.kind) {
+            case SideNav.TILE:
+                focusTile(a.index);
+                grid.playSoundEffect(keyCode == KeyEvent.KEYCODE_DPAD_UP ? SoundEffectConstants.NAVIGATION_UP
+                        : keyCode == KeyEvent.KEYCODE_DPAD_DOWN ? SoundEffectConstants.NAVIGATION_DOWN
+                        : keyCode == KeyEvent.KEYCODE_DPAD_LEFT ? SoundEffectConstants.NAVIGATION_LEFT
+                        : SoundEffectConstants.NAVIGATION_RIGHT);
+                break;
+            case SideNav.STRIP_OR_TOP:
+                if (!focusNearestCard(from, true)) focusNearestButton(from);
+                break;
+            case SideNav.TOP_BUTTONS:
+                focusNearestButton(from);
+                break;
+            case SideNav.STRIP_FIRST:
+                if (!focusNearestCard(from, false)) focusContentEntry();
+                break;
+            case SideNav.DOCK_FIRST:
+                focusTile(0);
+                break;
+            case SideNav.DOCK_NEAR:
+                focusNearestInList(dockList, 0, adapter.dockFilled(), from);
+                break;
+            case SideNav.GRID_NEAR:
+                focusNearestInList(grid, COLUMNS, adapter.getItemCount(), from);
+                break;
+            default:
+                break;   // STAY: the key does nothing
+        }
+    }
+
+    /**
+     * Focuses the tile of {@code list} nearest in height to {@code from}, among the laid-out tiles whose absolute position is in
+     * [firstPos, endPos). Nothing when none is laid out.
+     */
+    private void focusNearestInList(RecyclerView list, int firstPos, int endPos, View from) {
+        List<Integer> positions = new ArrayList<>();
+        List<Double> centres = new ArrayList<>();
+        for (int i = 0; i < list.getChildCount(); i++) {
+            View child = list.getChildAt(i);
+            int rel = list.getChildAdapterPosition(child);
+            int abs = list == grid && sideDock ? rel + COLUMNS : rel;
+            View card = child.findViewById(R.id.card);
+            if (rel < 0 || card == null || !card.isFocusable() || abs < firstPos || abs >= endPos) continue;
+            positions.add(abs);
+            centres.add((double) centreY(card));
+        }
+        double[] c = new double[centres.size()];
+        for (int i = 0; i < c.length; i++) c[i] = centres.get(i);
+        int k = SideNav.nearest(c, from == null ? 0 : centreY(from));
+        if (k >= 0) focusTile(positions.get(k));
     }
 
     // ---- top bar ---------------------------------------------------------------------------------
@@ -1249,7 +1501,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (!h.isEmpty()) cards.add(onCardClick(newsCard(h.get(headlineIndex++ % h.size()), ar), this::updateInterests));
 
         interestsStrip.removeAllViews();
-        int perRow = StripSize.perRow(textSize);
+        int perRow = stripPlaces();
         boolean rtl = getResources().getBoolean(R.bool.rtl_menu_bar);
         stripShared = StripSize.shared(cards.size(), perRow);
         cards = StripSize.visible(cards, perRow, stripTurn);
@@ -1291,7 +1543,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (focusedCard >= 0) {
             List<View> shown = stripCards();
             if (!shown.isEmpty()) shown.get(Math.min(focusedCard, shown.size() - 1)).requestFocus();
-            else focusTile(lastFocused % COLUMNS);
+            else focusContentEntry();
         }
     }
 
@@ -1408,12 +1660,21 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
                 if (r >= 0 && r < interestsStrip.getChildCount() - 1) {
                     focusNearestIn((ViewGroup) interestsStrip.getChildAt(r + 1), v);
+                } else if (sideDock) {
+                    runAction(SideNav.fromStripDown(adapter.getItemCount(), COLUMNS), v, keyCode);
                 } else {
                     focusTile(lastFocused % COLUMNS);
                 }
                 return true;
             }
             int at = row.indexOfChild(v);
+            // The dock column is next to the strip's end on the reading side: right on English, left on the mirrored screen.
+            boolean towardDock = sideDock && (rtlAppGrid ? keyCode == KeyEvent.KEYCODE_DPAD_LEFT && at == 0
+                    : keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && at == row.getChildCount() - 1);
+            if (towardDock) {
+                runAction(SideNav.of(SideNav.DOCK_NEAR), v, keyCode);
+                return true;
+            }
             if (keyCode == KeyEvent.KEYCODE_DPAD_LEFT) return at == 0;
             return keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && at == row.getChildCount() - 1;
         });
@@ -1468,7 +1729,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // (Mi TV, en-GB, cut off at "Isha…"), and a wrapped line beats a missing prayer.
         TextView times = cardText(all.toString(), 13, R.color.theme_dim, false);
         // Five or four cards in a row leave the prayer card narrow: a third line beats a missing prayer.
-        times.setMaxLines(StripSize.perRow(textSize) > 3 ? 3 : 2);
+        times.setMaxLines(stripPlaces() > 3 ? 3 : 2);
         times.setEllipsize(TextUtils.TruncateAt.END);
         c.addView(times);
         return c;

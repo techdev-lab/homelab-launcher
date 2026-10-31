@@ -219,11 +219,18 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
     @NonNull
     @Override
     public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        return createHolder(parent, 0, dockSize, listener);
+    }
+
+    /**
+     * A tile. {@code fixedWidthPx} is its width, or 0 to fit {@code columns} columns into the parent as the grid always did.
+     */
+    private Holder createHolder(ViewGroup parent, int fixedWidthPx, int columns, TileListener tileListener) {
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_app, parent, false);
         float density = parent.getResources().getDisplayMetrics().density;
         int width = parent.getWidth() > 0 ? parent.getWidth() : parent.getMeasuredWidth();
         int inner = width - parent.getPaddingLeft() - parent.getPaddingRight();
-        int w = tileWidthPx(inner, dockSize, density), h = tileHeightPx(w);
+        int w = fixedWidthPx > 0 ? fixedWidthPx : tileWidthPx(inner, columns, density), h = tileHeightPx(w);
         View card = v.findViewById(R.id.card);
         ViewGroup.LayoutParams cardLp = card.getLayoutParams();
         cardLp.width = w;
@@ -234,11 +241,19 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         nameLp.width = w;
         nameLp.topMargin = h + Math.round(7 * density);
         name.setLayoutParams(nameLp);
-        return new Holder(v, this, listener, animations, advancedEffects, reducedMotion);
+        return new Holder(v, this, tileListener, animations, advancedEffects, reducedMotion);
     }
 
     @Override
     public void onBindViewHolder(@NonNull Holder h, int position) {
+        bind(h, position, false);
+    }
+
+    /**
+     * Shows the app at an absolute position. {@code compact} is the right-hand dock column: its tiles take no room for a
+     * name under them (the focused app's name is shown beside the column).
+     */
+    private void bind(Holder h, int position, boolean compact) {
         Entry e = items.get(position);
         if (e.kind == Entry.EMPTY) {
             // A free dock slot keeps its place in the row and the band, but shows nothing and takes no focus.
@@ -253,7 +268,8 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         h.card.setVisibility(View.VISIBLE);
         h.card.setFocusable(true);
         h.name.setText(e.label);
-        h.name.setVisibility(position < dockSize ? View.INVISIBLE : View.VISIBLE);   // the dock has no labels
+        // The dock has no labels; a compact tile has no room for one either.
+        h.name.setVisibility(position < dockSize ? (compact ? View.GONE : View.INVISIBLE) : View.VISIBLE);
         boolean focused = h.card.isFocused();   // a rebind after reload() can hit the focused tile
         h.name.setAlpha(focused ? 1f : 0f);
         h.card.setScaleX(focused && animations ? focusScale() : 1f);
@@ -397,6 +413,75 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
      */
     static float cornerRadius(int tileWidthPx, float density, String tileCorners) {
         return TileShape.radiusPx(tileWidthPx, density, DESIGN_W_DP, tileCorners);
+    }
+
+    /**
+     * A window onto the tiles for the right-hand dock layout (docs/LAYOUT_OPTIONS.md): one list shows the dock slots and
+     * another the rest, both made and bound by this adapter, so a tile looks and behaves as it always did. Positions given
+     * to the listener stay absolute.
+     */
+    final class Slice extends RecyclerView.Adapter<Holder> {
+        private final int from, to, fixedWidthPx, columns;
+        private final boolean compact;
+        private final TileListener shifted;
+
+        /** {@code to} is exclusive; {@code fixedWidthPx} 0 fits {@code columns} columns into the list. */
+        Slice(int from, int to, int fixedWidthPx, int columns, boolean compact) {
+            this.from = from;
+            this.to = to;
+            this.fixedWidthPx = fixedWidthPx;
+            this.columns = columns;
+            this.compact = compact;
+            this.shifted = new TileListener() {
+                @Override
+                public void onTileFocused(int position, View card) {
+                    if (listener != null) listener.onTileFocused(Slice.this.from + position, card);
+                }
+
+                @Override
+                public boolean onTileVerticalKey(int position, int keyCode) {
+                    return listener != null && listener.onTileVerticalKey(Slice.this.from + position, keyCode);
+                }
+            };
+            setHasStableIds(true);
+            AppAdapter.this.registerAdapterDataObserver(new RecyclerView.AdapterDataObserver() {
+                @Override
+                public void onChanged() {
+                    notifyDataSetChanged();
+                }
+            });
+        }
+
+        @NonNull
+        @Override
+        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            return createHolder(parent, fixedWidthPx, columns, shifted);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull Holder h, int position) {
+            bind(h, from + position, compact);
+        }
+
+        @Override
+        public int getItemCount() {
+            return Math.max(0, Math.min(items.size(), to) - from);
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return AppAdapter.this.getItemId(from + position);
+        }
+    }
+
+    /** The dock slots as their own list, tiles {@code tileWidthPx} wide. */
+    Slice dockSlice(int tileWidthPx) {
+        return new Slice(0, dockSize, tileWidthPx, dockSize, true);
+    }
+
+    /** Every app after the dock slots, fitted into {@code columns} columns. */
+    Slice restSlice(int columns) {
+        return new Slice(dockSize, Integer.MAX_VALUE, 0, columns, false);
     }
 
     static final class Holder extends RecyclerView.ViewHolder {

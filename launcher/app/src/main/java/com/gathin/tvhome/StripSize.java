@@ -32,6 +32,11 @@ final class StripSize {
         return MEDIUM.equals(size) ? 4 : 5;
     }
 
+    /** Places in the strip next to the right-hand dock column: one fewer than {@link #perRow}, at least two. */
+    static int perRowSide(String size) {
+        return Math.max(2, perRow(size) - 1);
+    }
+
     /** Factor on every text size of a strip card (the prayer card's too). */
     static float scale(String size) {
         if (LARGE.equals(size)) return 1.35f;

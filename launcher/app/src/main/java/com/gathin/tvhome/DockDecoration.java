@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 public class DockDecoration extends RecyclerView.ItemDecoration {
 
     private final int dockSize;
+    /** The right-hand dock column (a vertical list of the dock slots): no gap under every tile, only at the ends. */
+    private final boolean column;
     private final float density;
     private final String style;
     private final float radius;
@@ -31,6 +33,11 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
 
     /** {@code tileCornerFactor} is {@link TileShape#factor}: a softer tile corner makes the plate rounder in step. */
     DockDecoration(int dockSize, float density, String style, float tileCornerFactor) {
+        this(dockSize, density, style, tileCornerFactor, false);
+    }
+
+    DockDecoration(int dockSize, float density, String style, float tileCornerFactor, boolean column) {
+        this.column = column;
         this.dockSize = dockSize;
         this.density = density;
         this.style = style;
@@ -52,6 +59,13 @@ public class DockDecoration extends RecyclerView.ItemDecoration {
     public void getItemOffsets(@NonNull Rect outRect, @NonNull View view, @NonNull RecyclerView parent,
                                @NonNull RecyclerView.State state) {
         int pos = parent.getChildAdapterPosition(view);
+        if (column) {
+            // One plate around the whole column: room inside it above the first tile and below the last.
+            if (pos == 0) outRect.top = (int) (6 * density);
+            RecyclerView.Adapter<?> a = parent.getAdapter();
+            if (a != null && pos == a.getItemCount() - 1) outRect.bottom = (int) (6 * density);
+            return;
+        }
         if (pos >= 0 && pos < dockSize) {
             outRect.top = (int) (6 * density);
             outRect.bottom = (int) (12 * density);
