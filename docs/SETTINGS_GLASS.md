@@ -2,7 +2,7 @@
 
 [English](SETTINGS_GLASS.md) · [العربية](SETTINGS_GLASS.ar.md)
 
-Status: **PHASE 1, written before the code.** Launcher settings looked like another app: a flat dark list of 14 rows
+Status: **PHASE 1, IMPLEMENTED** (written before the code; tried on the Chromecast 4K in the eight combinations below, remote only). Launcher settings looked like another app: a flat dark list of 14 rows
 and grey chips, while the home screen is glass. This note redesigns the screen only. No new option, no new permission, no
 new key in `config.json` and nothing new saved in the TV's choices: every chip writes exactly what it writes today.
 
@@ -55,7 +55,7 @@ focus, so a section is one or two presses away.
 
 The hint paragraph under every row is gone. At the bottom of the card there is one line (two when it must) that shows the
 hint of the row that has focus and changes as focus moves. The texts are today's hints; Language and Apps per row, which
-had none, get a short one. Rows with a long hint (dock position) are tightened.
+had none, get a short one.
 
 ## Navigation
 

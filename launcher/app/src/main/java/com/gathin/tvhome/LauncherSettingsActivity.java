@@ -531,8 +531,8 @@ public final class LauncherSettingsActivity extends Activity {
         if (event.getAction() != KeyEvent.ACTION_DOWN) return true;
         SettingsNav.Spot to = nav.move(from, dir);
         if (to.equals(nav.clamp(from))) return true;   // an edge: stay, never wrap
-        // Holding a key must not run across the sections; it takes a new press to cross.
-        if (event.getRepeatCount() > 0 && to.section != from.section) return true;
+        // Holding a key must not run across the sections; it takes a new press to cross from one section's row to another's.
+        if (event.getRepeatCount() > 0 && from.row >= 0 && to.row >= 0 && to.section != from.section) return true;
         View target = viewAt(to);
         if (target == null) return false;
         if (to.row != SettingsNav.FOOTER && to.section != activeSection) showSection(to.section);

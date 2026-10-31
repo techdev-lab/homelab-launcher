@@ -4,6 +4,9 @@
 
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
+## Unreleased
+- **Glass Launcher settings**: the settings screen is now four glass cards (Look, Dock and cards, Prayer and Ramadan, Motion) with one showing at a time, a strip of section tabs, wallpaper thumbnails taken from the APK's own pictures, a small drawing of the dock layout (mirrored on the Arabic screen), digit samples, and one explanation line that follows the focused chip. The chosen value is a filled base with a green edge; focus is the home screen's glass ring. Left and Right move along a row and cross to the next section at its edge; Up and Down move between rows; Back returns to Home. Nothing new is saved: every chip writes what it wrote before, with no new option, key, permission or file. The arrow keys are decided by a pure class with JVM tests (section edges, the Arabic order, a one-chip row, an empty section). Design note: `docs/SETTINGS_GLASS.md`.
+
 ## 3.0.0 (unreleased)
 The biggest release since the fork: Ramadan and prayer-time features, a dock you can put at the side, more looks to choose from, a store listing and an Arabic twin of every user-facing document. Every new option defaults to the 2.9 look, so an upgrade changes nothing until you pick.
 - **Arabic for everything on GitHub**: the install guide, the configuration guide, the security notes, the contributing guide, the notices, the design notes and this changelog now have an Arabic twin (`*.ar.md`, linked at the top of each English page), and the store listing has an Arabic text (`fastlane/metadata/android/ar/`). The release page carries the notes in both languages.
