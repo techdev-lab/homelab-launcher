@@ -50,6 +50,14 @@ One Java Android app (`launcher/`, package `com.gathin.tvhome`, minSdk 26, targe
 
 Google TV has two Home owners: `launcherx` (stock home) and `setupwraith` (setup wizard, also a Home fallback). Disabling `launcherx` alone makes `setupwraith` the Home and can loop the device on boot. `scripts/Set-TvhomeAsHome.ps1` disables `setupwraith` first, then `launcherx`, after checking that the Wi-Fi network in use is not owned by `setupwraith` (fail closed when the owner cannot be read). `scripts/Apply-TvhomeKit.ps1` refuses to reinstall unless both are disabled.
 
+## Signing and releases
+
+Releases are built from a tag by `.github/workflows/release.yml` and signed with one long-lived project key (policy and
+setup in `docs/RELEASING.md`). Its certificate SHA-256 is pinned in `release.yml` and `scripts/Test-Release.ps1`: a release
+whose APKs carry any other certificate is never published. The release job runs without a build cache and with the
+narrowest token permissions. Every action in every workflow is pinned to a commit SHA, enforced by zizmor in CI
+(`.github/zizmor.yml`). Rotating the key is not planned: Android would refuse the update on every installed TV.
+
 ## Known issues
 
 - The on-TV "deadman" rollback timer in `Set-TvhomeAsHome.ps1` did not survive a dropped ADB link on Android 14. Keep the rollback command ready.

@@ -1,0 +1,7 @@
+# zizmor configuration: https://docs.zizmor.sh/configuration/
+# Every action in a workflow must be pinned to a full commit SHA (with the tag in a trailing comment).
+rules:
+  unpinned-uses:
+    config:
+      policies:
+        "*": hash-pin
