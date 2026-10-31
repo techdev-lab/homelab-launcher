@@ -41,6 +41,7 @@ public final class LauncherSettingsActivity extends Activity {
     private String dockStyle, tileCorners, clockStyle;
     private String prayerMethod;
     private int asrFactor;
+    private int hijriShift, prayerAlertMinutes;
     private TextView prayerMethodChoice;
     private float density;
 
@@ -48,7 +49,11 @@ public final class LauncherSettingsActivity extends Activity {
     private final List<TextView> languageViews = new ArrayList<>(), wallViews = new ArrayList<>(),
             colourViews = new ArrayList<>(), cardViews = new ArrayList<>(), motionViews = new ArrayList<>(),
             textSizeViews = new ArrayList<>(), asrViews = new ArrayList<>(), dockStyleViews = new ArrayList<>(),
-            tileCornersViews = new ArrayList<>(), clockStyleViews = new ArrayList<>();
+            tileCornersViews = new ArrayList<>(), clockStyleViews = new ArrayList<>(),
+            hijriShiftViews = new ArrayList<>(), alertViews = new ArrayList<>();
+
+    /** The chips for the prayer alert: minutes, 0 is off. Any other value in config.json still works, it just has no chip. */
+    private static final int[] ALERT_CHOICES = {0, 5, 10, 15};
 
     private static final String[] LANGUAGES = {"system", "ar", "en"};
     private static final String[] WALL_SETS = {Wallpapers.HOMELAB, Wallpapers.SERENE, Wallpapers.KIDS};
@@ -76,7 +81,9 @@ public final class LauncherSettingsActivity extends Activity {
         wallMode = config.wallpaperMode;
         backgroundColor = config.backgroundColor;
         Interests.Settings s = config.interests;
-        cards = new boolean[]{s.showPrayer, s.showWeather, s.showSports, s.showClubs};
+        cards = new boolean[]{s.showPrayer, s.showWeather, s.showSports, s.showClubs, s.showRamadan};
+        hijriShift = s.hijriShift;
+        prayerAlertMinutes = s.prayerAlertMinutes;
         textSize = config.textSize;
         dockStyle = config.dockStyle;
         tileCorners = config.tileCorners;
@@ -137,7 +144,8 @@ public final class LauncherSettingsActivity extends Activity {
         }
         fill(R.id.colourRow, colourViews);
 
-        int[] cardNames = {R.string.card_prayer, R.string.card_weather, R.string.card_football, R.string.card_clubs};
+        int[] cardNames = {R.string.card_prayer, R.string.card_weather, R.string.card_football, R.string.card_clubs,
+                R.string.card_ramadan};
         for (int i = 0; i < Config.CARD_KEYS.length; i++) {
             final int index = i;
             TextView c = chip(getString(cardNames[i]), v -> {
@@ -146,7 +154,7 @@ public final class LauncherSettingsActivity extends Activity {
                 changed();
             });
             // Weather, football and clubs come from the network: the offline build has none of them.
-            if (i > 0 && !Feeds.AVAILABLE) c.setVisibility(android.view.View.GONE);
+            if (i > 0 && i < 4 && !Feeds.AVAILABLE) c.setVisibility(android.view.View.GONE);
             cardViews.add(c);
         }
         fill(R.id.cardsRow, cardViews);
@@ -216,6 +224,28 @@ public final class LauncherSettingsActivity extends Activity {
             }));
         }
         fill(R.id.asrRow, asrViews);
+
+        // Prayer alert and Hijri date shift: the viewer's choices, kept when a theme is pushed, like the Asr convention.
+        for (int minutes : ALERT_CHOICES) {
+            alertViews.add(chip(minutes == 0 ? getString(R.string.prayer_alert_off)
+                    : getString(R.string.prayer_alert_minutes, minutes), v -> {
+                if (minutes == prayerAlertMinutes) return;
+                prayerAlertMinutes = minutes;
+                choices.edit().putInt(Config.PRAYER_ALERT_KEY, minutes).apply();
+                changed();
+            }));
+        }
+        fill(R.id.prayerAlertRow, alertViews);
+        for (int d = HijriShift.MIN; d <= HijriShift.MAX; d++) {
+            final int days = d;
+            hijriShiftViews.add(chip(d > 0 ? "+" + d : String.valueOf(d), v -> {
+                if (days == hijriShift) return;
+                hijriShift = days;
+                choices.edit().putInt(Config.HIJRI_SHIFT_KEY, days).apply();
+                changed();
+            }));
+        }
+        fill(R.id.hijriShiftRow, hijriShiftViews);
 
         int[] motionNames = {R.string.motion_calm, R.string.motion_lively, R.string.motion_off};
         for (int i = 0; i < MOTIONS.length; i++) {
@@ -325,6 +355,8 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = 0; i < DockStyle.ALL.length; i++) dockStyleViews.get(i).setSelected(DockStyle.ALL[i].equals(dockStyle));
         for (int i = 0; i < TileShape.ALL.length; i++) tileCornersViews.get(i).setSelected(TileShape.ALL[i].equals(tileCorners));
         for (int i = 0; i < ClockStyle.ALL.length; i++) clockStyleViews.get(i).setSelected(ClockStyle.ALL[i].equals(clockStyle));
+        for (int i = 0; i < ALERT_CHOICES.length; i++) alertViews.get(i).setSelected(ALERT_CHOICES[i] == prayerAlertMinutes);
+        for (int i = 0; i < hijriShiftViews.size(); i++) hijriShiftViews.get(i).setSelected(HijriShift.MIN + i == hijriShift);
         asrViews.get(0).setSelected(asrFactor != Prayer.ASR_HANAFI);
         asrViews.get(1).setSelected(asrFactor == Prayer.ASR_HANAFI);
         int m = methodIndex(prayerMethod);

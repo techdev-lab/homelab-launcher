@@ -54,8 +54,10 @@ final class Config {
     static final String PRAYER_METHOD_KEY = "prayer_method", ASR_KEY = "asr_method";
     /** The six names "prayer_adjust" takes, in Prayer's order. */
     static final String[] PRAYER_TIME_KEYS = {"fajr", "sunrise", "dhuhr", "asr", "maghrib", "isha"};
-    /** Which strip cards show, picked on the TV: prayer, weather, football leagues, favourite clubs. */
-    static final String[] CARD_KEYS = {"card_prayer", "card_weather", "card_football", "card_clubs"};
+    /** Which strip cards show, picked on the TV: prayer, weather, football leagues, favourite clubs, Ramadan. */
+    static final String[] CARD_KEYS = {"card_prayer", "card_weather", "card_football", "card_clubs", "card_ramadan"};
+    /** Hijri date shift in days and prayer alert minutes picked on the TV (HijriShift, PrayerAlert); win over config.json. */
+    static final String HIJRI_SHIFT_KEY = "hijri_offset_days", PRAYER_ALERT_KEY = "prayer_alert_minutes";
     private static final String THEME_REVISION_NAME = "theme_revision";
     private static final String THEME_SIGNATURE_KEY = "theme_signature";
 
@@ -295,7 +297,27 @@ final class Config {
                 choices.getBoolean(CARD_KEYS[0], true), choices.getBoolean(CARD_KEYS[1], true),
                 choices.getBoolean(CARD_KEYS[2], true), choices.getBoolean(CARD_KEYS[3], true))
                 .withPrayer(prayerMethod(json, choices), Prayer.asrFactor(choices.getString(ASR_KEY,
-                        string(json, "asr_method", "standard"))), prayerAdjust(json));
+                        string(json, "asr_method", "standard"))), prayerAdjust(json))
+                .withCalendar(HijriShift.pick(tvInt(choices, HIJRI_SHIFT_KEY), wholeNumber(json, HIJRI_SHIFT_KEY)),
+                        PrayerAlert.pick(tvInt(choices, PRAYER_ALERT_KEY), wholeNumber(json, PRAYER_ALERT_KEY)),
+                        choices.getBoolean(CARD_KEYS[4], true));
+    }
+
+    /** A whole number picked on the TV, or null when none is stored (or the stored value is not a number). */
+    private static Integer tvInt(SharedPreferences choices, String key) {
+        try {
+            return choices.contains(key) ? choices.getInt(key, 0) : null;
+        } catch (ClassCastException e) {
+            return null;
+        }
+    }
+
+    /** A whole number from config.json, or null when the key is missing, not a number or not whole. */
+    private static Integer wholeNumber(JSONObject json, String key) {
+        Object v = json == null ? null : json.opt(key);
+        if (!(v instanceof Integer || v instanceof Long)) return null;
+        long l = ((Number) v).longValue();
+        return l < Integer.MIN_VALUE || l > Integer.MAX_VALUE ? null : (int) l;
     }
 
     /**

@@ -55,6 +55,13 @@
     <string name="prayer_times">مواقيت الصلاة</string>
     <string name="prayer_in">%1$s بعد</string>
     <string name="prayer_next">%1$s بعد %2$s</string>
+    <string name="prayer_now">حان وقت %1$s</string>
+    <string name="prayer_now_big">الآن</string>
+    <string name="ramadan">رمضان</string>
+    <string name="ramadan_day">رمضان · اليوم %1$d</string>
+    <string name="iftar_in">الإفطار بعد</string>
+    <string name="suhoor_ends_in">ينتهي السحور بعد</string>
+    <string name="ramadan_times">نهاية السحور %1$s · الإفطار %2$s</string>
     <string-array name="prayer_names">
         <item>الفجر</item>
         <item>الشروق</item>
@@ -111,6 +118,7 @@
     <string name="card_weather">الطقس</string>
     <string name="card_football">الكورة</string>
     <string name="card_clubs">أنديتي</string>
+    <string name="card_ramadan">رمضان</string>
     <string name="motion_label">الحركة</string>
     <string name="motion_calm">هادئة</string>
     <string name="motion_lively">حيوية</string>
@@ -147,6 +155,12 @@
     <string name="asr_standard">العصر: الجمهور</string>
     <string name="asr_hanafi">العصر: الحنفي</string>
     <string name="prayer_method_hint">تُحسب على التلفزيون بالطريقة اللي تختارها. كل طريقة تعطي أوقاتها هي، وقد تفرق دقائق عن التقويم المطبوع؛ وprayer_adjust في config.json يقدّم أو يؤخّر كل وقت بالدقائق.</string>
+    <string name="hijri_shift_label">التاريخ الهجري</string>
+    <string name="hijri_shift_hint">أيام تُضاف إلى التاريخ الهجري لمن يتبع رؤية الهلال في بلده. تحرّك أيضاً بداية رمضان. يظهر في الشاشة الرئيسية وشاشة التوقف.</string>
+    <string name="prayer_alert_label">تنبيه الصلاة</string>
+    <string name="prayer_alert_off">بدون</string>
+    <string name="prayer_alert_minutes">%1$d د</string>
+    <string name="prayer_alert_hint">بعد دخول وقت الصلاة بدقائق تكتب بطاقة الصلاة أن الوقت قد حان. بدون صوت.</string>
     <string-array name="prayer_method_names">
         <item>أم القرى (مكة)</item>
         <item>الهيئة المصرية العامة للمساحة</item>

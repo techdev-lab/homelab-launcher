@@ -84,6 +84,18 @@
 
         <TextView style="@style/SettingsHint" android:text="@string/prayer_method_hint" />
 
+        <TextView style="@style/SettingsHeading" android:text="@string/prayer_alert_label" />
+
+        <LinearLayout android:id="@+id/prayerAlertRow" style="@style/SettingsChoiceRow" />
+
+        <TextView style="@style/SettingsHint" android:text="@string/prayer_alert_hint" />
+
+        <TextView style="@style/SettingsHeading" android:text="@string/hijri_shift_label" />
+
+        <LinearLayout android:id="@+id/hijriShiftRow" style="@style/SettingsChoiceRow" />
+
+        <TextView style="@style/SettingsHint" android:text="@string/hijri_shift_hint" />
+
         <TextView
             android:id="@+id/clubsChoice"
             style="@style/SettingsRow"

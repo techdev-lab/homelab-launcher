@@ -61,6 +61,10 @@ final class Interests {
         int asrFactor = Prayer.ASR_STANDARD;
         /** "prayer_adjust": the viewer's own minutes per time, {FAJR..ISHA}, each at most 30 either way. */
         int[] prayerAdjust = new int[6];
+        /** Days added to the Hijri date ({@link HijriShift}), minutes the prayer alert lasts ({@link PrayerAlert}). */
+        int hijriShift = 0, prayerAlertMinutes = PrayerAlert.DEFAULT_MINUTES;
+        /** The Ramadan card's switch (Launcher settings); the card also needs the prayer place and Ramadan itself. */
+        boolean showRamadan = true;
 
         /** A copy of every field; the with* methods change the copy, never this object (NONE is shared). */
         private Settings copy() {
@@ -75,6 +79,18 @@ final class Interests {
             s.prayerMethod = prayerMethod;
             s.asrFactor = asrFactor;
             s.prayerAdjust = prayerAdjust.clone();
+            s.hijriShift = hijriShift;
+            s.prayerAlertMinutes = prayerAlertMinutes;
+            s.showRamadan = showRamadan;
+            return s;
+        }
+
+        /** A copy with the Hijri date shift, the prayer alert minutes and the Ramadan card switch. */
+        Settings withCalendar(int hijriShift, int alertMinutes, boolean ramadanCard) {
+            Settings s = copy();
+            s.hijriShift = HijriShift.valid(hijriShift) ? hijriShift : 0;
+            s.prayerAlertMinutes = PrayerAlert.valid(alertMinutes) ? alertMinutes : PrayerAlert.DEFAULT_MINUTES;
+            s.showRamadan = ramadanCard;
             return s;
         }
 
@@ -158,6 +174,11 @@ final class Interests {
         /** Prayer times need a real place: 0,0 (the template's placeholder) or out-of-range values mean off. */
         boolean prayer() {
             return showPrayer && validPlace(prayerLat, prayerLng);
+        }
+
+        /** The Ramadan card: its own switch, and the prayer card must be available (same place, same times). */
+        boolean wantsRamadan() {
+            return showRamadan && prayer();
         }
 
         boolean wantsMatches() {
