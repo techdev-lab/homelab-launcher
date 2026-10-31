@@ -188,4 +188,19 @@
         <item>أمريكا الشمالية (ISNA)</item>
         <item>كراتشي</item>
     </string-array>
+    <!-- الإعدادات الزجاجية (docs/SETTINGS_GLASS.ar.md): عناوين الأقسام وسطر لكل قسم والشروح التي كانت ناقصة -->
+    <string name="settings_section_look">المظهر</string>
+    <string name="settings_section_dock">الرصيف والبطاقات</string>
+    <string name="settings_section_prayer">الصلاة ورمضان</string>
+    <string name="settings_section_motion">الحركة</string>
+    <string name="settings_section_look_hint">شكل المشغّل: اللغة والخلفية والألوان والأرقام والساعة.</string>
+    <string name="settings_section_dock_hint">مكان تطبيقاتك وبطاقاتك وحجمها.</string>
+    <string name="settings_section_prayer_hint">كيف تُحسب أوقات الصلاة وتُعرض، والتاريخ الهجري.</string>
+    <string name="settings_section_motion_hint">مقدار حركة المشغّل.</string>
+    <string name="language_hint">لغة المشغّل. «النظام» يتبع لغة التلفاز.</string>
+    <string name="columns_hint">عدد التطبيقات في كل صف من شبكة التطبيقات.</string>
+    <string name="plain_colour_label">لون ساده</string>
+    <string name="plain_colour_hint">لون داكن ساده بدل صورة الخلفية.</string>
+    <string name="asr_label">العصر</string>
+    <string name="tv_settings_hint">يفتح إعدادات التلفاز نفسه.</string>
 </resources>
