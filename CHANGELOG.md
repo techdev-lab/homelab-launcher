@@ -1,8 +1,12 @@
 # Changelog
 
+[English](CHANGELOG.md) · [العربية](CHANGELOG.ar.md)
+
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
-## Unreleased
+## 3.0.0 (unreleased)
+The biggest release since the fork: Ramadan and prayer-time features, a dock you can put at the side, more looks to choose from, a store listing and an Arabic twin of every user-facing document. Every new option defaults to the 2.9 look, so an upgrade changes nothing until you pick.
+- **Arabic for everything on GitHub**: the install guide, the configuration guide, the security notes, the contributing guide, the notices and this changelog now have an Arabic twin (`*.ar.md`, linked at the top of each English page), and the store listing has an Arabic text (`fastlane/metadata/android/ar/`). The release page carries the notes in both languages.
 - **Dock at the side** (Launcher settings > Dock position, or `"dock_position": "side"`): the dock becomes a column at the end of the reading side, on the right on the English screen and on the left on the Arabic one, with the other apps in a grid beside it. The name of the focused dock app shows in a small pill beside its tile. The default is the bottom row of 2.9, so nothing changes until you pick. Arrow keys are decided by pure functions that are unit tested, including that no tile is a dead end and that the top bar is always reachable. The idea of a dock at the side came from looking at other launchers; the code is ours. Design note: `docs/LAYOUT_OPTIONS.md`.
 - **Digits and wallpaper dim** (Launcher settings): *Digits* draws every number on the home screen and the screensaver in Arabic-Indic digits on either language, and *Wallpaper dim* sets the veil over a wallpaper picture (15, 35, 55 or 75 percent; 35 is the veil of 2.9, so nothing changes until you pick). Also `"digits"` and `"wallpaper_dim"` in config.json; the TV's choice wins and a theme push does not clear it. Design note: `docs/LAYOUT_OPTIONS.md`.
 - **Store metadata and a corrected `SECURITY.md`**: `fastlane/metadata/android/en-US/` (title, short and full description, changelog, icon) so a store such as IzzyOnDroid can list the app; `SECURITY.md` no longer says releases use a debug key (they use the project key) and now shows the certificate fingerprint and how to check an APK. Design note: `docs/DISTRIBUTION.md`.

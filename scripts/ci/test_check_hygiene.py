@@ -31,6 +31,22 @@ class ArabicViolationsTest(unittest.TestCase):
         self.assertEqual(check_hygiene.arabic_violations("CONTRIBUTING.md", ARABIC_TEXT), [1])
         self.assertEqual(check_hygiene.arabic_violations("SECURITY.md", ARABIC_TEXT), [1])
 
+    def test_arabic_store_metadata_is_allowed_but_not_the_english_one(self):
+        self.assertEqual(check_hygiene.arabic_violations("fastlane/metadata/android/ar/title.txt", ARABIC_TEXT), [])
+        self.assertEqual(check_hygiene.arabic_violations("fastlane/metadata/android/en-US/title.txt", ARABIC_TEXT), [1])
+
+    def test_the_language_switch_line_at_the_top_of_an_english_doc_is_allowed(self):
+        text = "# Install guide\n\n[English](INSTALL.md) \u00b7 [" + ARABIC_TEXT + "](INSTALL.ar.md)\n"
+        self.assertEqual(check_hygiene.arabic_violations("docs/INSTALL.md", text), [])
+
+    def test_the_same_link_far_down_a_doc_is_reported(self):
+        text = "\n" * 10 + "[" + ARABIC_TEXT + "](INSTALL.ar.md)\n"
+        self.assertEqual(check_hygiene.arabic_violations("docs/INSTALL.md", text), [11])
+
+    def test_arabic_text_near_the_top_without_such_a_link_is_reported(self):
+        text = "# Install guide\n\n" + ARABIC_TEXT + "\n"
+        self.assertEqual(check_hygiene.arabic_violations("docs/INSTALL.md", text), [3])
+
     def test_english_text_is_clean(self):
         self.assertEqual(check_hygiene.arabic_violations("docs/INSTALL.md", "Plain English.\n"), [])
 

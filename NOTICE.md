@@ -1,5 +1,7 @@
 # Notices
 
+[English](NOTICE.md) · [العربية](NOTICE.ar.md)
+
 ## Upstream
 
 HomeLab Launcher is a fork of the `tvhome` launcher in [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv), MIT License, Copyright (c) 2026 Gathin. Forked from commit `e561b0551c57700397c6862e9513fc23ef601c02`. The Android package name `com.gathin.tvhome` is kept from upstream so existing installs upgrade in place.
@@ -9,6 +11,8 @@ HomeLab Launcher is a fork of the `tvhome` launcher in [Gathin23/cleanyourtv](ht
 The *Dock style* (floating glass) and *Clock style* (glass) options in Launcher settings were inspired by the public description of [tvOS Launcher](https://github.com/techgenius1/tvOS-Launcher) by techgenius, Apache License 2.0. Only its README was read. No code, image or wallpaper from it is in this project: the drawing is our own and uses the `Glass` colour arithmetic. If code from it is ever copied, that file will keep the Apache License 2.0 header, the licence text will be added, and this section will say what was changed.
 
 The *ignore* action for a remote button (`app_keys`) and the option to hide apps from the grid were inspired by features in the public 3.x releases of CleanYourTV (see Upstream, MIT License). The code for both is written here, not copied.
+
+The ideas of the *side dock*, the *wallpaper dim* and *Arabic digits for the clock* were inspired by the public README of [sukoon-tv](https://github.com/MultiX0/sukoon-tv) by MultiX0. It states no licence, so only the ideas were taken: its README was read, no code or image from it is in this project, and the implementation is ours.
 
 ## Fonts
 

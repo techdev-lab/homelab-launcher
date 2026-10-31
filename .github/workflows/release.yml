@@ -83,11 +83,21 @@ jobs:
               exit 1
             fi
           done
-      - name: Release notes from CHANGELOG.md
+      - name: Release notes from CHANGELOG.md and CHANGELOG.ar.md
         run: |
           version="${TAG#v}"
           awk -v v="## $version" 'index($0, v) == 1 {on = 1; next} on && /^## / {exit} on' CHANGELOG.md > notes.md
-          cat notes.md docs/RELEASE_NOTES_FOOTER.md > release-notes.md
+          awk -v v="## $version" 'index($0, v) == 1 {on = 1; next} on && /^## / {exit} on' CHANGELOG.ar.md > notes.ar.md
+          {
+            cat notes.md docs/RELEASE_NOTES_FOOTER.md
+            # The Arabic notes follow the English ones, so a reader who cannot read English still gets them.
+            if [ -s notes.ar.md ]; then
+              printf '\n---\n\n<div dir="rtl">\n\n'
+              cat notes.ar.md
+              printf '\n</div>\n'
+              cat docs/RELEASE_NOTES_FOOTER.ar.md
+            fi
+          } > release-notes.md
       - name: Publish
         env:
           GH_TOKEN: ${{ github.token }}

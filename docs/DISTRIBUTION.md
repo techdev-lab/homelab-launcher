@@ -22,8 +22,10 @@ read on 2026-10-31; neither page carries a date, so the rules are read again whe
 | `changelogs/4.txt` | At most 500 bytes. The file name is the `versionCode`, and every build keeps `versionCode 4`, so this file is rewritten for each release. |
 | `images/icon.png` | 512 by 512, made from the app's own launcher icon. |
 
-- English only. The repository keeps Arabic in `*.ar.md`, the bilingual README, `values-ar` and data files, so there is
-  no `ar` folder here. An Arabic store text can be added later as a deliberate exception.
+- English in `en-US` and Arabic in `ar`. The first plan had English only, because the repository keeps Arabic in
+  `*.ar.md`, the bilingual README, `values-ar` and data files. The owner then decided that everything on GitHub should
+  also be readable in Arabic, since the people this is for are Arabic-speaking Muslims and some do not read English, so
+  `fastlane/metadata/android/ar/` is an allowed place for Arabic in `scripts/ci/check_hygiene.py` (a unit test says so).
 - Screenshots (`images/tvScreenshots/`) are not part of this batch. The current README screenshots were taken on the
   maintainer's own TV and show a city name and third-party apps, and they will change again with batch 5. They are
   redone once, at the end, from the demo config with a neutral city, and then added here.
@@ -66,8 +68,8 @@ when the `versionCode` goes up, so a user who installed from a store would never
 
 ## Definition of done
 
-- The five `fastlane` files exist, are English only, the short description is at most 80 characters, the changelog is
-  at most 500 bytes, and `icon.png` is 512 by 512.
+- The `fastlane` files exist in `en-US` and `ar`, the short description is at most 80 characters, the changelog is at
+  most 500 bytes, and `icon.png` is 512 by 512.
 - `SECURITY.md` no longer says releases use a debug key, shows the fingerprint and the verification command, and
   contains no secret.
 - `NOTICE.md` has the CleanYourTV paragraph and no duplicate of the tvOS one.

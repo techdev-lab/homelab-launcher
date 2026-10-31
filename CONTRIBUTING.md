@@ -1,5 +1,7 @@
 # Contributing
 
+[English](CONTRIBUTING.md) · [العربية](CONTRIBUTING.ar.md)
+
 Thank you for helping. The most useful contributions right now:
 
 1. **Arabic team names for more leagues.** Add entries to `launcher/app/src/main/assets/names_ar.json` under `"teams"`, keyed by the ESPN team id from `https://site.api.espn.com/apis/site/v2/sports/soccer/<league>/teams`, and the league under `"leagues"`. Do not change existing entries without a reason in the PR.
@@ -9,7 +11,7 @@ Thank you for helping. The most useful contributions right now:
 
 ## Rules
 
-- Code, comments, docs and commit messages are in English. User-facing strings go in the app's resources (`values-ar/`, `values/`), and Arabic data in `names_ar.json`.
+- Code, comments, docs and commit messages are in English. User-facing strings go in the app's resources (`values-ar/`, `values/`), and Arabic data in `names_ar.json`. Every user-facing doc has an Arabic twin next to it named `*.ar.md` (for example `docs/INSTALL.ar.md`): when you change a doc, change its twin too, or say in the pull request that you could not and it will be completed.
 - Run the tests before a pull request:
   ```bash
   cd launcher && ./gradlew testOfflineReleaseUnitTest testOnlineReleaseUnitTest

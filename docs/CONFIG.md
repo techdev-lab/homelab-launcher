@@ -1,5 +1,7 @@
 # Configuration (`config.json`)
 
+[English](CONFIG.md) · [العربية](CONFIG.ar.md)
+
 tvhome reads `/sdcard/Android/data/com.gathin.tvhome/files/config.json` when it starts. Every key is optional; a missing or badly typed key keeps the default. After editing, push the file and run `adb shell am force-stop com.gathin.tvhome`, then press HOME.
 
 Start from `config/config.example.json` or a city in `config/examples/`.
@@ -118,6 +120,7 @@ one card for the four Arab leagues. Still not available (no free source checked 
 | Apps per row, wallpapers and plain colour, motion | `columns`, `wallpaper_mode`, `background_color`, `animations`, `advanced_effects` | a new theme push, or *Follow theme* |
 | Cards: prayer times, weather, football, my clubs | a card that is off never shows, whatever the config says | switching it on again |
 | Favourite clubs | `favorite_teams` | *Clear* on the clubs screen |
+| Text size, dock position, dock style, tile corners, clock style, digits, wallpaper dim, prayer method and Asr, prayer alert, Hijri date, hidden apps | `text_size`, `dock_position`, `dock_style`, `tile_corners`, `clock_style`, `digits`, `wallpaper_dim`, `prayer_method`, `asr_method`, `prayer_alert_minutes`, `hijri_offset_days`, `hidden_apps` | **A theme push does not clear them**; change them on the same screen (hidden apps: *Use the theme's list*) |
 
 ## Wallpapers
 

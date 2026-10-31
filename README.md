@@ -17,7 +17,7 @@
 
 <div dir="rtl">
 
-**[⬇ نزّل ملف APK](https://github.com/techdev-lab/homelab-launcher/releases/latest)** · [التثبيت](docs/INSTALL.md) · [الإعدادات](docs/CONFIG.md) · [الأمان](SECURITY.md) · [المساهمة](CONTRIBUTING.md)
+**[⬇ نزّل ملف APK](https://github.com/techdev-lab/homelab-launcher/releases/latest)** · [التثبيت](docs/INSTALL.ar.md) · [الإعدادات](docs/CONFIG.ar.md) · [الأمان](SECURITY.ar.md) · [المساهمة](CONTRIBUTING.ar.md)
 
 </div>
 
@@ -50,7 +50,17 @@ It is written for Muslim and Arabic-speaking households first, but it is not tie
 
 A fresh install starts on **Serene**. Got a Google TV for the children? Pick **Kids**, switch off the football cards, and it is ready.
 
-### What's new in 2.9
+### What's new in 3.0
+
+The biggest release since the fork. Every new option defaults to the 2.9 look, so an upgrade changes nothing until you pick.
+
+- **Ramadan and prayer:** in Ramadan a card counts down to the **iftar** and to the end of **suhoor**; for a few minutes after each prayer time the prayer card says it is time (no sound); and the **Hijri date** can be moved by up to two days for countries that follow moon sighting.
+- **A dock at the side:** put your favourite apps in a column at the end of the reading side, on the **right** on the English screen and on the **left** on the Arabic one, with the other apps beside it. The bottom row of 2.9 is still the default.
+- **More looks, all on the TV:** floating-glass or flat dock, soft or normal corners, a glass clock, **Arabic-Indic digits** on either language, and how dark the wallpaper veil is.
+- **Hide apps** from the grid, **ignore a remote button** pressed by accident, and matches and weather that come back soon after a start with no network.
+- **Arabic for everything on GitHub:** the install guide, configuration guide, security notes, changelog and release notes now come in Arabic too, and so does the store listing.
+
+### 2.9
 
 - **Prayer methods:** 14 methods and Hanafi Asr, picked on the TV; and the **Egyptian, UAE, Qatari and Moroccan leagues** (next kick-off).
 - **Your clubs stand out:** a gold star on every match of your favourite clubs, and each club's next two matches, so Al Hilal's AFC Champions League Elite game shows next to the league one.
@@ -92,22 +102,27 @@ Install it like any sideloaded app: `adb install HomeLab-Launcher-<version>.apk`
 |---|---|
 | **Arabic and English, end to end** | Follows the TV's language, or its own: pick it in *Launcher settings*. In Arabic the whole screen is Arabic, right to left, including app names, league names and 156 team names, and the screensaver follows the same language. In English it is fully English. |
 | **Prayer times, offline** | 14 calculation methods (Umm al-Qura by default, Egyptian, Gulf, Dubai, Qatar, Kuwait, Jordan, Morocco, Algeria, Tunisia, Turkey, Muslim World League, ISNA, Karachi) and standard or Hanafi Asr, picked on the TV. Computed on the TV from the coordinates you set: no network and no location lookup. Every method is checked against api.aladhan.com to within 2 minutes; `prayer_adjust` shifts a time by a few minutes if your printed calendar differs. |
-| **Hijri date** | Umm al-Qura calendar from the platform's ICU, next to the Gregorian date. |
+| **Hijri date** | Umm al-Qura calendar from the platform's ICU, next to the Gregorian date, with an adjustment of up to two days for countries that follow moon sighting. |
+| **Ramadan** | In Ramadan only: a card with the time left to the iftar (Fajr to Maghrib) or to the end of suhoor, the day's two times and the day of Ramadan. A visual alert at each prayer time, without sound. |
 | **Football cards** | One card per league group, side by side, e.g. the Saudi Pro League and "the big European leagues". A live match first, otherwise the next kick-off within 7 days. The **Egyptian, UAE, Qatari and Moroccan leagues** work too (next kick-off, no live score). Matches of your favourite clubs carry a gold star. |
 | **Wallpapers** | Three built-in sets, **HomeLab**, **Serene** and **Kids**, changing every few minutes, or a plain colour; picked on the TV. Your own pictures still work through the config. |
-| **Settings on the TV** | Hold OK on the Settings button: language, apps per row, wallpapers, which cards show, text size, prayer method and Asr, favourite clubs, motion. No computer needed. |
+| **Settings on the TV** | Hold OK on the Settings button: language, apps per row, wallpapers and their dim, which cards show, text size, dock position, dock and clock look, digits, prayer method and Asr, prayer alert, Hijri date, favourite clubs, hidden apps, motion. No computer needed. |
 | **Favourite clubs** | Pick up to 10 clubs with the remote (Al Hilal, Al Nassr, Man City...). One card shows each club's live or next two matches in any competition, league, cup or continental, one every 5 seconds, and every match of your clubs gets a gold star. |
 | **Weather** | Current conditions for the same city (Open-Meteo, free, no key). |
-| **Your dock** | Four apps of your choice on top (YouTube, Netflix, Shahid, Jellyfin, an IPTV player, anything), the rest in a grid. |
+| **Your dock** | The apps of your choice (YouTube, Netflix, Shahid, Jellyfin, an IPTV player, anything) in a row at the bottom or in a column at the side, the rest in a grid. |
 | **Remote buttons** | The YouTube button on the Chromecast remote keeps working after the stock launcher is gone. |
 | **Screensaver** | A thin clock that glides around the screen with the Hijri date, the next prayer and a slow colour glow (no burn-in). |
 | **VPN indicator** | Set your VPN app (e.g. WireGuard) and the Wi-Fi pill shows a green "VPN" capsule while the tunnel is up, red when it dropped. |
 | **Two builds** | `online` (football, weather) and `offline` (no INTERNET permission at all). |
 | **Small and private** | About 4 MB with fonts and 22 wallpapers. No analytics, no accounts, no ads. The offline build cannot reach the network. |
 
-| English | App grid | Screensaver |
+| English | Arabic | App grid |
 |---|---|---|
-| ![English](docs/screenshots/home-english.png) | ![Grid](docs/screenshots/app-grid.png) | ![Screensaver](docs/screenshots/screensaver-amber.png) |
+| ![English home screen](docs/screenshots/home-english.png) | ![Arabic home screen](docs/screenshots/home-arabic.png) | ![App grid](docs/screenshots/app-grid.png) |
+
+| Side dock, English (right) | Side dock, Arabic (left) |
+|---|---|
+| ![Side dock in English](docs/screenshots/side-dock-english.png) | ![Side dock in Arabic](docs/screenshots/side-dock-arabic.png) |
 
 ### Quick start
 
@@ -213,7 +228,17 @@ MIT License, see [LICENSE](LICENSE).
 
 التثبيت الجديد يبدأ على **سكينة**. **عندك جوجل تي في للأطفال؟** اختر خلفيات **أطفال**، وأطفئ بطاقات الكورة من الإعدادات، وصار جاهز لهم.
 
-### الجديد في 2.9
+### الجديد في 3.0
+
+أكبر إصدار من وقت ما تفرّع المشروع. كل خيار جديد قيمته الافتراضية شكل 2.9، فالترقية ما تغيّر شي لين تختار.
+
+- **رمضان والصلاة:** في رمضان بطاقة تعدّ تنازلياً **للإفطار** ولنهاية **السحور**؛ وبعد كل وقت صلاة بدقائق تكتب بطاقة الصلاة إن الوقت حان (بدون صوت)؛ و**التاريخ الهجري** تقدر تحرّكه حتى يومين للبلدان اللي تتبع رؤية الهلال.
+- **رصيف على الجنب:** حط تطبيقاتك المفضلة في عمود في نهاية جهة القراءة، على **اليمين** في الشاشة الإنجليزية وعلى **اليسار** في العربية، وباقي التطبيقات بجانبه. والصف تحت (شكل 2.9) يبقى الافتراضي.
+- **أشكال أكثر، كلها من التلفزيون:** رصيف زجاجي عائم أو مسطح، وزوايا ناعمة أو عادية، وساعة زجاجية، و**أرقام عربية** بأي لغة، ودرجة تعتيم الخلفية.
+- **إخفاء التطبيقات** من الشبكة، و**تجاهل زر في الريموت** ينضغط بالغلط، ورجوع المباريات والطقس بسرعة بعد تشغيل بدون شبكة.
+- **العربي لكل شي في GitHub:** دليل التثبيت ودليل الإعدادات وملاحظات الأمان وسجل التغييرات وملاحظات الإصدار صارت بالعربي كذلك، وصفحة المتاجر بعد.
+
+### 2.9
 
 - **طرق حساب الصلاة:** 14 طريقة والعصر الحنفي من التلفزيون؛ و**الدوري المصري والإماراتي والقطري والمغربي** (المباراة الجاية).
 - **أنديتك واضحة:** نجمة ذهبية على كل مباراة لأنديتك المفضلة، ومباراتين لكل نادٍ، فتطلع مباراة الهلال في النخبة الآسيوية جنب مباراة الدوري.
@@ -227,7 +252,7 @@ MIT License, see [LICENSE](LICENSE).
 - **البطاقات تتحرك لها بالأسهم:** من التطبيقات اضغط فوق توصلها. OK على بطاقة الأندية ينقلك للنادي اللي بعده، وعلى الباقي يفتح الإعدادات.
 - **ملف APK جاهز للتنزيل** من [صفحة الإصدارات](https://github.com/techdev-lab/homelab-launcher/releases/latest) (2.7)، و**أنديتك المفضلة** (2.6): حتى 10 أندية، مباراة كل نادٍ الجاية أو المباشرة في أي بطولة.
 
-كل التغييرات: [CHANGELOG.md](CHANGELOG.md).
+كل التغييرات: [CHANGELOG.md](CHANGELOG.ar.md).
 
 ### التنزيل
 
@@ -237,16 +262,16 @@ MIT License, see [LICENSE](LICENSE).
 | `HomeLab-Launcher-<الإصدار>-offline.apk` | نفسه بدون أي اتصال إنترنت (بدون طقس وكورة). لتلفزيون لازم يبقى بدون إنترنت. |
 | `SHA256SUMS.txt` | بصمات الملفات، تتأكد إن التنزيل سليم. |
 
-تثبّته مثل أي تطبيق من برا المتجر: `adb install HomeLab-Launcher-<الإصدار>.apk`، أو تنقله للتلفزيون بتطبيق مثل *Send files to TV* أو *Downloader* وتفتحه هناك. ينزل **جنب** الشاشة الأصلية، وتحويله للشاشة الرئيسية خطوة ثانية لها رجوع ([دليل التثبيت](docs/INSTALL.md)). كل إصدار يبنيه ويوقّعه GitHub Actions من الكود نفسه ([كيف](docs/RELEASING.md))، فما تحتاج تثق بملف أرسله لك شخص أو ذكاء اصطناعي.
+تثبّته مثل أي تطبيق من برا المتجر: `adb install HomeLab-Launcher-<الإصدار>.apk`، أو تنقله للتلفزيون بتطبيق مثل *Send files to TV* أو *Downloader* وتفتحه هناك. ينزل **جنب** الشاشة الأصلية، وتحويله للشاشة الرئيسية خطوة ثانية لها رجوع ([دليل التثبيت](docs/INSTALL.ar.md)). كل إصدار يبنيه ويوقّعه GitHub Actions من الكود نفسه ([كيف](docs/RELEASING.md))، فما تحتاج تثق بملف أرسله لك شخص أو ذكاء اصطناعي.
 
-**وش يشتغل مباشرة بعد التثبيت، ووش يحتاج كمبيوتر مرة وحدة.** جوجل تي في يحتفظ بثلاث أشياء لتطبيقاته، فتحتاج خطوة وحدة بكمبيوتر و`adb` (كلها في [دليل التثبيت](docs/INSTALL.md)، وكلها لها رجوع):
+**وش يشتغل مباشرة بعد التثبيت، ووش يحتاج كمبيوتر مرة وحدة.** جوجل تي في يحتفظ بثلاث أشياء لتطبيقاته، فتحتاج خطوة وحدة بكمبيوتر و`adb` (كلها في [دليل التثبيت](docs/INSTALL.ar.md)، وكلها لها رجوع):
 
 | الميزة | بعد تثبيت الملف | الطريقة |
 |---|---|---|
 | الشاشة الرئيسية: الساعة، الهجري، الصلاة، الطقس، الكورة، الأندية، الخلفيات، وكل الإعدادات | تشتغل: افتح *HomeLab Launcher* من تطبيقاتك | ما تسوي شي |
-| مدينتك للصلاة والطقس | تحتاج ملف إعدادات | انسخ مثال من `config/examples` وادفعه مرة ([الإعدادات](docs/CONFIG.md)) |
-| يفتح بزر الهوم (بدل شاشة جوجل) | كمبيوتر مرة وحدة | السكربت `scripts/Set-TvhomeAsHome.ps1` ([دليل التثبيت](docs/INSTALL.md) الخطوة 5) |
-| زر يوتيوب في الريموت | كمبيوتر مرة وحدة | أمر `adb` واحد ([دليل التثبيت](docs/INSTALL.md) الخطوة 6) |
+| مدينتك للصلاة والطقس | تحتاج ملف إعدادات | انسخ مثال من `config/examples` وادفعه مرة ([الإعدادات](docs/CONFIG.ar.md)) |
+| يفتح بزر الهوم (بدل شاشة جوجل) | كمبيوتر مرة وحدة | السكربت `scripts/Set-TvhomeAsHome.ps1` ([دليل التثبيت](docs/INSTALL.ar.md) الخطوة 5) |
+| زر يوتيوب في الريموت | كمبيوتر مرة وحدة | أمر `adb` واحد ([دليل التثبيت](docs/INSTALL.ar.md) الخطوة 6) |
 | شاشة التوقف (ساعة تنساب مع الهجري والصلاة الجاية) | كمبيوتر مرة وحدة | أمر `adb` واحد: قائمة جوجل تي في تخفي شاشات التوقف الثانية (الخطوة 6) |
 
 ### وش فيه؟
@@ -255,28 +280,33 @@ MIT License, see [LICENSE](LICENSE).
 |---|---|
 | **عربي وإنجليزي بالكامل** | يتبع لغة التلفزيون، أو لغته الخاصة: تختارها من *إعدادات المشغّل*. بالعربي الشاشة كلها عربي من اليمين لليسار، حتى أسماء التطبيقات (يوتيوب، شاهد، جيليفين…) والدوريات و156 فريقاً، وشاشة التوقف تتبع نفس اللغة. بالإنجليزي كلها إنجليزي. |
 | **مواقيت الصلاة بدون إنترنت** | 14 طريقة حساب (أم القرى الافتراضية، والمصرية، والخليج، ودبي، وقطر، والكويت، والأردن، والمغرب، والجزائر، وتونس، وتركيا، ورابطة العالم الإسلامي، وأمريكا الشمالية، وكراتشي) والعصر على مذهب الجمهور أو الحنفي، تختارها من التلفزيون. تنحسب على الجهاز من إحداثيات مدينتك، بدون إنترنت وبدون تحديد موقع. كل طريقة فرقها عن api.aladhan.com أقل من دقيقتين، و`prayer_adjust` يعدّل الوقت دقائق لو تقويم بلدك يفرق. |
-| **التاريخ الهجري** | تقويم أم القرى، جنب الميلادي. |
+| **التاريخ الهجري** | تقويم أم القرى، جنب الميلادي، مع تعديل حتى يومين للبلدان اللي تتبع رؤية الهلال. |
+| **رمضان** | في رمضان فقط: بطاقة فيها الوقت الباقي للإفطار (من الفجر للمغرب) أو لنهاية السحور، ووقتا اليوم، ويوم رمضان. وتنبيه على الشاشة عند كل صلاة بدون صوت. |
 | **بطاقات الكورة** | بطاقة لكل مجموعة دوريات جنب بعض، مثلاً: الدوري السعودي، والدوريات الأوروبية الكبرى. المباشر أولاً، وإلا أقرب مباراة خلال 7 أيام. و**الدوري المصري والإماراتي والقطري والمغربي** صارت تشتغل (المباراة الجاية، بدون نتيجة مباشرة). ومباريات أنديتك المفضلة عليها نجمة ذهبية. |
 | **الخلفيات** | ثلاث مجموعات داخل التطبيق، **هوم لاب** و**سكينة** و**أطفال**، تتبدّل كل كم دقيقة، أو لون سادة؛ تختارها من التلفزيون. صورك الخاصة تشتغل من ملف الإعدادات. |
-| **الإعدادات من التلفزيون** | ضغطة مطوّلة على زر الإعدادات: اللغة، عدد التطبيقات في الصف، الخلفيات، أي البطاقات تظهر، حجم النص، طريقة حساب الصلاة والعصر، الأندية المفضلة، الحركة. بدون كمبيوتر. |
+| **الإعدادات من التلفزيون** | ضغطة مطوّلة على زر الإعدادات: اللغة، عدد التطبيقات في الصف، الخلفيات وتعتيمها، أي البطاقات تظهر، حجم النص، مكان الرصيف وشكله وشكل الساعة، الأرقام، طريقة حساب الصلاة والعصر، تنبيه الصلاة، التاريخ الهجري، الأندية المفضلة، التطبيقات المخفية، الحركة. بدون كمبيوتر. |
 | **أنديتك المفضلة** | تختار حتى 10 أندية بالريموت (الهلال، النصر، مانشستر سيتي…). بطاقة وحدة تعرض مباراتين لكل نادٍ (المباشرة أو الجاية) في أي بطولة: الدوري أو الكأس أو النخبة الآسيوية أو أبطال أوروبا، مباراة كل 5 ثواني، وكل مباراة لأنديتك عليها نجمة ذهبية. |
 | **الطقس** | لنفس المدينة (Open-Meteo، مجاني وبدون مفتاح). |
-| **شريط تطبيقاتك** | أربع تطبيقات تختارها فوق (يوتيوب، نتفليكس، شاهد، جيليفين، برنامج IPTV، أي شي)، والباقي تحت في شبكة. |
+| **رصيف تطبيقاتك** | التطبيقات اللي تختارها (يوتيوب، نتفليكس، شاهد، جيليفين، برنامج IPTV، أي شي) في صف تحت أو في عمود على الجنب، والباقي في شبكة. |
 | **زر يوتيوب في الريموت** | يبقى شغّال بعد ما نوقف اللانشر الأصلي. |
 | **شاشة توقف** | ساعة رفيعة تنساب على الشاشة، معها الهجري والصلاة الجاية ووهج يتغيّر لونه بهدوء (تحمي الشاشة من الحرق). |
 | **علامة الـVPN** | لو حطيت تطبيق الـVPN (مثل WireGuard) في الإعدادات، يطلع جنب كلمة واي فاي **VPN بالأخضر** وقت ما يكون شغّال، وبالأحمر لو انقطع. |
 | **نسختين** | `online` (كورة وطقس) و`offline` (بدون صلاحية إنترنت أبداً). |
 | **خفيف وخاص** | حوالي 4 ميغابايت مع الخطوط و22 خلفية. لا تتبع ولا حسابات ولا إعلانات. نسخة offline ما تقدر توصل للإنترنت أصلاً. |
 
-| بالإنجليزي | شبكة التطبيقات | شاشة التوقف |
+| بالعربي | بالإنجليزي | شبكة التطبيقات |
 |---|---|---|
-| ![English](docs/screenshots/home-english.png) | ![Grid](docs/screenshots/app-grid.png) | ![Screensaver](docs/screenshots/screensaver-violet.png) |
+| ![الشاشة الرئيسية بالعربي](docs/screenshots/home-arabic.png) | ![الشاشة الرئيسية بالإنجليزي](docs/screenshots/home-english.png) | ![شبكة التطبيقات](docs/screenshots/app-grid.png) |
+
+| الرصيف الجانبي بالعربي (يسار) | الرصيف الجانبي بالإنجليزي (يمين) |
+|---|---|
+| ![الرصيف الجانبي بالعربي](docs/screenshots/side-dock-arabic.png) | ![الرصيف الجانبي بالإنجليزي](docs/screenshots/side-dock-english.png) |
 
 ### البداية السريعة
 
 تحتاج كمبيوتر (ويندوز أو ماك أو لينكس) على نفس الواي فاي حق التلفزيون، والريموت، وحوالي نص ساعة.
 
-1. **اقرأ [دليل التثبيت](docs/INSTALL.md) مرة كاملة قبل ما تبدأ.** فيه الترتيب الصحيح، والفخ الوحيد اللي ممكن يدخل الجهاز في إعادة تشغيل متكررة.
+1. **اقرأ [دليل التثبيت](docs/INSTALL.ar.md) مرة كاملة قبل ما تبدأ.** فيه الترتيب الصحيح، والفخ الوحيد اللي ممكن يدخل الجهاز في إعادة تشغيل متكررة.
 2. **اكتب كلمة سر الواي فاي على ورقة.**
 3. نزّل أداة [Android platform-tools](https://developer.android.com/tools/releases/platform-tools) الرسمية (فيها `adb`).
 4. في التلفزيون: حدّث النظام، فعّل Developer options (اضغط 7 مرات على Android TV OS build في About)، وشغّل **Wireless debugging**، ثم:
@@ -292,10 +322,10 @@ MIT License, see [LICENSE](LICENSE).
    ```bash
    adb push config.json /sdcard/Android/data/com.gathin.tvhome/files/config.json
    ```
-7. خلّه الشاشة الرئيسية بالسكربت `scripts/Set-TvhomeAsHome.ps1` (يجرب أول بدون تغيير)، ثم فعّل زر يوتيوب وشاشة التوقف. التفاصيل في [دليل التثبيت](docs/INSTALL.md).
+7. خلّه الشاشة الرئيسية بالسكربت `scripts/Set-TvhomeAsHome.ps1` (يجرب أول بدون تغيير)، ثم فعّل زر يوتيوب وشاشة التوقف. التفاصيل في [دليل التثبيت](docs/INSTALL.ar.md).
 
 > ⚠️ **تحذير:**
-> **لا توقف اللانشر الأصلي `launcherx` وحزمة `setupwraith` لسه شغّالة.** Google TV ساعتها يخلي معالج الإعداد هو الشاشة الرئيسية، والجهاز ممكن يعلق في إعادة تشغيل. السكربت يسويها بالترتيب الصحيح. ولو صارت، الحل: **اضغط مطوّلاً الزر اللي ورا الكروم كاست لين اللمبة تصير صفراء ثم بيضاء** (factory reset). كل التفاصيل في [قسم الإنقاذ](docs/INSTALL.md#rescue).
+> **لا توقف اللانشر الأصلي `launcherx` وحزمة `setupwraith` لسه شغّالة.** Google TV ساعتها يخلي معالج الإعداد هو الشاشة الرئيسية، والجهاز ممكن يعلق في إعادة تشغيل. السكربت يسويها بالترتيب الصحيح. ولو صارت، الحل: **اضغط مطوّلاً الزر اللي ورا الكروم كاست لين اللمبة تصير صفراء ثم بيضاء** (factory reset). كل التفاصيل في [قسم الإنقاذ](docs/INSTALL.ar.md#الإنقاذ).
 
 ### أسماء الدوريات اللي تشتغل
 
@@ -317,7 +347,7 @@ MIT License, see [LICENSE](LICENSE).
 | خدمات إمكانية الوصول (`HomeKeyService` و`InputKeyService`) | النسختين، اختيارية | تشغّل زرّي Home وInput في الريموت بعد إيقاف اللانشر الأصلي. ترى ضغطات الأزرار فقط، مو محتوى الشاشة، وتبقى مطفية لين تفعّلها. |
 | شاشة التوقف (`ClockDream`) | النسختين | تختارها من الإعدادات. |
 
-بدون تتبع ولا حسابات ولا تقارير أعطال ولا إعدادات عن بُعد. كل التفاصيل في [SECURITY.md](SECURITY.md).
+بدون تتبع ولا حسابات ولا تقارير أعطال ولا إعدادات عن بُعد. كل التفاصيل في [SECURITY.md](SECURITY.ar.md).
 
 ### بناء التطبيق
 
@@ -331,12 +361,12 @@ cd launcher
 ### المساهمة والدعم
 
 - **مشكلة؟** افتح بلاغاً من نموذج «Bug report». يسألك عن إصدار التطبيق والنسخة والجهاز، ويذكّرك تشيل عناوين IP والمفاتيح.
-- **تبي تساهم؟** [CONTRIBUTING.md](CONTRIBUTING.md) فيه أنفع المساهمات: أسماء فرق عربية لدوريات أكثر، ومصدر مجاني للدوريات العربية الناقصة (ونتائجها المباشرة)، والتجربة على أجهزة ثانية.
-- **ثغرة أمنية؟** اتبع [SECURITY.md](SECURITY.md) وما تفتح بلاغاً عاماً.
+- **تبي تساهم؟** [CONTRIBUTING.md](CONTRIBUTING.ar.md) فيه أنفع المساهمات: أسماء فرق عربية لدوريات أكثر، ومصدر مجاني للدوريات العربية الناقصة (ونتائجها المباشرة)، والتجربة على أجهزة ثانية.
+- **ثغرة أمنية؟** اتبع [SECURITY.md](SECURITY.ar.md) وما تفتح بلاغاً عاماً.
 
 ### الشكر والرخصة
 
-المشروع مبني على لانشر `tvhome` من مشروع [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (رخصة MIT)، ولهذا اسم الحزمة `com.gathin.tvhome`. الخطوط: Outfit وIBM Plex Sans Arabic (رخصة SIL OFL 1.1). البيانات: ESPN وOpen-Meteo. خيارا الرصيف الزجاجي والساعة الزجاجية مستوحيان من [tvOS Launcher](https://github.com/techgenius1/tvOS-Launcher) للمطوّر techgenius (رخصة Apache-2.0)، له الشكر. التفاصيل في [NOTICE.md](NOTICE.md).
+المشروع مبني على لانشر `tvhome` من مشروع [Gathin23/cleanyourtv](https://github.com/Gathin23/cleanyourtv) (رخصة MIT)، ولهذا اسم الحزمة `com.gathin.tvhome`. الخطوط: Outfit وIBM Plex Sans Arabic (رخصة SIL OFL 1.1). البيانات: ESPN وOpen-Meteo. خيارا الرصيف الزجاجي والساعة الزجاجية مستوحيان من [tvOS Launcher](https://github.com/techgenius1/tvOS-Launcher) للمطوّر techgenius (رخصة Apache-2.0)، له الشكر. التفاصيل في [NOTICE.md](NOTICE.ar.md).
 
 رخصة MIT، شوف [LICENSE](LICENSE).
 
