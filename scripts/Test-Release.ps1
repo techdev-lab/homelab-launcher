@@ -1,5 +1,5 @@
 # Read-only check of a downloaded release APK: its SHA-256 against SHA256SUMS.txt, then its signing certificate.
-#   powershell -ExecutionPolicy Bypass -File .\Test-Release.ps1 -Apk .\HomeLab-Launcher-2.9.0.apk
+#   powershell -ExecutionPolicy Bypass -File .\Test-Release.ps1 -Apk .\HomeLab-Launcher-3.0.0.apk
 # Exit codes: 0 OK, 1 sha256, 2 listed, 3 signer, 4 tool, 5 input. Writes no file, makes no network call.
 param(
     [string]$Apk,
