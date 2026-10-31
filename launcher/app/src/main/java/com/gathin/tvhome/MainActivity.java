@@ -358,11 +358,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         clockStyle = cfg.clockStyle;
         if (ClockStyle.capsule(clockStyle)) glassClock();
         digits = cfg.digits;
-        if (DigitStyle.arabic(digits)) {
-            // The header's numbers: the clock, the Gregorian and Hijri dates. The strip cards do the same in cardText.
-            for (int id : new int[]{R.id.clock, R.id.date, R.id.hijriDate, R.id.shamsiDate}) {
-                ((TextView) findViewById(id)).setTransformationMethod(DigitsTransformation.INSTANCE);
-            }
+        // The header's numbers: the clock, the Gregorian and Hijri dates. The strip cards do the same in cardText.
+        // Latin too: the clock and the date take the system locale, which gives Arabic-Indic digits on the Arabic screen.
+        for (int id : new int[]{R.id.clock, R.id.date, R.id.hijriDate, R.id.shamsiDate}) {
+            ((TextView) findViewById(id)).setTransformationMethod(DigitsTransformation.of(digits));
         }
 
         grid = findViewById(R.id.grid);
@@ -1940,7 +1939,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             t.setEllipsize(TextUtils.TruncateAt.END);
         }
         // After setSingleLine: it installs its own transformation method and would replace this one.
-        if (DigitStyle.arabic(digits)) t.setTransformationMethod(DigitsTransformation.INSTANCE);
+        t.setTransformationMethod(DigitsTransformation.of(digits));
         return t;
     }
 

@@ -19,14 +19,20 @@ logbook and NOTICE.md); the code is ours.
 
 ## 1. Digits (`digits`)
 
-`arabic` shows every number on the home screen in Arabic-Indic digits (U+0660 to U+0669): the clock, the Gregorian and Hijri
-dates, and the numbers on the strip cards (prayer times, countdowns, kick-off times, scores, temperatures). The Arabic
-screen already writes the Hijri date that way; this makes the rest follow when the viewer wants it, and gives the same
-choice on the English screen.
+The setting means what it says, on every number of the home screen and the screensaver, on either language:
+
+- `latin` (the default) draws every number in Latin digits (0 to 9): the clock, the Gregorian and Hijri dates, and the
+  numbers on the strip cards (prayer times, countdowns, kick-off times, scores, temperatures). This holds on the Arabic
+  screen too. Before 3.0 the clock and the two dates took the system locale there, so an Arabic screen mixed Arabic-Indic
+  digits in the header with Latin digits on the cards; `latin` now unifies them.
+- `arabic` draws every one of those numbers in Arabic-Indic digits (U+0660 to U+0669), on either language.
 
 - It changes how a number is drawn, never the number: a `TransformationMethod` on the text views, so the clock keeps
-  formatting itself and the strip cards build their text as before. The mapping is the existing `Hijri.arabicDigits`.
-- The screensaver clock follows the same choice.
+  formatting itself and the strip cards build their text as before. The rule is `DigitStyle.apply` (Latin and
+  Arabic-Indic digits are each mapped to the chosen set; letters and punctuation are never touched; a digit that is
+  already in the chosen set is left alone, so nothing is converted twice). `Hijri.arabicDigits` stays the Latin to
+  Arabic-Indic mapping. Nothing new is saved: no new option, key or permission, and the default is still `latin`.
+- The screensaver clock and both dates follow the same choice.
 - The English screen draws the clock in Outfit, which has no Arabic-Indic digits, so Android supplies them from its own
   font. This is noted in the setting's hint.
 - Settings screens, dialogs and the top-bar pills are not changed.
