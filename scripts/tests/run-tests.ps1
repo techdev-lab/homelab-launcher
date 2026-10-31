@@ -94,6 +94,10 @@ RunRel 'S4 sums has only a malformed line' 'good' (RelArgs $apk $relSigner) { pa
 $apk = MakeApk
 RunRel 'S5 other signer' 'other' (RelArgs $apk $relSigner) { param($o, $c) $c -eq 3 -and $o -match 'FAIL signer' }
 $apk = MakeApk
+RunRel 'S11 newer apksigner prints "V2 Signer:" lines' 'v2format' (RelArgs $apk $relSigner) { param($o, $c) $c -eq 0 -and $o -match 'RESULT: OK' -and $o -match 'PASS signer' }
+$apk = MakeApk
+RunRel 'S12 the same certificate under V2 and V3 counts once' 'twoschemes' (RelArgs $apk $relSigner) { param($o, $c) $c -eq 0 -and $o -match 'RESULT: OK' }
+$apk = MakeApk
 RunRel 'S6 two signers' 'two' (RelArgs $apk $relSigner) { param($o, $c) $c -eq 3 -and $o -match 'FAIL signer' }
 $apk = MakeApk
 RunRel 'S7 apksigner rejects the APK' 'reject' (RelArgs $apk $relSigner) { param($o, $c) $c -eq 3 -and $o -match 'FAIL signer' }

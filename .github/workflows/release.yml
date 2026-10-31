@@ -76,8 +76,10 @@ jobs:
             certs="$("$tool" verify --print-certs "$apk")"
             echo "$apk"
             echo "$certs" | grep -i "SHA-256"
-            count="$(echo "$certs" | grep -c 'certificate SHA-256 digest:' || true)"
-            actual="$(echo "$certs" | sed -n 's/^Signer #[0-9]* certificate SHA-256 digest: \([0-9a-f]\{64\}\)$/\1/p')"
+            # Older apksigner prints "Signer #1 certificate SHA-256 digest: ...", newer ones "V2 Signer: certificate SHA-256
+            # digest: ..." (one line per signature scheme). Take every digest once each: exactly one certificate must remain.
+            actual="$(echo "$certs" | sed -n 's/.*certificate SHA-256 digest: \([0-9a-fA-F]\{64\}\).*/\1/p' | tr 'A-F' 'a-f' | sort -u)"
+            count="$(echo "$actual" | grep -c . || true)"
             if [ "$count" != "1" ] || [ "$actual" != "$EXPECTED_SIGNER_SHA256" ]; then
               echo "::error::$apk is not signed by exactly the project certificate (see docs/RELEASING.md)"
               exit 1

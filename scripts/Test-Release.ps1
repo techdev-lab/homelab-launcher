@@ -77,8 +77,11 @@ if ($code -ne 0) {
 # signer
 $digests = @()
 foreach ($line in ($out -split "`r?`n")) {
-    if ($line -match '^Signer #\d+ certificate SHA-256 digest: ([0-9a-fA-F]{64})\s*$') { $digests += $Matches[1].ToLower() }
+    # "Signer #1 certificate SHA-256 digest: ..." (older apksigner) or "V2 Signer: certificate SHA-256 digest: ..." (newer).
+    if ($line -match 'certificate SHA-256 digest: ([0-9a-fA-F]{64})\s*$') { $digests += $Matches[1].ToLower() }
 }
+# The same certificate listed under several signature schemes (V2, V3) counts once.
+$digests = @($digests | Select-Object -Unique)
 if ($digests.Count -ne 1) { Fail 3 'signer' "expected 1 signer certificate, found $($digests.Count)" }
 $expected = ($ExpectedSigner -replace '[: ]', '').ToLower()
 if ($digests[0] -ne $expected) { Fail 3 'signer' 'certificate differs from the project certificate' }
