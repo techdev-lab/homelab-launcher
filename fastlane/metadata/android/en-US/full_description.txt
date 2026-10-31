@@ -1,0 +1,20 @@
+HomeLab Launcher is an Arabic-first, privacy-friendly home screen for Google TV and Android TV. It installs next to the stock home screen and only becomes your Home when you choose it, a step you can undo. Nothing is uninstalled.
+
+What you get
+- Prayer times computed on the TV: 14 calculation methods, standard or Hanafi Asr, and your own minute adjustments. No account and no location lookup.
+- The Hijri date (Umm al-Qura), with an adjustment of up to two days for countries that follow moon sighting.
+- In Ramadan: a card that counts down to the iftar and to the end of suhoor, and an on-screen alert at each prayer time. No sound.
+- Football (online build): scores, your favourite clubs with a gold star, and the Arab domestic leagues. Weather too.
+- Arabic and English: Arabic names for apps, leagues and clubs, Arabic digits in the Hijri date, and an Arabic font.
+- Looks you pick: a flat or floating-glass dock, soft or normal tile corners, a glass clock, three built-in wallpaper sets, text size.
+- Hide apps from the grid, and ignore a remote button that gets pressed by accident.
+- A clock screensaver with the Hijri date and the next prayer.
+
+Privacy
+- No ads, no analytics, no accounts, no crash reporting.
+- Two builds. The offline build has no INTERNET permission at all. The online build only asks the ESPN scoreboard, Open-Meteo and the RSS feeds you add.
+- The two accessibility services only see key events, never window content, and stay off until you enable them.
+
+Trust
+- Every release is built and signed by GitHub Actions from the tagged source, with checksums published next to the APKs. SECURITY.md shows the certificate fingerprint and how to check an APK yourself.
+- Open source under the MIT licence, forked from the tvhome launcher of CleanYourTV.

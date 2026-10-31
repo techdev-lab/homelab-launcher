@@ -8,6 +8,8 @@ HomeLab Launcher is a fork of the `tvhome` launcher in [Gathin23/cleanyourtv](ht
 
 The *Dock style* (floating glass) and *Clock style* (glass) options in Launcher settings were inspired by the public description of [tvOS Launcher](https://github.com/techgenius1/tvOS-Launcher) by techgenius, Apache License 2.0. Only its README was read. No code, image or wallpaper from it is in this project: the drawing is our own and uses the `Glass` colour arithmetic. If code from it is ever copied, that file will keep the Apache License 2.0 header, the licence text will be added, and this section will say what was changed.
 
+The *ignore* action for a remote button (`app_keys`) and the option to hide apps from the grid were inspired by features in the public 3.x releases of CleanYourTV (see Upstream, MIT License). The code for both is written here, not copied.
+
 ## Fonts
 
 The fonts are not covered by the MIT License in [LICENSE](LICENSE). Outfit is copyright The Outfit Project Authors and IBM Plex Sans Arabic is copyright IBM Corp., both under the SIL Open Font License 1.1.
