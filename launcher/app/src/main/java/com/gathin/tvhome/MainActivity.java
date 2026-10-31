@@ -1133,7 +1133,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             greeting.setTextColor(greetingColor);
         }
         if (shamsi) shamsiDate.setText(Shamsi.today());
-        if (interestsCfg.hijriDate) hijriDate.setText(Hijri.format(this, Hijri.today(), arabic()));
+        if (interestsCfg.hijriDate) hijriDate.setText(Hijri.format(this, Hijri.today(interestsCfg.hijriShift), arabic()));
         updateInterests();
     }
 
@@ -1210,6 +1210,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // viewer's own teams are the first football card, and a large text size rotates the least wanted ones.
         List<View> cards = new ArrayList<>();
         if (interestsCfg.prayer()) cards.add(onCardClick(prayerCard(ar), this::openLauncherSettings));
+        View ramadan = interestsCfg.wantsRamadan() ? ramadanCard() : null;
+        if (ramadan != null) cards.add(onCardClick(ramadan, this::openLauncherSettings));
         clubCard = null;
         if (interestsCfg.wantsClubs()) {
             List<Interests.Match> clubs = Interests.pickClubs(clubMatches, interestsCfg.favoriteTeams, now);
@@ -1408,7 +1410,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
     private View prayerCard(boolean ar) {
         Calendar now = Calendar.getInstance();
-        boolean ramadan = Hijri.isRamadan(Hijri.today());
+        boolean ramadan = Hijri.isRamadan(Hijri.today(interestsCfg.hijriShift));
         double tz = TimeZone.getDefault().getOffset(now.getTimeInMillis()) / 3_600_000.0;
         double[] t = interestsCfg.prayerTimes(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
                 now.get(Calendar.DAY_OF_MONTH), tz, ramadan);
@@ -1423,8 +1425,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         String[] names = getResources().getStringArray(R.array.prayer_names);
         boolean twelve = !android.text.format.DateFormat.is24HourFormat(this);
         int next = Prayer.next(t, nowH);
+        // For a few minutes after a prayer time the card says so, instead of counting down to the next one.
+        int alert = PrayerAlert.active(t, nowH, interestsCfg.prayerAlertMinutes);
         String title, big;
-        if (next >= 0) {
+        if (alert >= 0) {
+            title = getString(R.string.prayer_now, names[alert]);
+            big = getString(R.string.prayer_now_big);
+        } else if (next >= 0) {
             title = getString(R.string.prayer_in, names[next]);
             big = Prayer.countdown(nowH, t[next]);
         } else {
@@ -1445,12 +1452,48 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // (at Large, "Maghrib" ended one line and its time began the next).
             all.append(names[i]).append('\u00A0').append(Prayer.clock(t[i], twelve));
         }
-        LinearLayout c = card(meta, false, title, big, 1.4f);
+        LinearLayout c = card(meta, alert >= 0, title, big, 1.4f);
         // Up to two lines: the five times do not fit one line in a lone prayer card on every font and locale
         // (Mi TV, en-GB, cut off at "Isha…"), and a wrapped line beats a missing prayer.
         TextView times = cardText(all.toString(), 13, R.color.theme_dim, false);
         // Five or four cards in a row leave the prayer card narrow: a third line beats a missing prayer.
         times.setMaxLines(StripSize.perRow(textSize) > 3 ? 3 : 2);
+        times.setEllipsize(TextUtils.TruncateAt.END);
+        c.addView(times);
+        return c;
+    }
+
+    /**
+     * Ramadan only (docs/RAMADAN_PRAYER.md): the time left to the iftar, or to the end of suhoor, with the day's two
+     * times under it. Null outside Ramadan, when the times are unknown, or after Maghrib on the last day.
+     */
+    private View ramadanCard() {
+        int shift = interestsCfg.hijriShift;
+        int[] hijri = Hijri.today(shift);
+        boolean today = Hijri.isRamadan(hijri), tomorrow = Hijri.isRamadan(Hijri.today(shift + 1));
+        if (!today && !tomorrow) return null;
+        Calendar now = Calendar.getInstance();
+        double tz = TimeZone.getDefault().getOffset(now.getTimeInMillis()) / 3_600_000.0;
+        double[] t = interestsCfg.prayerTimes(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
+                now.get(Calendar.DAY_OF_MONTH), tz, today);
+        if (t == null) return null;
+        Calendar tm = (Calendar) now.clone();
+        tm.add(Calendar.DAY_OF_MONTH, 1);
+        double tzTomorrow = TimeZone.getDefault().getOffset(tm.getTimeInMillis()) / 3_600_000.0;
+        double[] tt = interestsCfg.prayerTimes(tm.get(Calendar.YEAR), tm.get(Calendar.MONTH) + 1,
+                tm.get(Calendar.DAY_OF_MONTH), tzTomorrow, tomorrow);
+        double fajrNext = Prayer.onTodaysClock(tt[Prayer.FAJR], tz, tzTomorrow) + 24;
+        double nowH = now.get(Calendar.HOUR_OF_DAY) + now.get(Calendar.MINUTE) / 60.0
+                + now.get(Calendar.SECOND) / 3600.0;
+        RamadanCountdown.Result r = RamadanCountdown.of(today, tomorrow, nowH, t[Prayer.FAJR], t[Prayer.MAGHRIB], fajrNext);
+        if (r.kind == RamadanCountdown.NONE) return null;
+        boolean twelve = !android.text.format.DateFormat.is24HourFormat(this);
+        String meta = today ? getString(R.string.ramadan_day, hijri[2]) : getString(R.string.ramadan);
+        String title = getString(r.kind == RamadanCountdown.IFTAR ? R.string.iftar_in : R.string.suhoor_ends_in);
+        LinearLayout c = card(meta, false, title, Prayer.countdown(nowH, r.target), 1f);
+        TextView times = cardText(getString(R.string.ramadan_times, Prayer.clock(t[Prayer.FAJR], twelve),
+                Prayer.clock(t[Prayer.MAGHRIB], twelve)), 13, R.color.theme_dim, false);
+        times.setMaxLines(2);
         times.setEllipsize(TextUtils.TruncateAt.END);
         c.addView(times);
         return c;

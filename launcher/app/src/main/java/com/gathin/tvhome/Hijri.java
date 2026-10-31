@@ -12,10 +12,16 @@ final class Hijri {
     private Hijri() {
     }
 
-    /** {year, month 1-12, day, dayOfWeek 1-7 (Sunday 1)} for today. */
+    /** {year, month 1-12, day, dayOfWeek 1-7 (Sunday 1)} for today by the calendar as it is. */
     static int[] today() {
+        return today(0);
+    }
+
+    /** As {@link #today()}, {@code shiftDays} later ({@link HijriShift}: the viewer's moon-sighting adjustment). */
+    static int[] today(int shiftDays) {
         IslamicCalendar c = new IslamicCalendar();
         c.setCalculationType(IslamicCalendar.CalculationType.ISLAMIC_UMALQURA);
+        if (shiftDays != 0) c.add(IslamicCalendar.DAY_OF_MONTH, shiftDays);
         return new int[]{c.get(IslamicCalendar.EXTENDED_YEAR), c.get(IslamicCalendar.MONTH) + 1,
                 c.get(IslamicCalendar.DAY_OF_MONTH), c.get(IslamicCalendar.DAY_OF_WEEK)};
     }

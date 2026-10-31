@@ -231,7 +231,7 @@ public class ClockDream extends DreamService {
 
     private void updateTexts() {
         formatClocks();
-        hijriLine.setText(Hijri.format(this, Hijri.today(), arabic));
+        hijriLine.setText(Hijri.format(this, Hijri.today(settings.hijriShift), arabic));
         String p = nextPrayer();
         prayerLine.setText(p);
         prayerLine.setVisibility(p.isEmpty() ? View.GONE : View.VISIBLE);
@@ -241,7 +241,7 @@ public class ClockDream extends DreamService {
     private String nextPrayer() {
         if (!settings.prayer()) return "";
         Calendar now = Calendar.getInstance();
-        boolean ramadan = Hijri.isRamadan(Hijri.today());
+        boolean ramadan = Hijri.isRamadan(Hijri.today(settings.hijriShift));
         double tz = TimeZone.getDefault().getOffset(now.getTimeInMillis()) / 3_600_000.0;
         double[] t = settings.prayerTimes(now.get(Calendar.YEAR), now.get(Calendar.MONTH) + 1,
                 now.get(Calendar.DAY_OF_MONTH), tz, ramadan);

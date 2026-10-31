@@ -3,6 +3,9 @@
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
 ## Unreleased
+- **Ramadan card**: only in Ramadan, one more card after the prayer card counts down to the iftar (Fajr to Maghrib) or to the end of suhoor (Maghrib to Fajr), with the day's two times and "Ramadan · day N". It needs the prayer place like the prayer card, has its own chip in the card row, and is gone after Maghrib on the last day. Suhoor ends at Fajr; use `prayer_adjust` if you want a margin.
+- **Prayer alert**: for 10 minutes (Off, 5, 10 or 15 in Launcher settings, or `"prayer_alert_minutes"`) after a prayer time the prayer card says "Asr time · Now" instead of counting down. Visual only: no sound, no permission.
+- **Hijri date adjustment** (Launcher settings > Hijri date, or `"hijri_offset_days"`, -2 to +2): for countries that follow moon sighting. It moves the header date, the screensaver and the start of Ramadan. Design note: `docs/RAMADAN_PRAYER.md`.
 - **Hide apps on the TV** (Launcher settings > Hidden apps): OK on an app hides it or shows it again; a hidden app stays installed and opens from anywhere else. It wins over the theme's `hidden_apps` and a theme push does not clear it; "Use the theme's list" goes back. The launcher itself cannot be hidden.
 - **A remote button can be ignored**: `"app_keys": {"190": "ignore"}` swallows a button pressed by accident. Home, Back, the arrows, OK and Power can never be mapped, so a bad config cannot lock you out.
 - **Matches and weather come back soon after a start with no network**: while no card has data the next fetch comes after 1, 2, 4 and 8 minutes (instead of 15), and a network that comes back starts one fetch after 3 seconds. With data nothing changes.

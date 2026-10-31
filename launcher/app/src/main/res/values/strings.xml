@@ -59,6 +59,15 @@
     <string name="prayer_times">Prayer times</string>
     <string name="prayer_in">%1$s in</string>
     <string name="prayer_next">%1$s in %2$s</string>
+    <!-- Prayer alert: the card for a few minutes after a prayer time. -->
+    <string name="prayer_now">%1$s time</string>
+    <string name="prayer_now_big">Now</string>
+    <!-- Ramadan card: meta line, the two countdown titles and the day's two times. -->
+    <string name="ramadan">Ramadan</string>
+    <string name="ramadan_day">Ramadan · day %1$d</string>
+    <string name="iftar_in">Iftar in</string>
+    <string name="suhoor_ends_in">Suhoor ends in</string>
+    <string name="ramadan_times">Suhoor ends %1$s · Iftar %2$s</string>
     <string-array name="prayer_names">
         <item>Fajr</item>
         <item>Sunrise</item>
@@ -116,6 +125,7 @@
     <string name="card_weather">Weather</string>
     <string name="card_football">Football</string>
     <string name="card_clubs">My clubs</string>
+    <string name="card_ramadan">Ramadan</string>
     <string name="motion_label">Motion</string>
     <string name="motion_calm">Calm</string>
     <string name="motion_lively">Lively</string>
@@ -152,6 +162,12 @@
     <string name="asr_standard">Asr: standard</string>
     <string name="asr_hanafi">Asr: Hanafi</string>
     <string name="prayer_method_hint">Computed on the TV by the method you pick. A method gives that method\'s times, which can differ by a few minutes from a printed calendar; prayer_adjust in config.json shifts each time by minutes.</string>
+    <string name="hijri_shift_label">Hijri date</string>
+    <string name="hijri_shift_hint">Days added to the Hijri date, for a country that follows moon sighting. It also moves the start of Ramadan. Shown on the home screen and the screensaver.</string>
+    <string name="prayer_alert_label">Prayer alert</string>
+    <string name="prayer_alert_off">Off</string>
+    <string name="prayer_alert_minutes">%1$d min</string>
+    <string name="prayer_alert_hint">For a few minutes after a prayer time, the prayer card says it is time for that prayer. No sound.</string>
     <string-array name="prayer_method_names">
         <item>Umm al-Qura (Makkah)</item>
         <item>Egyptian General Authority of Survey</item>
