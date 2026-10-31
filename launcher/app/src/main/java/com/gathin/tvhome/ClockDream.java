@@ -51,8 +51,8 @@ public class ClockDream extends DreamService {
     private TextView hijriLine;
     private TextView prayerLine;
     private Interests.Settings settings = Interests.Settings.NONE;
-    /** The "digits" option: every number on the dream in Arabic-Indic digits. */
-    private boolean arabicDigits;
+    /** The "digits" option (DigitStyle): every number on the dream in Latin or Arabic-Indic digits. */
+    private String digits = DigitStyle.LATIN;
     private boolean arabic;
     private float density;
     /** The layout's TextClocks and their own patterns {12 hour, 24 hour}, see formatClocks. */
@@ -103,7 +103,7 @@ public class ClockDream extends DreamService {
         try {
             Config cfg = Config.load(this);
             settings = cfg.interests;
-            arabicDigits = DigitStyle.arabic(cfg.digits);
+            digits = cfg.digits;
         } catch (Exception e) {
             settings = Interests.Settings.NONE;
         }
@@ -159,7 +159,7 @@ public class ClockDream extends DreamService {
         t.setTextDirection(View.TEXT_DIRECTION_FIRST_STRONG);
         t.setSingleLine(true);
         // After setSingleLine: it installs its own transformation method and would replace this one.
-        if (arabicDigits) t.setTransformationMethod(DigitsTransformation.INSTANCE);
+        t.setTransformationMethod(DigitsTransformation.of(digits));
         t.setIncludeFontPadding(false);
         t.setPadding(0, (int) (4 * density), 0, (int) (4 * density));
         // Own width, not the clock's: "Thu, 11 Jumada al-Ula 1448 AH" is wider than the clock and was cut off.
@@ -209,7 +209,7 @@ public class ClockDream extends DreamService {
     private void collectClocks(View v) {
         if (v instanceof TextClock) {
             TextClock c = (TextClock) v;
-            if (arabicDigits) c.setTransformationMethod(DigitsTransformation.INSTANCE);
+            c.setTransformationMethod(DigitsTransformation.of(digits));
             clocks.add(c);
             clockPatterns.add(new CharSequence[]{c.getFormat12Hour(), c.getFormat24Hour()});
         } else if (v instanceof ViewGroup) {
