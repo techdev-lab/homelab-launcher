@@ -21,6 +21,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.InsetDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.media.tv.TvContract;
 import android.media.tv.TvInputInfo;
@@ -966,7 +967,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         capsule.setColor(Glass.pillFill(-1));
         capsule.setStroke(Math.max(1, Math.round(density)), Glass.edge(-1));
         glassPills.add(capsule);
-        clock.setBackground(capsule);
+        int inset = Math.round(ClockStyle.insetDp(clockStyle) * density);
+        clock.setBackground(new InsetDrawable(capsule, 0, inset, 0, inset));   // the capsule keeps clear of the greeting
         int pad = Math.round(ClockStyle.padDp(clockStyle) * density);
         clock.setPadding(pad, 0, pad, 0);   // sides only: the header keeps its height and the dock its place
     }

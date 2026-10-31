@@ -39,4 +39,12 @@ public class ClockStyleTest {
         assertTrue(ClockStyle.capsule("glass"));
         assertEquals(18f, ClockStyle.padDp("glass"), 0f);
     }
+
+    @Test
+    public void theCapsuleIsInsetAtTopAndBottomSoItDoesNotTouchTheGreeting() {
+        // Seen on the TV: the full height of the clock view put the capsule right under the greeting line.
+        assertEquals(4f, ClockStyle.insetDp("glass"), 0f);
+        assertEquals(0f, ClockStyle.insetDp("plain"), 0f);
+        assertEquals(0f, ClockStyle.insetDp("weird"), 0f);
+    }
 }

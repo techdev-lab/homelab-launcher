@@ -10,7 +10,7 @@ final class ClockStyle {
     static final String PLAIN = "plain", GLASS = "glass";
     static final String[] ALL = {PLAIN, GLASS};
 
-    private static final float GLASS_PAD_DP = 18f;
+    private static final float GLASS_PAD_DP = 18f, GLASS_INSET_DP = 4f;
 
     private ClockStyle() {
     }
@@ -33,5 +33,13 @@ final class ClockStyle {
     /** Space at each side of the time, inside the capsule. */
     static float padDp(String style) {
         return capsule(style) ? GLASS_PAD_DP : 0f;
+    }
+
+    /**
+     * How far the capsule is pulled in from the top and bottom of the clock view. The view is taller than the digits,
+     * and the full height put the capsule right under the greeting line (seen on the TV).
+     */
+    static float insetDp(String style) {
+        return capsule(style) ? GLASS_INSET_DP : 0f;
     }
 }
