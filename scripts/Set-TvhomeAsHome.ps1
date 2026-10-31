@@ -116,7 +116,7 @@ say ("  [INFO] accessibility now: $a11yBefore")
 say ("  [INFO] Home now: " + (sh 'cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME | tail -1'))
 
 $plan = @()
-if ($useApk -and $devHash -ne $ApkSha256.ToUpper()) { $plan += "adb install -r <pinned apk>   (same versionCode, no downgrade)" }
+if ($useApk -and $devHash -ne $ApkSha256.ToUpper()) { $plan += "adb install -r <pinned apk>   (an upgrade in place, never a downgrade)" }
 if ($setupEnabled) { $plan += "adb shell pm disable-user --user 0 $Setup" }
 $plan += "adb shell pm disable-user --user 0 $Launcherx"
 $plan += "adb shell cmd package set-home-activity --user 0 $TvhomeHome"

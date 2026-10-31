@@ -15,8 +15,9 @@ notes for that version from `CHANGELOG.md`.
 | `HomeLab-Launcher-<version>-offline.apk` | `offline`: no INTERNET permission at all |
 | `SHA256SUMS.txt` | SHA-256 of both APKs |
 
-Both keep `versionCode 4` (see `CHANGELOG.md`), so any release installs over another with `adb install -r`. A store
-needs the `versionCode` to rise with each release: see "Open decision for the release" in `docs/DISTRIBUTION.md`.
+Both carry the same `versionCode` (5 from 3.0.0), and it rises by one with each release because a store needs it: see
+"Decision for the release" in `docs/DISTRIBUTION.md`. Before a tag, raise `versionCode` in `launcher/app/build.gradle` and
+rename the two `fastlane/metadata/android/*/changelogs/<versionCode>.txt` files to match.
 
 The release page carries the notes in English and then in Arabic: the workflow takes the section of the version from
 `CHANGELOG.md` and from `CHANGELOG.ar.md`, so both files need a `## <version> (...)` heading before a tag.

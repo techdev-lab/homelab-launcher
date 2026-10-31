@@ -118,7 +118,7 @@ say "  [INFO] screensaver now: $($now['screensaver_components'])"
 say "  [INFO] accessibility now: $($now['enabled_accessibility_services']) | $($now['accessibility_enabled'])"
 
 say "`n== plan"
-if ($devHash -ne $ApkSha256) { say "  adb install -r $ApkName (same versionCode, an upgrade in place)" } else { say '  the TV already runs this APK: no install' }
+if ($devHash -ne $ApkSha256) { say "  adb install -r $ApkName (an upgrade in place; the pinned APK must not have a lower versionCode than the one on the TV)" } else { say '  the TV already runs this APK: no install' }
 say "  push config.json + $wallCount wallpapers, force-stop tvhome, HOME"
 say "  settings: enabled_accessibility_services=$HomeKey, accessibility_enabled=1 (AFTER force-stop)"
 say "  settings: screensaver_components=$Dream"

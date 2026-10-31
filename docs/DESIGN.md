@@ -24,7 +24,7 @@ One Java Android app (`launcher/`, package `com.gathin.tvhome`, minSdk 26, targe
 | `offline` | no (absent from the merged manifest) | nothing; prayer times, Hijri date and the UI work offline |
 | `online` | yes | ESPN public scoreboard (football), Open-Meteo (weather), optional RSS |
 
-`versionCode` stays at 4 across 2.3 to 2.5.x on purpose: the APKs are not debuggable, and Android refuses a downgrade of `versionCode` without `install -d`, so keeping it constant keeps every older build an `install -r` away.
+`versionCode` stayed at 4 from 2.3 to 2.9 on purpose: the APKs are not debuggable, and Android refuses a downgrade of `versionCode` without `install -d`, so keeping it constant kept every older build an `install -r` away. From 3.0.0 it is 5 and rises by one with each release, because a store decides that an update exists from it; the cost is in `docs/DISTRIBUTION.md`.
 
 ## Main parts
 

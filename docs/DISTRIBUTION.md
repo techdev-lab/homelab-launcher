@@ -21,7 +21,7 @@ read on 2026-10-31; neither page carries a date, so the rules are read again whe
 | `title.txt` | `HomeLab Launcher` |
 | `short_description.txt` | One line, at most 80 characters. |
 | `full_description.txt` | What it does, the two builds, privacy, how an APK is built and signed. Plain text. |
-| `changelogs/4.txt` | At most 500 bytes. The file name is the `versionCode`, and every build keeps `versionCode 4`, so this file is rewritten for each release. |
+| `changelogs/5.txt` | At most 500 bytes. The file name is the `versionCode` (5 from 3.0.0), so the file is renamed with each release. |
 | `images/icon.png` | 512 by 512, made from the app's own launcher icon. |
 
 - English in `en-US` and Arabic in `ar`. The first plan had English only, because the repository keeps Arabic in
@@ -56,17 +56,17 @@ read on 2026-10-31; neither page carries a date, so the rules are read again whe
   logbook with the date. The ESPN address in the docs is a template with a league placeholder, so it is expected not to
   answer.
 
-## Open decision for the release: `versionCode`
+## Decision for the release: `versionCode` (decided 2026-10-31)
 
-Not changed here, but it blocks a store listing, so it is written down now. Every build keeps `versionCode 4` so that
-any build installs over any other with `adb install -r`. A store (IzzyOnDroid, F-Droid) decides that an update exists
-when the `versionCode` goes up, so a user who installed from a store would never be offered a new release.
+Until 2.9 every build kept `versionCode 4` so that any build installed over any other with `adb install -r`. A store
+(IzzyOnDroid, F-Droid) decides that an update exists when the `versionCode` goes up, so a user who installed from a store
+would never be offered a new release. The maintainer decided to raise it: 3.0.0 has `versionCode 5`.
 
 - Before the first store-listed release the `versionCode` has to start rising with each release. The changelog file
   then follows it (`5.txt`, `6.txt`, and so on).
 - The cost: an older build, 2.9.0 included, then no longer installs over a newer one. Going back means uninstalling,
   which removes `config.json` from the TV. The rollback APKs and the rollback text in `docs/INSTALL.md` must say so.
-- The maintainer decides this at the final upgrade, together with the release name (decided: 3.0).
+- Decided by the maintainer at the final upgrade, together with the release name (3.0). The next release is 6, and so on.
 
 ## Definition of done
 
