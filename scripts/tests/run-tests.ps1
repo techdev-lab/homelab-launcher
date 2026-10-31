@@ -58,6 +58,8 @@ Run 'dry run changes nothing' 'normal' @() { param($o, $w, $s) $w.Count -eq 0 -a
 Run 'execute without the confirmation text changes nothing' 'normal' @('-Execute') { param($o, $w, $s) $w.Count -eq 0 -and $o -match 'Missing exact confirmation' }
 Run 'success: tvhome Home, launcherx and setupwraith disabled, deadman cancelled' 'normal' @('-Execute', '-ConfirmText', 'CONFIRM HOME tv', '-EnableAppKeys') {
     param($o, $w, $s) $s.home -eq 'com.gathin.tvhome' -and $s.enabled.Count -eq 0 -and $s.cancel -and $s.a11y -match 'HomeKeyService' -and $o -match 'DONE' }
+Run 'Android 11 dump (mResumedActivity only): the HOME key check still passes' 'android11' @('-Execute', '-ConfirmText', 'CONFIRM HOME tv', '-EnableAppKeys') {
+    param($o, $w, $s) $s.home -eq 'com.gathin.tvhome' -and $s.enabled.Count -eq 0 -and $s.cancel -and $o -match 'DONE' -and $o -notmatch 'FAIL' }
 Run 'set-home ignored: rolls back to launcherx, deadman cancelled' 'sethome_ignored' @('-Execute', '-ConfirmText', 'CONFIRM HOME tv') {
     param($o, $w, $s) $s.home -like '*launcherx' -and $s.enabled.Count -eq 2 -and $s.cancel }
 Run 'network owned by setupwraith: aborts before any change' 'setup_owns_wifi' @('-Execute', '-ConfirmText', 'CONFIRM HOME tv') {

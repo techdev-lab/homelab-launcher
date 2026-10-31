@@ -2,9 +2,10 @@
 State lives in the JSON file named by FAKE_STATE; every call is appended to the log named by FAKE_LOG.
 FAKE_MODE: normal | sethome_ignored (set-home-activity has no effect) | setup_owns_wifi | owner_unknown
 (the network in use has no cname line, as seen on a real Chromecast) | bind_fails | builtin_walls (no pushed
-wallpapers folder, and saved networks listed as "* ID: n SSID:" as on some Android 14 builds)
+wallpapers folder, and saved networks listed as "* ID: n SSID:" as on some Android 14 builds) | android11
+(`dumpsys activity activities` has no topResumedActivity line, only mResumedActivity, as on the Mi TV MOOR2 with Android 11)
 """
-import json, os, sys
+import json, os, re, sys
 
 state_path = os.environ["FAKE_STATE"]
 log_path = os.environ["FAKE_LOG"]
@@ -93,7 +94,16 @@ elif c.startswith("dumpsys accessibility"):
 elif c.startswith("cmd package resolve-activity"):
     out(st["home"] + "/.MainActivity")
 elif c.startswith("dumpsys activity activities"):
-    out("topResumedActivity=ActivityRecord{1 u0 " + st["home"] + "/.MainActivity t1}")
+    rec = "ActivityRecord{1 u0 " + st["home"] + "/.MainActivity t1}"
+    if mode == "android11":
+        lines = ["  mResumedActivity: " + rec, "  ResumedActivity: " + rec, "  mFocusedApp=" + rec]
+    else:
+        lines = ["  topResumedActivity=" + rec, "  ResumedActivity: " + rec]
+    g = re.search(r"grep -m1(?: -E)? '?([^'|]+(?:\|[^'|]+)*)'?\s*$", c)
+    if g:
+        lines = [x for x in lines if re.search(g.group(1), x)][:1]
+    for x in lines:
+        out(x)
 elif c.startswith("pm disable-user"):
     p = c.split()[-1]
     if p in st["enabled"]:
