@@ -61,7 +61,7 @@
     <string name="ramadan_day">رمضان · اليوم %1$d</string>
     <string name="iftar_in">الإفطار بعد</string>
     <string name="suhoor_ends_in">ينتهي السحور بعد</string>
-    <string name="ramadan_times">نهاية السحور %1$s · الإفطار %2$s</string>
+    <string name="ramadan_times">نهاية السحور %1$s\nالإفطار %2$s</string>
     <string-array name="prayer_names">
         <item>الفجر</item>
         <item>الشروق</item>
