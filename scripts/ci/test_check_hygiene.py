@@ -47,6 +47,12 @@ class ArabicViolationsTest(unittest.TestCase):
         text = "# Install guide\n\n" + ARABIC_TEXT + "\n"
         self.assertEqual(check_hygiene.arabic_violations("docs/INSTALL.md", text), [3])
 
+    def test_issue_and_pull_request_templates_may_be_bilingual_but_workflows_may_not(self):
+        self.assertEqual(check_hygiene.arabic_violations(".github/ISSUE_TEMPLATE/bug_report.yml", ARABIC_TEXT), [])
+        self.assertEqual(check_hygiene.arabic_violations(".github/PULL_REQUEST_TEMPLATE.md", ARABIC_TEXT), [])
+        self.assertEqual(check_hygiene.arabic_violations(".github/workflows/ci.yml", ARABIC_TEXT), [1])
+        self.assertEqual(check_hygiene.arabic_violations(".github/dependabot.yml", ARABIC_TEXT), [1])
+
     def test_english_text_is_clean(self):
         self.assertEqual(check_hygiene.arabic_violations("docs/INSTALL.md", "Plain English.\n"), [])
 

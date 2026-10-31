@@ -1,5 +1,5 @@
-name: Bug report
-description: Something does not work as described
+name: Bug report · بلاغ عن مشكلة
+description: Something does not work as described · شي ما يشتغل كما هو مكتوب
 labels: [bug]
 body:
   - type: markdown
@@ -7,41 +7,57 @@ body:
       value: |
         Do not paste IP addresses, Wi-Fi names, pairing codes or ADB keys. Replace them with placeholders.
         If the TV is stuck in a boot loop, read the rescue steps in `docs/INSTALL.md` first.
+        You can write in Arabic or in English.
+
+        لا تلصق عناوين IP ولا أسماء الواي فاي ولا رموز الإقران ولا مفاتيح ADB؛ حط مكانها كلمات بديلة.
+        لو التلفزيون عالق في إعادة تشغيل متكررة، اقرأ خطوات الإنقاذ في `docs/INSTALL.ar.md` أول.
+        تقدر تكتب بالعربي أو بالإنجليزي.
   - type: input
     id: version
     attributes:
-      label: App version
-      description: The versionName shown in the build, for example 2.5.5 or 2.5.5-online.
+      label: App version · نسخة التطبيق
+      description: The versionName shown in the build, for example 3.0.0 or 3.0.0-online. · رقم النسخة، مثل 3.0.0 أو 3.0.0-online.
     validations:
       required: true
   - type: dropdown
     id: build
     attributes:
-      label: Build
+      label: Build · النسخة
       options:
         - online
         - offline
-        - built from source
+        - built from source · مبنية من الكود
     validations:
       required: true
   - type: input
     id: device
     attributes:
-      label: Device and Android version
-      description: For example Chromecast with Google TV 4K, Android 14.
+      label: Device and Android version · الجهاز ونسخة أندرويد
+      description: For example Chromecast with Google TV 4K, Android 14. · مثلاً Chromecast with Google TV 4K، أندرويد 14.
     validations:
       required: true
+  - type: dropdown
+    id: language
+    attributes:
+      label: Launcher language and dock position · لغة اللانشر ومكان الرصيف
+      description: Helps when the problem is about layout. · يفيد لو المشكلة في التخطيط.
+      options:
+        - English, dock at the bottom · إنجليزي، الرصيف تحت
+        - English, dock at the side · إنجليزي، الرصيف على الجنب
+        - Arabic, dock at the bottom · عربي، الرصيف تحت
+        - Arabic, dock at the side · عربي، الرصيف على الجنب
+        - Not about layout · مو متعلق بالتخطيط
   - type: textarea
     id: happened
     attributes:
-      label: What happened
-      description: What you saw, and what you expected instead.
+      label: What happened · وش صار
+      description: What you saw, and what you expected instead. · وش شفت، ووش كنت تتوقع.
     validations:
       required: true
   - type: textarea
     id: steps
     attributes:
-      label: Steps to reproduce
+      label: Steps to reproduce · الخطوات لتكرار المشكلة
       placeholder: |
         1. ...
         2. ...
@@ -50,13 +66,13 @@ body:
   - type: textarea
     id: output
     attributes:
-      label: Relevant output
-      description: Optional. Logs or command output, with personal details removed.
+      label: Relevant output · مخرجات متعلقة
+      description: Optional. Logs or command output, with personal details removed. · اختياري. سجلات أو مخرجات أوامر بعد إزالة بياناتك الشخصية.
       render: shell
   - type: checkboxes
     id: checks
     attributes:
-      label: Before sending
+      label: Before sending · قبل الإرسال
       options:
-        - label: I removed IP addresses, Wi-Fi names, pairing codes and keys from this report.
+        - label: I removed IP addresses, Wi-Fi names, pairing codes and keys from this report. · شلت عناوين IP وأسماء الواي فاي ورموز الإقران والمفاتيح من هذا البلاغ.
           required: true
