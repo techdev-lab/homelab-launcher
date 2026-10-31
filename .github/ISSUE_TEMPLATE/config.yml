@@ -1,8 +1,11 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Report a security issue
+  - name: Report a security issue · بلاغ عن ثغرة أمنية
     url: https://github.com/techdev-lab/homelab-launcher/security/advisories/new
-    about: Use private vulnerability reporting. Do not open a public issue.
-  - name: Installation help
+    about: Use private vulnerability reporting. Do not open a public issue. · استعمل الإبلاغ الخاص عن الثغرات. لا تفتح بلاغاً علنياً.
+  - name: Installation help · مساعدة في التثبيت
     url: https://github.com/techdev-lab/homelab-launcher/blob/main/docs/INSTALL.md
-    about: Read the install guide first, including the rescue steps.
+    about: Read the install guide first, including the rescue steps (English). · اقرأ دليل التثبيت أول مع خطوات الإنقاذ (بالإنجليزي).
+  - name: دليل التثبيت بالعربي
+    url: https://github.com/techdev-lab/homelab-launcher/blob/main/docs/INSTALL.ar.md
+    about: اقرأ دليل التثبيت بالعربي أول، مع خطوات الإنقاذ.

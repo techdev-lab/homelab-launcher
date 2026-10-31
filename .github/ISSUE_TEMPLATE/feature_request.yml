@@ -1,5 +1,5 @@
-name: Feature request
-description: Suggest an improvement
+name: Feature request · اقتراح تحسين
+description: Suggest an improvement · اقترح شي يتحسّن
 labels: [enhancement]
 body:
   - type: markdown
@@ -7,21 +7,25 @@ body:
       value: |
         The project is a calm, private, Arabic-first home screen. Ideas that need a new permission, an account
         or a paid service are unlikely to fit. See the list of wanted contributions in `CONTRIBUTING.md`.
+        You can write in Arabic or in English.
+
+        المشروع شاشة رئيسية هادئة وخاصة وعربية أولاً. الأفكار اللي تحتاج صلاحية جديدة أو حساباً أو خدمة مدفوعة
+        غالباً ما تناسب. شوف قائمة المساهمات المطلوبة في `CONTRIBUTING.ar.md`. تقدر تكتب بالعربي أو بالإنجليزي.
   - type: textarea
     id: problem
     attributes:
-      label: The problem
-      description: What is hard or missing today?
+      label: The problem · المشكلة
+      description: What is hard or missing today? · وش الصعب أو الناقص اليوم؟
     validations:
       required: true
   - type: textarea
     id: idea
     attributes:
-      label: Your idea
-      description: What would you like to see? For a data source, give the HTTPS address and the terms of use.
+      label: Your idea · فكرتك
+      description: What would you like to see? For a data source, give the HTTPS address and the terms of use. · وش تبي تشوف؟ لو مصدر بيانات، اكتب عنوان HTTPS وشروط الاستخدام.
     validations:
       required: true
   - type: textarea
     id: alternatives
     attributes:
-      label: Alternatives you considered
+      label: Alternatives you considered · بدائل فكرت فيها

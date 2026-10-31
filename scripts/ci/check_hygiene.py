@@ -2,8 +2,9 @@
 
 1. Arabic text is allowed only where it belongs: the parallel *.ar.md docs, the bilingual README.md,
    localization data (res/values-ar, assets/names_ar.json, assets/clubs.json, the language
-   names in res/values/language_names.xml), the Arabic store listing (fastlane/metadata/android/ar/)
-   and the city names in config/. An English doc may also carry the link to its Arabic twin in its
+   names in res/values/language_names.xml), the Arabic store listing (fastlane/metadata/android/ar/),
+   the issue and pull request templates (they are shown to the people who write to the project, so
+   they carry both languages) and the city names in config/. An English doc may also carry the link to its Arabic twin in its
    first lines (the language switch), so a reader who cannot read English can find the Arabic one.
    Code, comments, scripts, English docs and CI files must be English.
 2. Files that must never be tracked: Gradle local.properties, signing keys, ADB keys, .env files.
@@ -16,10 +17,11 @@ import sys
 # file itself contains no Arabic characters).
 ARABIC_RANGES = ((0x0600, 0x06FF), (0x0750, 0x077F), (0xFB50, 0xFDFF), (0xFE70, 0xFEFF))
 
-ARABIC_ALLOWED_PREFIXES = ("launcher/app/src/main/res/values-ar/", "config/", "fastlane/metadata/android/ar/")
+ARABIC_ALLOWED_PREFIXES = ("launcher/app/src/main/res/values-ar/", "config/", "fastlane/metadata/android/ar/",
+                           ".github/ISSUE_TEMPLATE/")
 # The language switch of an English doc: a link to its Arabic twin within the first lines.
 SWITCH_LINE_LIMIT = 5
-ARABIC_ALLOWED_FILES = {"README.md", "launcher/app/src/main/assets/names_ar.json",
+ARABIC_ALLOWED_FILES = {"README.md", ".github/PULL_REQUEST_TEMPLATE.md", "launcher/app/src/main/assets/names_ar.json",
                         "launcher/app/src/main/assets/clubs.json",
                         "launcher/app/src/main/res/values/language_names.xml"}
 
