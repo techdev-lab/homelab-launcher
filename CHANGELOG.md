@@ -2,7 +2,7 @@
 
 [English](CHANGELOG.md) · [العربية](CHANGELOG.ar.md)
 
-All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
+From 3.0.0 the `versionCode` is 5 (every earlier build had 4) and it rises by one with each release, so a store or an update checker sees an update. 3.0.0 installs over 2.9.0 and earlier with `adb install -r`; going back to 2.9.0 or older needs an uninstall first, which removes `config.json` from the TV, so copy it before.
 
 ## Unreleased
 - **Glass Launcher settings**: the settings screen is now four glass cards (Look, Dock and cards, Prayer and Ramadan, Motion) with one showing at a time, a strip of section tabs, wallpaper thumbnails taken from the APK's own pictures, a small drawing of the dock layout (mirrored on the Arabic screen), digit samples, and one explanation line that follows the focused chip. The chosen value is a filled base with a green edge; focus is the home screen's glass ring. Left and Right move along a row and cross to the next section at its edge; Up and Down move between rows; Back returns to Home. Nothing new is saved: every chip writes what it wrote before, with no new option, key, permission or file. The arrow keys are decided by a pure class with JVM tests (section edges, the Arabic order, a one-chip row, an empty section). Leaving a row for another section takes a second press of the key (the tabs are the fast way), long sections scroll by whole rows with an arrow under the card, and the focus ring is never clipped. Design note: `docs/SETTINGS_GLASS.md`.

@@ -14,7 +14,7 @@
 | `HomeLab-Launcher-<version>-offline.apk` | `offline`: بدون صلاحية INTERNET أبداً |
 | `SHA256SUMS.txt` | بصمة SHA-256 للملفين |
 
-الاثنين يبقيان `versionCode 4` (شوف `CHANGELOG.md`)، فأي إصدار يتثبّت فوق ثاني بـ `adb install -r`. والمتجر يحتاج `versionCode` يرتفع مع كل إصدار: شوف «قرار مفتوح للإصدار» في `docs/DISTRIBUTION.ar.md`.
+الاثنان لهما نفس `versionCode` (5 من 3.0.0)، ويرتفع واحد مع كل إصدار لأن المتجر يحتاجه: شوف «قرار الإصدار» في `docs/DISTRIBUTION.ar.md`. قبل الوسم ارفع `versionCode` في `launcher/app/build.gradle` وغيّر اسم ملفي `fastlane/metadata/android/*/changelogs/<versionCode>.txt` ليطابقاه.
 
 صفحة الإصدار تحمل الملاحظات بالإنجليزي ثم بالعربي: سير العمل ياخذ قسم النسخة من `CHANGELOG.md` ومن `CHANGELOG.ar.md`، فالملفين يحتاجون عنوان `## <version> (...)` قبل أي وسم.
 

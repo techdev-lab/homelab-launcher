@@ -195,4 +195,8 @@ adb shell pm enable com.google.android.apps.tv.launcherx
 adb shell cmd package set-home-activity --user 0 com.google.android.apps.tv.launcherx/.home.HomeActivity
 ```
 
+## الرجوع إلى 2.9.0 أو أقدم
+
+الإصدار 3.0.0 رقمه `versionCode` 5، وكل الإصدارات الأقدم رقمها 4. أندرويد يثبّت 3.0.0 فوقها، لكنه يرفض تثبيت بناء أقدم فوق 3.0.0 لأن ملفات APK مو قابلة للتصحيح. وللرجوع: انسخ `config.json` من التلفزيون أول (`adb pull /sdcard/Android/data/com.gathin.tvhome/files/config.json`)، ثم `adb uninstall com.gathin.tvhome`، وثبّت APK الأقدم، وأرجع `config.json`. الحذف يمسح اختيارات التطبيق اللي سويتها على التلفزيون (اللغة والخلفية والأعمدة).
+
 </div>
