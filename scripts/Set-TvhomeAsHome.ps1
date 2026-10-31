@@ -188,7 +188,8 @@ try {
     check (Test-Link) 'adb link still up'
     check ((sh 'cmd package resolve-activity --brief -a android.intent.action.MAIN -c android.intent.category.HOME | tail -1') -match [regex]::Escape($Tvhome)) 'HOME resolves to tvhome'
     sh 'input keyevent KEYCODE_HOME' | Out-Null; Start-Sleep 4
-    check ((sh 'dumpsys activity activities 2>/dev/null | grep -m1 topResumedActivity') -match [regex]::Escape($Tvhome)) 'HOME key opens tvhome'
+    # Android 12 and later print topResumedActivity; Android 11 (Mi TV MOOR2) prints only mResumedActivity.
+    check ((sh "dumpsys activity activities 2>/dev/null | grep -m1 -E 'topResumedActivity|mResumedActivity'") -match [regex]::Escape($Tvhome)) 'HOME key opens tvhome'
     # Single quotes inside the device command: Windows PowerShell 5.1 drops embedded double quotes when it
     # passes an argument to a native program (adb), which would split "Supplicant state" in two.
     check ((sh "dumpsys wifi | grep -m1 'Supplicant state'") -match 'COMPLETED') 'Wi-Fi still connected'

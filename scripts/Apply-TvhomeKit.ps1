@@ -163,7 +163,7 @@ say '== 4. verify'
 $ok = $true
 check ($devHash -eq $ApkSha256) 'tvhome on the TV = the kit APK (SHA-256)'
 check ((sh 'cmd role get-role-holders android.app.role.HOME').Trim() -eq $Tvhome) 'Home role still tvhome'
-check ((sh "dumpsys activity activities | grep -m1 topResumedActivity") -match [regex]::Escape($Tvhome)) 'HOME shows tvhome'
+check ((sh "dumpsys activity activities | grep -m1 -E 'topResumedActivity|mResumedActivity'") -match [regex]::Escape($Tvhome)) 'HOME shows tvhome'
 check ((sh "dumpsys accessibility | grep -m1 -o 'capabilities=[0-9]*'") -match 'capabilities=8') 'HomeKeyService bound (capabilities=8)'
 check ((setting 'screensaver_components') -eq $Dream) 'screensaver = tvhome ClockDream'
 if ($ok) {
