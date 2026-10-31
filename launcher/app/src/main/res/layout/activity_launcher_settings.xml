@@ -1,155 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<!-- Glass settings (docs/SETTINGS_GLASS.md). The section tabs, the rows and the footer buttons are added in code, because
+     their order mirrors on the Arabic and Hebrew screens and which chips exist depends on the build. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/settingsRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FF101419"
-    android:fillViewport="true">
+    android:background="@drawable/settings_bg"
+    android:clipChildren="false">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
+        android:clipChildren="false"
         android:orientation="vertical"
-        android:paddingStart="72dp"
-        android:paddingEnd="72dp"
-        android:paddingTop="38dp"
-        android:paddingBottom="38dp">
+        android:paddingStart="48dp"
+        android:paddingEnd="48dp"
+        android:paddingTop="22dp"
+        android:paddingBottom="20dp">
 
-        <TextView
+        <LinearLayout
+            android:id="@+id/headerRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/launcher_settings"
-            android:textColor="#FFFFFFFF"
-            android:textSize="34sp" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
-        <TextView style="@style/SettingsHeading" android:text="@string/language_label" />
+            <TextView
+                android:id="@+id/settingsTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
+                android:text="@string/launcher_settings"
+                android:textColor="#FFFFFFFF"
+                android:textSize="30sp" />
 
-        <LinearLayout android:id="@+id/languageRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/columns_label" />
-
-        <LinearLayout style="@style/SettingsChoiceRow">
-
-            <TextView android:id="@+id/columns4" style="@style/SettingsColumnChoice" android:text="4" />
-            <TextView android:id="@+id/columns5" style="@style/SettingsColumnChoice" android:text="5" />
-            <TextView android:id="@+id/columns6" style="@style/SettingsColumnChoice" android:text="6" />
-            <TextView android:id="@+id/columns7" style="@style/SettingsColumnChoice" android:text="7" />
+            <LinearLayout
+                android:id="@+id/tabStrip"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
         </LinearLayout>
 
-        <TextView style="@style/SettingsHeading" android:text="@string/wallpapers_label" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="14dp"
+            android:layout_weight="1"
+            android:background="@drawable/settings_card_bg"
+            android:orientation="vertical"
+            android:padding="18dp">
 
-        <LinearLayout android:id="@+id/wallpaperRow" style="@style/SettingsChoiceRow" />
+            <ScrollView
+                android:id="@+id/sectionScroll"
+                android:clipChildren="false"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:clipToPadding="false"
+                android:fadingEdgeLength="28dp"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="4dp"
+                android:requiresFadingEdge="vertical"
+                android:scrollbars="none">
 
-        <LinearLayout android:id="@+id/colourRow" style="@style/SettingsChoiceRow" />
+                <FrameLayout
+                    android:id="@+id/sectionHost"
+                    android:clipChildren="false"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content" />
+            </ScrollView>
 
-        <TextView style="@style/SettingsHint" android:text="@string/wallpapers_hint" />
+            <TextView
+                android:id="@+id/explainLine"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="8dp"
+                android:ellipsize="end"
+                android:maxLines="3"
+                android:textColor="#FFC9D3DA"
+                android:textSize="14sp" />
+        </LinearLayout>
 
-        <TextView style="@style/SettingsHeading" android:text="@string/wallpaper_dim_label" />
-
-        <LinearLayout android:id="@+id/wallpaperDimRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/wallpaper_dim_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/cards_label" />
-
-        <LinearLayout android:id="@+id/cardsRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/cards_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/text_size_label" />
-
-        <LinearLayout android:id="@+id/textSizeRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/text_size_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/dock_position_label" />
-
-        <LinearLayout android:id="@+id/dockPositionRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/dock_position_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/dock_style_label" />
-
-        <LinearLayout android:id="@+id/dockStyleRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/dock_style_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/tile_corners_label" />
-
-        <LinearLayout android:id="@+id/tileCornersRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/tile_corners_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/clock_style_label" />
-
-        <LinearLayout android:id="@+id/clockStyleRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/clock_style_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/digits_label" />
-
-        <LinearLayout android:id="@+id/digitsRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/digits_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/prayer_method_label" />
-
-        <TextView
-            android:id="@+id/prayerMethodChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="12dp" />
-
-        <LinearLayout android:id="@+id/asrRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/prayer_method_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/prayer_alert_label" />
-
-        <LinearLayout android:id="@+id/prayerAlertRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/prayer_alert_hint" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/hijri_shift_label" />
-
-        <LinearLayout android:id="@+id/hijriShiftRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/hijri_shift_hint" />
-
-        <TextView
-            android:id="@+id/clubsChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="12dp" />
-
-        <TextView
-            android:id="@+id/hiddenAppsChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="12dp" />
-
-        <TextView style="@style/SettingsHeading" android:text="@string/motion_label" />
-
-        <LinearLayout android:id="@+id/motionRow" style="@style/SettingsChoiceRow" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/motion_hint" />
-
-        <TextView
-            android:id="@+id/followThemeChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="28dp"
-            android:text="@string/follow_theme" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/follow_theme_hint" />
-
-        <TextView
-            android:id="@+id/defaultHomeChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="28dp"
-            android:text="@string/home_settings" />
-
-        <TextView style="@style/SettingsHint" android:text="@string/home_settings_help" />
-
-        <TextView
-            android:id="@+id/tvSettingsChoice"
-            style="@style/SettingsRow"
-            android:layout_marginTop="18dp"
-            android:text="@string/tv_settings" />
+        <LinearLayout
+            android:id="@+id/footerRow"
+            android:clipChildren="false"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:orientation="horizontal" />
     </LinearLayout>
-</ScrollView>
+</FrameLayout>

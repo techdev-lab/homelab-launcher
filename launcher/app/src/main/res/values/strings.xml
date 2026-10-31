@@ -195,4 +195,19 @@
         <item>North America (ISNA)</item>
         <item>Karachi</item>
     </string-array>
+    <!-- Glass settings (docs/SETTINGS_GLASS.md): section titles, one line per section, and the hints Language, Apps per row, colours and Asr did not have. -->
+    <string name="settings_section_look">Look</string>
+    <string name="settings_section_dock">Dock and cards</string>
+    <string name="settings_section_prayer">Prayer and Ramadan</string>
+    <string name="settings_section_motion">Motion</string>
+    <string name="settings_section_look_hint">How the launcher looks: language, wallpaper, colours, digits and the clock.</string>
+    <string name="settings_section_dock_hint">Where your apps and cards are and how big they are.</string>
+    <string name="settings_section_prayer_hint">How prayer times are computed and shown, and the Hijri date.</string>
+    <string name="settings_section_motion_hint">How much the launcher moves.</string>
+    <string name="language_hint">The language of the launcher. System follows the TV.</string>
+    <string name="columns_hint">How many apps sit in a row of the app grid.</string>
+    <string name="plain_colour_label">Plain colour</string>
+    <string name="plain_colour_hint">A plain dark colour instead of a wallpaper picture.</string>
+    <string name="asr_label">Asr</string>
+    <string name="tv_settings_hint">Opens the settings of the TV itself.</string>
 </resources>

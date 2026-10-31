@@ -4,7 +4,7 @@
 
 [English](DESIGN.md) · العربية
 
-الحالة: **مسودة للمراجعة** (تصف الكود في النسخة 3.0.0؛ وملاحظات كل دفعة من 2.10 و3.0 في `docs/LOOK_OPTIONS.ar.md` و`docs/REMOTE_RELIABILITY.ar.md` و`docs/RAMADAN_PRAYER.ar.md` و`docs/DISTRIBUTION.ar.md` و`docs/LAYOUT_OPTIONS.ar.md`).
+الحالة: **مسودة للمراجعة** (تصف الكود في النسخة 3.0.0؛ وملاحظات كل دفعة من 2.10 و3.0 في `docs/LOOK_OPTIONS.ar.md` و`docs/REMOTE_RELIABILITY.ar.md` و`docs/RAMADAN_PRAYER.ar.md` و`docs/DISTRIBUTION.ar.md` و`docs/LAYOUT_OPTIONS.ar.md`؛ وشاشة الإعدادات الزجاجية في `docs/SETTINGS_GLASS.ar.md`).
 
 ## الهدف
 

@@ -7,24 +7,45 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.res.ColorStateList;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Outline;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.LocaleList;
 import android.provider.Settings;
+import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewOutlineProvider;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-/** Remote-friendly settings owned by the launcher; system settings stay one row away. */
+/**
+ * Remote-friendly settings owned by the launcher; system settings stay one row away. Four glass section cards with one
+ * showing at a time, a strip of section tabs, one explanation line that follows focus and a footer of system buttons
+ * (docs/SETTINGS_GLASS.md). Arrow keys are decided by {@link SettingsNav}; every chip saves what it always saved.
+ */
 public final class LauncherSettingsActivity extends Activity {
     private SharedPreferences choices;
-    private final TextView[] columnChoices = new TextView[4];
     private TextView followThemeChoice;
     private TextView clubsChoice;
     private TextView hiddenAppsChoice;
@@ -41,20 +62,21 @@ public final class LauncherSettingsActivity extends Activity {
     private String dockStyle, tileCorners, clockStyle;
     private String prayerMethod;
     private int asrFactor;
-    private int hijriShift, prayerAlertMinutes;
+    private int hijriShift, prayerAlertMinutes, clubSeconds;
     /** Layout options (docs/LAYOUT_OPTIONS.md): the digits and the veil over a wallpaper picture in percent. */
     private String digits, dockPosition;
     private int wallpaperDim;
     private TextView prayerMethodChoice;
     private float density;
+    private boolean rtl;
 
-    /** One row of choices: the views in screen order and the value each one stands for. */
-    private final List<TextView> languageViews = new ArrayList<>(), wallViews = new ArrayList<>(),
-            colourViews = new ArrayList<>(), cardViews = new ArrayList<>(), motionViews = new ArrayList<>(),
-            textSizeViews = new ArrayList<>(), asrViews = new ArrayList<>(), dockStyleViews = new ArrayList<>(),
-            tileCornersViews = new ArrayList<>(), clockStyleViews = new ArrayList<>(),
+    /** One row of choices: the views in reading order and the value each one stands for. */
+    private final List<View> columnViews = new ArrayList<>(), languageViews = new ArrayList<>(),
+            wallViews = new ArrayList<>(), colourViews = new ArrayList<>(), cardViews = new ArrayList<>(),
+            motionViews = new ArrayList<>(), textSizeViews = new ArrayList<>(), asrViews = new ArrayList<>(),
+            dockStyleViews = new ArrayList<>(), tileCornersViews = new ArrayList<>(), clockStyleViews = new ArrayList<>(),
             hijriShiftViews = new ArrayList<>(), alertViews = new ArrayList<>(), digitsViews = new ArrayList<>(),
-            dimViews = new ArrayList<>(), dockPositionViews = new ArrayList<>();
+            dimViews = new ArrayList<>(), dockPositionViews = new ArrayList<>(), footerViews = new ArrayList<>();
 
     /** The chips for the prayer alert: minutes, 0 is off. Any other value in config.json still works, it just has no chip. */
     private static final int[] ALERT_CHOICES = {0, 5, 10, 15};
@@ -63,6 +85,41 @@ public final class LauncherSettingsActivity extends Activity {
     private static final String[] WALL_SETS = {Wallpapers.HOMELAB, Wallpapers.SERENE, Wallpapers.KIDS};
     private static final String MOTION_CALM = "calm", MOTION_LIVELY = "lively", MOTION_OFF = "off";
     private static final String[] MOTIONS = {MOTION_CALM, MOTION_LIVELY, MOTION_OFF};
+
+    private static final int LOOK = 0, DOCK = 1, PRAYER = 2, MOTION = 3, SECTIONS = 4;
+    private static final int LABEL_DP = 150, CHIP_GAP_DP = 10, ROW_GAP_DP = 10;
+    private static final int THUMB_W_DP = 112, THUMB_H_DP = 63;
+
+    /** A row of a section: its chips (some may be hidden in this build), the hint that follows focus, its container. */
+    private static final class Row {
+        final int section;
+        final String hint;
+        final List<? extends View> chips;
+        final View container;
+
+        Row(int section, String hint, List<? extends View> chips, View container) {
+            this.section = section;
+            this.hint = hint;
+            this.chips = chips;
+            this.container = container;
+        }
+    }
+
+    private final List<Row> rows = new ArrayList<>();
+    private final List<LinearLayout> sectionViews = new ArrayList<>();
+    private final List<TextView> tabs = new ArrayList<>();
+    private final List<String> sectionHints = new ArrayList<>();
+    private final List<ImageView> thumbViews = new ArrayList<>();
+    /** What a view stands for: its place in the navigation model and the line that explains it. */
+    private final Map<View, SettingsNav.Spot> spots = new HashMap<>();
+    private final Map<View, String> hints = new HashMap<>();
+    private View[][][] grid;
+    private SettingsNav nav;
+    private int activeSection = -1;
+    private boolean switching;
+    private ScrollView sectionScroll;
+    private FrameLayout sectionHost;
+    private TextView explainLine;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -74,6 +131,7 @@ public final class LauncherSettingsActivity extends Activity {
         super.onCreate(state);
         setContentView(R.layout.activity_launcher_settings);
         density = getResources().getDisplayMetrics().density;
+        rtl = getResources().getBoolean(R.bool.rtl_app_grid);
         choices = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE);
         Config config = Config.load(this);
         columns = config.columns;
@@ -88,6 +146,7 @@ public final class LauncherSettingsActivity extends Activity {
         cards = new boolean[]{s.showPrayer, s.showWeather, s.showSports, s.showClubs, s.showRamadan};
         hijriShift = s.hijriShift;
         prayerAlertMinutes = s.prayerAlertMinutes;
+        clubSeconds = s.clubRotateSeconds;
         textSize = config.textSize;
         dockStyle = config.dockStyle;
         tileCorners = config.tileCorners;
@@ -98,42 +157,112 @@ public final class LauncherSettingsActivity extends Activity {
         prayerMethod = s.prayerMethodKey;
         asrFactor = s.asrFactor;
 
-        int[] ids = {R.id.columns4, R.id.columns5, R.id.columns6, R.id.columns7};
-        for (int i = 0; i < ids.length; i++) {
-            final int value = i + 4;
-            columnChoices[i] = findViewById(ids[i]);
-            columnChoices[i].setOnClickListener(v -> {
-                if (columns == value) return;
-                columns = value;
-                choices.edit().putInt("columns", value).apply();
-                changed();
-            });
+        sectionScroll = findViewById(R.id.sectionScroll);
+        explainLine = findViewById(R.id.explainLine);
+        explainLine.setGravity((rtl ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
+        ((TextView) findViewById(R.id.settingsTitle)).setGravity((rtl ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
+        sectionHost = findViewById(R.id.sectionHost);
+        for (int i = 0; i < SECTIONS; i++) {
+            LinearLayout section = new LinearLayout(this);
+            section.setOrientation(LinearLayout.VERTICAL);
+            section.setClipChildren(false);   // the focused chip grows a little beyond its row
+            sectionViews.add(section);
         }
-        // Keep the numeric choices increasing in the reading direction. Reorder the actual views so D-pad
-        // focus follows their positions without changing the saved values.
-        if (rtl()) {
-            LinearLayout row = (LinearLayout) columnChoices[0].getParent();
-            row.removeAllViews();
-            for (int i = columnChoices.length - 1; i >= 0; i--) row.addView(columnChoices[i]);
-        }
+        buildTabs();
+        buildLook();
+        buildDock();
+        buildPrayer();
+        buildMotion();
+        buildFooter();
+        buildNav();
+        findViewById(R.id.settingsRoot).getViewTreeObserver()
+                .addOnGlobalFocusChangeListener((oldFocus, newFocus) -> focusMoved(oldFocus, newFocus));
+        showSection(LOOK);
+        refresh();
+        View start = languageViews.get(indexOf(LANGUAGES, language));
+        start.requestFocus();
+        focusMoved(null, start);
+        loadThumbnails();
+    }
 
+    // ---- the sections ----------------------------------------------------------------------------
+
+    private void buildTabs() {
+        int[] titles = {R.string.settings_section_look, R.string.settings_section_dock, R.string.settings_section_prayer,
+                R.string.settings_section_motion};
+        int[] hintTexts = {R.string.settings_section_look_hint, R.string.settings_section_dock_hint,
+                R.string.settings_section_prayer_hint, R.string.settings_section_motion_hint};
+        int[] icons = {R.drawable.ic_picture, R.drawable.ic_apps, R.drawable.ic_section_prayer, R.drawable.ic_section_motion};
+        int sand = getColor(R.color.theme_sand);
+        for (int i = 0; i < SECTIONS; i++) {
+            final int section = i;
+            TextView tab = new TextView(this);
+            tab.setText(titles[i]);
+            tab.setTextSize(15);
+            tab.setTextColor(sand);
+            tab.setSingleLine(true);
+            tab.setGravity(Gravity.CENTER);
+            tab.setMinHeight(dp(40));
+            tab.setPadding(dp(14), 0, dp(16), 0);
+            tab.setBackgroundResource(R.drawable.settings_tab_bg);
+            Drawable icon = getDrawable(icons[i]);
+            tab.setCompoundDrawablesWithIntrinsicBounds(rtl ? null : icon, null, rtl ? icon : null, null);
+            tab.setCompoundDrawablePadding(dp(8));
+            tab.setCompoundDrawableTintList(ColorStateList.valueOf(sand));
+            tab.setFocusable(true);
+            tab.setClickable(true);
+            // OK on a tab goes into its section, like Down.
+            tab.setOnClickListener(v -> {
+                SettingsNav.Spot to = nav.move(SettingsNav.tab(section), SettingsNav.DOWN);
+                View target = viewAt(to);
+                if (target != null) target.requestFocus();
+            });
+            tab.setOnKeyListener(keys);
+            tabs.add(tab);
+            sectionHints.add(getString(hintTexts[i]));
+        }
+        LinearLayout strip = findViewById(R.id.tabStrip);
+        fill(strip, tabs, ViewGroup.LayoutParams.WRAP_CONTENT, 8);
+        if (rtl) {
+            // The title is at the right edge on the mirrored screen, the tabs at the left.
+            LinearLayout header = findViewById(R.id.headerRow);
+            View title = findViewById(R.id.settingsTitle);
+            header.removeView(title);
+            header.addView(title, 0);
+            header.removeView(strip);
+            header.addView(strip, 0);
+        }
+    }
+
+    private void buildLook() {
         int[] languageNames = {R.string.language_system, R.string.language_arabic, R.string.language_english};
         for (int i = 0; i < LANGUAGES.length; i++) {
             final String tag = LANGUAGES[i];
             languageViews.add(chip(getString(languageNames[i]), v -> setLanguage(tag)));
         }
-        fill(R.id.languageRow, languageViews);
+        addRow(LOOK, R.string.language_label, getString(R.string.language_hint), languageViews);
 
+        // Each set shows its first picture, decoded from the APK's own assets (loadThumbnails).
         int[] wallNames = {R.string.wallpapers_homelab, R.string.wallpapers_serene, R.string.wallpapers_kids};
         for (int i = 0; i < WALL_SETS.length; i++) {
             final String mode = WALL_SETS[i];
-            wallViews.add(chip(getString(wallNames[i]), v -> {
+            ImageView thumb = new ImageView(this);
+            thumb.setScaleType(ImageView.ScaleType.CENTER_CROP);
+            thumb.setBackgroundColor(0x22FFFFFF);
+            thumb.setOutlineProvider(new ViewOutlineProvider() {
+                @Override
+                public void getOutline(View view, Outline outline) {
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), 8 * density);
+                }
+            });
+            thumbViews.add(thumb);
+            wallViews.add(previewChip(thumb, THUMB_W_DP, THUMB_H_DP, getString(wallNames[i]), v -> {
                 wallMode = mode;
                 choices.edit().putString(Config.WALLPAPER_MODE_KEY, mode).apply();
                 changed();
             }));
         }
-        fill(R.id.wallpaperRow, wallViews);
+        addRow(LOOK, R.string.wallpapers_label, getString(R.string.wallpapers_hint), wallViews);
 
         String[] colourNames = getResources().getStringArray(R.array.plain_colour_names);
         for (int i = 0; i < Wallpapers.PLAIN_COLOURS.length; i++) {
@@ -149,22 +278,99 @@ public final class LauncherSettingsActivity extends Activity {
             c.setTextSize(14);
             colourViews.add(c);
         }
-        fill(R.id.colourRow, colourViews);
+        addRow(LOOK, R.string.plain_colour_label, getString(R.string.plain_colour_hint), colourViews);
 
-        int[] cardNames = {R.string.card_prayer, R.string.card_weather, R.string.card_football, R.string.card_clubs,
-                R.string.card_ramadan};
-        for (int i = 0; i < Config.CARD_KEYS.length; i++) {
-            final int index = i;
-            TextView c = chip(getString(cardNames[i]), v -> {
-                cards[index] = !cards[index];
-                choices.edit().putBoolean(Config.CARD_KEYS[index], cards[index]).apply();
+        for (int percent : WallpaperDim.CHOICES) {
+            dimViews.add(chip(getString(R.string.wallpaper_dim_percent, percent), v -> {
+                if (percent == wallpaperDim) return;
+                wallpaperDim = percent;
+                choices.edit().putInt(Config.WALLPAPER_DIM_KEY, percent).apply();
                 changed();
-            });
-            // Weather, football and clubs come from the network: the offline build has none of them.
-            if (i > 0 && i < 4 && !Feeds.AVAILABLE) c.setVisibility(android.view.View.GONE);
-            cardViews.add(c);
+            }));
         }
-        fill(R.id.cardsRow, cardViews);
+        addRow(LOOK, R.string.wallpaper_dim_label, getString(R.string.wallpaper_dim_hint), dimViews);
+
+        // Digits show a sample of what they draw.
+        int[] digitNames = {R.string.digits_latin, R.string.digits_arabic};
+        for (int i = 0; i < DigitStyle.ALL.length; i++) {
+            final String style = DigitStyle.ALL[i];
+            TextView sample = new TextView(this);
+            sample.setText(DigitStyle.ARABIC.equals(style) ? Hijri.arabicDigits("123") : "123");
+            sample.setTextSize(22);
+            sample.setTextColor(0xFFFFFFFF);
+            sample.setGravity(Gravity.CENTER);
+            digitsViews.add(previewChip(sample, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT,
+                    getString(digitNames[i]), v -> {
+                if (style.equals(digits)) return;
+                digits = style;
+                choices.edit().putString(Config.DIGITS_KEY, style).apply();
+                changed();
+            }));
+        }
+        addRow(LOOK, R.string.digits_label, getString(R.string.digits_hint), digitsViews);
+
+        int[] clockNames = {R.string.clock_style_plain, R.string.clock_style_glass};
+        for (int i = 0; i < ClockStyle.ALL.length; i++) {
+            final String style = ClockStyle.ALL[i];
+            clockStyleViews.add(chip(getString(clockNames[i]), v -> {
+                if (style.equals(clockStyle)) return;
+                clockStyle = style;
+                choices.edit().putString(Config.CLOCK_STYLE_KEY, style).apply();
+                changed();
+            }));
+        }
+        addRow(LOOK, R.string.clock_style_label, getString(R.string.clock_style_hint), clockStyleViews);
+    }
+
+    private void buildDock() {
+        // The dock position shows a little drawing of the screen, mirrored on the Arabic one like the real screen.
+        int[] positionNames = {R.string.dock_position_bottom, R.string.dock_position_side};
+        for (int i = 0; i < DockPosition.ALL.length; i++) {
+            final String position = DockPosition.ALL[i];
+            dockPositionViews.add(previewChip(new DockPreview(this, position, rtl), 80, 45, getString(positionNames[i]), v -> {
+                if (position.equals(dockPosition)) return;
+                dockPosition = position;
+                choices.edit().putString(Config.DOCK_POSITION_KEY, position).apply();
+                changed();
+            }));
+        }
+        addRow(DOCK, R.string.dock_position_label, getString(R.string.dock_position_hint), dockPositionViews);
+
+        // The look options: the viewer's choices, like the text size, so a theme push does not clear them.
+        int[] dockNames = {R.string.dock_style_band, R.string.dock_style_floating};
+        for (int i = 0; i < DockStyle.ALL.length; i++) {
+            final String style = DockStyle.ALL[i];
+            dockStyleViews.add(chip(getString(dockNames[i]), v -> {
+                if (style.equals(dockStyle)) return;
+                dockStyle = style;
+                choices.edit().putString(Config.DOCK_STYLE_KEY, style).apply();
+                changed();
+            }));
+        }
+        addRow(DOCK, R.string.dock_style_label, getString(R.string.dock_style_hint), dockStyleViews);
+
+        int[] cornerNames = {R.string.tile_corners_normal, R.string.tile_corners_soft};
+        for (int i = 0; i < TileShape.ALL.length; i++) {
+            final String shape = TileShape.ALL[i];
+            tileCornersViews.add(chip(getString(cornerNames[i]), v -> {
+                if (shape.equals(tileCorners)) return;
+                tileCorners = shape;
+                choices.edit().putString(Config.TILE_CORNERS_KEY, shape).apply();
+                changed();
+            }));
+        }
+        addRow(DOCK, R.string.tile_corners_label, getString(R.string.tile_corners_hint), tileCornersViews);
+
+        for (int i = 0; i < 4; i++) {
+            final int value = i + 4;
+            columnViews.add(chip(String.valueOf(value), v -> {
+                if (columns == value) return;
+                columns = value;
+                choices.edit().putInt("columns", value).apply();
+                changed();
+            }));
+        }
+        addRow(DOCK, R.string.columns_label, getString(R.string.columns_hint), columnViews);
 
         int[] sizeNames = {R.string.text_size_small, R.string.text_size_medium, R.string.text_size_large};
         for (int i = 0; i < StripSize.ALL.length; i++) {
@@ -177,81 +383,37 @@ public final class LauncherSettingsActivity extends Activity {
                 changed();
             }));
         }
-        fill(R.id.textSizeRow, textSizeViews);
+        addRow(DOCK, R.string.text_size_label, getString(R.string.text_size_hint), textSizeViews);
 
-        int[] positionNames = {R.string.dock_position_bottom, R.string.dock_position_side};
-        for (int i = 0; i < DockPosition.ALL.length; i++) {
-            final String position = DockPosition.ALL[i];
-            dockPositionViews.add(chip(getString(positionNames[i]), v -> {
-                if (position.equals(dockPosition)) return;
-                dockPosition = position;
-                choices.edit().putString(Config.DOCK_POSITION_KEY, position).apply();
+        int[] cardNames = {R.string.card_prayer, R.string.card_weather, R.string.card_football, R.string.card_clubs,
+                R.string.card_ramadan};
+        for (int i = 0; i < Config.CARD_KEYS.length; i++) {
+            final int index = i;
+            TextView c = chip(getString(cardNames[i]), v -> {
+                cards[index] = !cards[index];
+                choices.edit().putBoolean(Config.CARD_KEYS[index], cards[index]).apply();
                 changed();
-            }));
+            });
+            // Weather, football and clubs come from the network: the offline build has none of them.
+            if (i > 0 && i < 4 && !Feeds.AVAILABLE) c.setVisibility(View.GONE);
+            cardViews.add(c);
         }
-        fill(R.id.dockPositionRow, dockPositionViews);
+        addRow(DOCK, R.string.cards_label, getString(R.string.cards_hint), cardViews);
 
-        // The three look options: the viewer's choices, like the text size, so a theme push does not clear them.
-        int[] dockNames = {R.string.dock_style_band, R.string.dock_style_floating};
-        for (int i = 0; i < DockStyle.ALL.length; i++) {
-            final String style = DockStyle.ALL[i];
-            dockStyleViews.add(chip(getString(dockNames[i]), v -> {
-                if (style.equals(dockStyle)) return;
-                dockStyle = style;
-                choices.edit().putString(Config.DOCK_STYLE_KEY, style).apply();
-                changed();
-            }));
+        clubsChoice = chip("", v -> startActivityForResult(new Intent(this, ClubsActivity.class), CLUBS_REQUEST));
+        // Matches need the network: the offline build has no INTERNET, so the row would promise nothing.
+        if (Feeds.AVAILABLE) {
+            addRow(DOCK, 0, getString(R.string.favorite_clubs_hint, Interests.MAX_CLUBS, clubSeconds), single(clubsChoice));
         }
-        fill(R.id.dockStyleRow, dockStyleViews);
+        hiddenAppsChoice = chip("", v -> startActivityForResult(new Intent(this, HiddenAppsActivity.class),
+                HIDDEN_APPS_REQUEST));
+        addRow(DOCK, 0, getString(R.string.hidden_apps_hint), single(hiddenAppsChoice));
+    }
 
-        int[] cornerNames = {R.string.tile_corners_normal, R.string.tile_corners_soft};
-        for (int i = 0; i < TileShape.ALL.length; i++) {
-            final String shape = TileShape.ALL[i];
-            tileCornersViews.add(chip(getString(cornerNames[i]), v -> {
-                if (shape.equals(tileCorners)) return;
-                tileCorners = shape;
-                choices.edit().putString(Config.TILE_CORNERS_KEY, shape).apply();
-                changed();
-            }));
-        }
-        fill(R.id.tileCornersRow, tileCornersViews);
+    private void buildPrayer() {
+        prayerMethodChoice = chip("", v -> choosePrayerMethod());
+        addRow(PRAYER, R.string.prayer_method_label, getString(R.string.prayer_method_hint), single(prayerMethodChoice));
 
-        int[] clockNames = {R.string.clock_style_plain, R.string.clock_style_glass};
-        for (int i = 0; i < ClockStyle.ALL.length; i++) {
-            final String style = ClockStyle.ALL[i];
-            clockStyleViews.add(chip(getString(clockNames[i]), v -> {
-                if (style.equals(clockStyle)) return;
-                clockStyle = style;
-                choices.edit().putString(Config.CLOCK_STYLE_KEY, style).apply();
-                changed();
-            }));
-        }
-        fill(R.id.clockStyleRow, clockStyleViews);
-
-        int[] digitNames = {R.string.digits_latin, R.string.digits_arabic};
-        for (int i = 0; i < DigitStyle.ALL.length; i++) {
-            final String style = DigitStyle.ALL[i];
-            digitsViews.add(chip(getString(digitNames[i]), v -> {
-                if (style.equals(digits)) return;
-                digits = style;
-                choices.edit().putString(Config.DIGITS_KEY, style).apply();
-                changed();
-            }));
-        }
-        fill(R.id.digitsRow, digitsViews);
-
-        for (int percent : WallpaperDim.CHOICES) {
-            dimViews.add(chip(getString(R.string.wallpaper_dim_percent, percent), v -> {
-                if (percent == wallpaperDim) return;
-                wallpaperDim = percent;
-                choices.edit().putInt(Config.WALLPAPER_DIM_KEY, percent).apply();
-                changed();
-            }));
-        }
-        fill(R.id.wallpaperDimRow, dimViews);
-
-        prayerMethodChoice = findViewById(R.id.prayerMethodChoice);
-        prayerMethodChoice.setOnClickListener(v -> choosePrayerMethod());
         int[] asrNames = {R.string.asr_standard, R.string.asr_hanafi};
         int[] asrValues = {Prayer.ASR_STANDARD, Prayer.ASR_HANAFI};
         for (int i = 0; i < asrNames.length; i++) {
@@ -264,7 +426,7 @@ public final class LauncherSettingsActivity extends Activity {
                 changed();
             }));
         }
-        fill(R.id.asrRow, asrViews);
+        addRow(PRAYER, R.string.asr_label, getString(R.string.prayer_method_hint), asrViews);
 
         // Prayer alert and Hijri date shift: the viewer's choices, kept when a theme is pushed, like the Asr convention.
         for (int minutes : ALERT_CHOICES) {
@@ -276,7 +438,8 @@ public final class LauncherSettingsActivity extends Activity {
                 changed();
             }));
         }
-        fill(R.id.prayerAlertRow, alertViews);
+        addRow(PRAYER, R.string.prayer_alert_label, getString(R.string.prayer_alert_hint), alertViews);
+
         for (int d = HijriShift.MIN; d <= HijriShift.MAX; d++) {
             final int days = d;
             hijriShiftViews.add(chip(d > 0 ? "+" + d : String.valueOf(d), v -> {
@@ -286,25 +449,21 @@ public final class LauncherSettingsActivity extends Activity {
                 changed();
             }));
         }
-        fill(R.id.hijriShiftRow, hijriShiftViews);
+        addRow(PRAYER, R.string.hijri_shift_label, getString(R.string.hijri_shift_hint), hijriShiftViews);
+    }
 
+    private void buildMotion() {
         int[] motionNames = {R.string.motion_calm, R.string.motion_lively, R.string.motion_off};
         for (int i = 0; i < MOTIONS.length; i++) {
             final String motion = MOTIONS[i];
             motionViews.add(chip(getString(motionNames[i]), v -> setMotion(motion)));
         }
-        fill(R.id.motionRow, motionViews);
+        addRow(MOTION, R.string.motion_label, getString(R.string.motion_hint), motionViews);
+    }
 
-        clubsChoice = findViewById(R.id.clubsChoice);
-        // Matches need the network: the offline build has no INTERNET, so the row would promise nothing.
-        clubsChoice.setVisibility(Feeds.AVAILABLE ? android.view.View.VISIBLE : android.view.View.GONE);
-        clubsChoice.setOnClickListener(v ->
-                startActivityForResult(new Intent(this, ClubsActivity.class), CLUBS_REQUEST));
-        hiddenAppsChoice = findViewById(R.id.hiddenAppsChoice);
-        hiddenAppsChoice.setOnClickListener(v ->
-                startActivityForResult(new Intent(this, HiddenAppsActivity.class), HIDDEN_APPS_REQUEST));
-        followThemeChoice = findViewById(R.id.followThemeChoice);
-        followThemeChoice.setOnClickListener(v -> {
+    /** The three buttons that are not preferences, under the card and reachable from every section. */
+    private void buildFooter() {
+        followThemeChoice = chip(getString(R.string.follow_theme), v -> {
             if (!hasOnTvChoices()) return;
             choices.edit().remove("columns").remove("animations").remove("advanced_effects")
                     .remove(Config.WALLPAPER_MODE_KEY).remove(Config.BACKGROUND_COLOR_KEY).apply();
@@ -316,15 +475,305 @@ public final class LauncherSettingsActivity extends Activity {
             backgroundColor = current.backgroundColor;
             changed();
         });
-        findViewById(R.id.defaultHomeChoice).setOnClickListener(v -> {
+        TextView defaultHome = chip(getString(R.string.home_settings), v -> {
             Toast.makeText(this, R.string.home_settings_help, Toast.LENGTH_LONG).show();
             open(new Intent(Settings.ACTION_HOME_SETTINGS));
         });
-        findViewById(R.id.tvSettingsChoice).setOnClickListener(v ->
-                open(new Intent(Settings.ACTION_SETTINGS)));
-        refresh();
-        languageViews.get(indexOf(LANGUAGES, language)).requestFocus();
+        TextView tvSettings = chip(getString(R.string.tv_settings), v -> open(new Intent(Settings.ACTION_SETTINGS)));
+        for (TextView b : new TextView[]{followThemeChoice, defaultHome, tvSettings}) {
+            b.setTextSize(14);
+            b.setMaxLines(2);
+            footerViews.add(b);
+        }
+        hints.put(followThemeChoice, getString(R.string.follow_theme_hint));
+        hints.put(defaultHome, getString(R.string.home_settings_help));
+        hints.put(tvSettings, getString(R.string.tv_settings_hint));
+        fill((LinearLayout) findViewById(R.id.footerRow), footerViews, ViewGroup.LayoutParams.WRAP_CONTENT, CHIP_GAP_DP);
     }
+
+    // ---- navigation ------------------------------------------------------------------------------
+
+    /** Hands the model the chips that exist in this build and maps every view to its place. */
+    private void buildNav() {
+        int[][] counts = new int[SECTIONS][];
+        grid = new View[SECTIONS][][];
+        for (int s = 0; s < SECTIONS; s++) {
+            List<View[]> shown = new ArrayList<>();
+            for (Row row : rows) {
+                if (row.section != s) continue;
+                List<View> visible = new ArrayList<>();
+                for (View chip : row.chips) if (chip.getVisibility() == View.VISIBLE) visible.add(chip);
+                if (visible.isEmpty()) {
+                    row.container.setVisibility(View.GONE);
+                    continue;
+                }
+                int r = shown.size();
+                for (int c = 0; c < visible.size(); c++) {
+                    spots.put(visible.get(c), new SettingsNav.Spot(s, r, c));
+                    hints.put(visible.get(c), row.hint);
+                }
+                shown.add(visible.toArray(new View[0]));
+            }
+            grid[s] = shown.toArray(new View[0][]);
+            counts[s] = new int[shown.size()];
+            for (int r = 0; r < shown.size(); r++) counts[s][r] = shown.get(r).length;
+        }
+        nav = new SettingsNav(counts, footerViews.size(), rtl);
+        for (int i = 0; i < tabs.size(); i++) hints.put(tabs.get(i), sectionHints.get(i));
+    }
+
+    /** The four arrow keys, answered by the model; anything it cannot place falls through to Android's focus search. */
+    private final View.OnKeyListener keys = (v, keyCode, event) -> {
+        int dir = direction(keyCode);
+        if (dir < 0 || nav == null) return false;
+        SettingsNav.Spot from = spotOf(v);
+        if (from == null) return false;
+        if (event.getAction() != KeyEvent.ACTION_DOWN) return true;
+        SettingsNav.Spot to = nav.move(from, dir);
+        if (to.equals(nav.clamp(from))) return true;   // an edge: stay, never wrap
+        // Holding a key must not run across the sections; it takes a new press to cross from one section's row to another's.
+        if (event.getRepeatCount() > 0 && from.row >= 0 && to.row >= 0 && to.section != from.section) return true;
+        View target = viewAt(to);
+        if (target == null) return false;
+        if (to.row != SettingsNav.FOOTER && to.section != activeSection) showSection(to.section);
+        target.requestFocus();
+        return true;
+    };
+
+    private static int direction(int keyCode) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_DPAD_UP: return SettingsNav.UP;
+            case KeyEvent.KEYCODE_DPAD_DOWN: return SettingsNav.DOWN;
+            case KeyEvent.KEYCODE_DPAD_LEFT: return SettingsNav.LEFT;
+            case KeyEvent.KEYCODE_DPAD_RIGHT: return SettingsNav.RIGHT;
+            default: return -1;
+        }
+    }
+
+    private SettingsNav.Spot spotOf(View v) {
+        int tab = tabs.indexOf(v);
+        if (tab >= 0) return SettingsNav.tab(tab);
+        int footer = footerViews.indexOf(v);
+        if (footer >= 0) return new SettingsNav.Spot(Math.max(0, activeSection), SettingsNav.FOOTER, footer);
+        return spots.get(v);
+    }
+
+    private View viewAt(SettingsNav.Spot spot) {
+        if (spot.row == SettingsNav.TABS) return spot.chip < tabs.size() ? tabs.get(spot.chip) : null;
+        if (spot.row == SettingsNav.FOOTER) return spot.chip < footerViews.size() ? footerViews.get(spot.chip) : null;
+        if (spot.section >= grid.length || spot.row >= grid[spot.section].length
+                || spot.chip >= grid[spot.section][spot.row].length) return null;
+        return grid[spot.section][spot.row][spot.chip];
+    }
+
+    /**
+     * Shows one section card. Only the showing section is attached to the screen, so a hidden one can never hold focus
+     * or leave a stale picture (hiding with GONE left the old section painted on the TV after a key across sections).
+     */
+    private void showSection(int section) {
+        if (section == activeSection) return;
+        activeSection = section;
+        // Taking the focused chip off the screen makes Android focus the first tab on its own; that must not switch back.
+        switching = true;
+        try {
+            sectionHost.removeAllViews();
+            sectionHost.addView(sectionViews.get(section), new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                    ViewGroup.LayoutParams.WRAP_CONTENT));
+        } finally {
+            switching = false;
+        }
+        for (int i = 0; i < SECTIONS; i++) tabs.get(i).setSelected(i == section);
+        sectionScroll.scrollTo(0, 0);
+
+    }
+
+    /** Focus follows the tabs to their section, and the explanation line follows focus. */
+    private void focusMoved(View oldFocus, View newFocus) {
+        if (oldFocus != null && oldFocus.getScaleX() != 1f) oldFocus.animate().scaleX(1f).scaleY(1f).setDuration(120).start();
+        if (newFocus == null) return;
+        int tab = tabs.indexOf(newFocus);
+        if (tab >= 0 && !switching) showSection(tab);
+        String hint = hints.get(newFocus);
+        if (hint != null) explainLine.setText(hint);
+        if (animations && tab < 0 && hints.containsKey(newFocus)) {
+            newFocus.animate().scaleX(1.04f).scaleY(1.04f).setDuration(120).start();
+        }
+    }
+
+    // ---- building blocks -------------------------------------------------------------------------
+
+    private void addRow(int section, int labelRes, String hint, List<? extends View> chips) {
+        LinearLayout line = new LinearLayout(this);
+        line.setOrientation(LinearLayout.HORIZONTAL);
+        line.setGravity(Gravity.CENTER_VERTICAL);
+        line.setClipChildren(false);
+        LinearLayout box = new LinearLayout(this);
+        box.setOrientation(LinearLayout.HORIZONTAL);
+        box.setClipChildren(false);
+        box.setBaselineAligned(false);
+        fill(box, chips, ViewGroup.LayoutParams.WRAP_CONTENT, CHIP_GAP_DP);
+        LinearLayout.LayoutParams boxParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+        if (labelRes == 0) {
+            line.addView(box, boxParams);
+        } else {
+            TextView label = new TextView(this);
+            label.setText(labelRes);
+            label.setTextSize(16);
+            label.setTextColor(getColor(R.color.theme_sand));
+            label.setGravity((rtl ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
+            LinearLayout.LayoutParams labelParams = new LinearLayout.LayoutParams(dp(LABEL_DP),
+                    ViewGroup.LayoutParams.WRAP_CONTENT);
+            if (rtl) {
+                labelParams.leftMargin = dp(CHIP_GAP_DP);
+                line.addView(box, boxParams);
+                line.addView(label, labelParams);
+            } else {
+                labelParams.rightMargin = dp(CHIP_GAP_DP);
+                line.addView(label, labelParams);
+                line.addView(box, boxParams);
+            }
+        }
+        LinearLayout.LayoutParams lineParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        lineParams.bottomMargin = dp(ROW_GAP_DP);
+        sectionViews.get(section).addView(line, lineParams);
+        rows.add(new Row(section, hint, chips, line));
+    }
+
+    private static List<View> single(View v) {
+        List<View> out = new ArrayList<>();
+        out.add(v);
+        return out;
+    }
+
+    /** A text chip. */
+    private TextView chip(String label, View.OnClickListener click) {
+        TextView v = (TextView) LayoutInflater.from(this).inflate(R.layout.item_choice, null, false);
+        v.setBackgroundResource(R.drawable.settings_chip_bg);
+        v.setTextSize(16);
+        v.setMinHeight(dp(48));
+        v.setPadding(dp(10), 0, dp(10), 0);
+        v.setText(label);
+        v.setOnClickListener(click);
+        v.setOnKeyListener(keys);
+        return v;
+    }
+
+    /** A chip with a picture, a drawing or a sample above its name. */
+    private LinearLayout previewChip(View preview, int widthDp, int heightDp, String label, View.OnClickListener click) {
+        LinearLayout c = new LinearLayout(this);
+        c.setOrientation(LinearLayout.VERTICAL);
+        c.setGravity(Gravity.CENTER_HORIZONTAL);
+        c.setPadding(dp(8), dp(8), dp(8), dp(6));
+        c.setBackgroundResource(R.drawable.settings_chip_bg);
+        c.setFocusable(true);
+        c.setClickable(true);
+        c.setOnClickListener(click);
+        c.setOnKeyListener(keys);
+        c.addView(preview, new LinearLayout.LayoutParams(
+                widthDp > 0 ? dp(widthDp) : widthDp, heightDp > 0 ? dp(heightDp) : heightDp));
+        TextView name = new TextView(this);
+        name.setText(label);
+        name.setTextSize(14);
+        name.setTextColor(getColor(R.color.theme_sand));
+        name.setGravity(Gravity.CENTER);
+        name.setSingleLine(true);
+        LinearLayout.LayoutParams nameParams = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        nameParams.topMargin = dp(4);
+        c.addView(name, nameParams);
+        return c;
+    }
+
+    /**
+     * Adds a row's views in reading order: right to left on an Arabic or Hebrew screen, so focus follows. The gap goes
+     * between the views, never after the last one.
+     */
+    private void fill(LinearLayout row, List<? extends View> views, int height, int gapDp) {
+        for (int i = 0; i < views.size(); i++) {
+            View v = views.get(rtl ? views.size() - 1 - i : i);
+            LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(0, height, 1f);
+            if (i < views.size() - 1) p.rightMargin = dp(gapDp);
+            // A tab strip's tabs are as wide as their text.
+            if (row.getId() == R.id.tabStrip) {
+                p.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                p.weight = 0f;
+            }
+            row.addView(v, p);
+        }
+    }
+
+    /** A colour chip: the colour itself, a green edge when chosen and a white one under focus. */
+    private StateListDrawable swatch(int colour) {
+        StateListDrawable s = new StateListDrawable();
+        s.addState(new int[]{android.R.attr.state_focused}, rounded(colour, 0xE6FFFFFF, 3));
+        s.addState(new int[]{android.R.attr.state_selected}, rounded(colour, 0xFF57D294, 3));
+        s.addState(new int[]{}, rounded(colour, 0x33FFFFFF, 1));
+        return s;
+    }
+
+    private GradientDrawable rounded(int fill, int stroke, int strokeDp) {
+        GradientDrawable d = new GradientDrawable();
+        d.setColor(fill);
+        d.setCornerRadius(14 * density);
+        d.setStroke(Math.round(strokeDp * density), stroke);
+        return d;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * density);
+    }
+
+    // ---- wallpaper thumbnails --------------------------------------------------------------------
+
+    /** Decodes the first picture of each set a few times smaller than it is, off the UI thread; none is kept beyond the chip. */
+    private void loadThumbnails() {
+        final int width = dp(THUMB_W_DP);
+        new Thread(() -> {
+            for (int i = 0; i < WALL_SETS.length; i++) {
+                final Bitmap bitmap = thumbnail(WALL_SETS[i], width);
+                final ImageView target = thumbViews.get(i);
+                if (bitmap == null) continue;
+                runOnUiThread(() -> {
+                    if (!isDestroyed()) target.setImageBitmap(bitmap);
+                });
+            }
+        }, "settings-thumbnails").start();
+    }
+
+    private Bitmap thumbnail(String set, int targetWidth) {
+        try {
+            String dir = Wallpapers.DIR_NAME + "/" + set;
+            String[] names = getAssets().list(dir);
+            if (names == null) return null;
+            Arrays.sort(names);
+            String first = null;
+            for (String name : names) {
+                if (name.endsWith(".jpg")) {
+                    first = name;
+                    break;
+                }
+            }
+            if (first == null) return null;
+            BitmapFactory.Options bounds = new BitmapFactory.Options();
+            bounds.inJustDecodeBounds = true;
+            try (InputStream in = getAssets().open(dir + "/" + first)) {
+                BitmapFactory.decodeStream(in, null, bounds);
+            }
+            int sample = 1;
+            while (bounds.outWidth / (sample * 2) >= targetWidth) sample *= 2;
+            BitmapFactory.Options options = new BitmapFactory.Options();
+            options.inSampleSize = sample;
+            options.inPreferredConfig = Bitmap.Config.RGB_565;
+            try (InputStream in = getAssets().open(dir + "/" + first)) {
+                return BitmapFactory.decodeStream(in, null, options);
+            }
+        } catch (IOException | RuntimeException e) {
+            return null;   // the chip stays the plain one
+        }
+    }
+
+    // ---- saving ----------------------------------------------------------------------------------
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -384,7 +833,7 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     private void refresh() {
-        for (int i = 0; i < columnChoices.length; i++) columnChoices[i].setSelected(columns == i + 4);
+        for (int i = 0; i < columnViews.size(); i++) columnViews.get(i).setSelected(columns == i + 4);
         for (int i = 0; i < LANGUAGES.length; i++) languageViews.get(i).setSelected(LANGUAGES[i].equals(language));
         for (int i = 0; i < WALL_SETS.length; i++) wallViews.get(i).setSelected(WALL_SETS[i].equals(wallMode));
         for (int i = 0; i < Wallpapers.PLAIN_COLOURS.length; i++) {
@@ -437,44 +886,6 @@ public final class LauncherSettingsActivity extends Activity {
         return choices.contains("columns") || choices.contains("animations")
                 || choices.contains("advanced_effects") || choices.contains(Config.WALLPAPER_MODE_KEY)
                 || choices.contains(Config.BACKGROUND_COLOR_KEY);
-    }
-
-    private TextView chip(String label, android.view.View.OnClickListener click) {
-        TextView v = (TextView) LayoutInflater.from(this).inflate(R.layout.item_choice, null, false);
-        v.setText(label);
-        v.setOnClickListener(click);
-        return v;
-    }
-
-    /** Adds a row's chips in reading order: right to left on an Arabic or Hebrew screen, so focus follows. */
-    private void fill(int rowId, List<TextView> views) {
-        LinearLayout row = findViewById(rowId);
-        for (int i = 0; i < views.size(); i++) {
-            TextView v = views.get(rtl() ? views.size() - 1 - i : i);
-            row.addView(v, new LinearLayout.LayoutParams(0, (int) (52 * density), 1f));
-            ((LinearLayout.LayoutParams) v.getLayoutParams()).setMarginEnd((int) (10 * density));
-        }
-    }
-
-    /** A colour chip: the colour itself, a green edge when chosen and a white one under focus. */
-    private StateListDrawable swatch(int colour) {
-        StateListDrawable s = new StateListDrawable();
-        s.addState(new int[]{android.R.attr.state_focused}, rounded(colour, 0xFFFFFFFF, 3));
-        s.addState(new int[]{android.R.attr.state_selected}, rounded(colour, 0xFF57D294, 2));
-        s.addState(new int[]{}, rounded(colour, 0x33FFFFFF, 1));
-        return s;
-    }
-
-    private GradientDrawable rounded(int fill, int stroke, int strokeDp) {
-        GradientDrawable d = new GradientDrawable();
-        d.setColor(fill);
-        d.setCornerRadius(14 * density);
-        d.setStroke(Math.round(strokeDp * density), stroke);
-        return d;
-    }
-
-    private boolean rtl() {
-        return getResources().getBoolean(R.bool.rtl_app_grid);
     }
 
     private static int indexOf(String[] values, String value) {

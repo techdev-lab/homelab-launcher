@@ -124,6 +124,10 @@ Install it like any sideloaded app: `adb install HomeLab-Launcher-<version>.apk`
 |---|---|
 | ![Side dock in English](docs/screenshots/side-dock-english.png) | ![Side dock in Arabic](docs/screenshots/side-dock-arabic.png) |
 
+| Launcher settings, English | Launcher settings, Arabic |
+|---|---|
+| ![Glass settings in English](docs/screenshots/settings-glass-english.png) | ![Glass settings in Arabic](docs/screenshots/settings-glass-arabic.png) |
+
 ### Quick start
 
 You need a Windows, macOS or Linux computer on the same Wi-Fi as the TV, and about 30 minutes.
@@ -301,6 +305,10 @@ MIT License, see [LICENSE](LICENSE).
 | الرصيف الجانبي بالعربي (يسار) | الرصيف الجانبي بالإنجليزي (يمين) |
 |---|---|
 | ![الرصيف الجانبي بالعربي](docs/screenshots/side-dock-arabic.png) | ![الرصيف الجانبي بالإنجليزي](docs/screenshots/side-dock-english.png) |
+
+| إعدادات المشغّل بالعربي | إعدادات المشغّل بالإنجليزي |
+|---|---|
+| ![الإعدادات الزجاجية بالعربي](docs/screenshots/settings-glass-arabic.png) | ![الإعدادات الزجاجية بالإنجليزي](docs/screenshots/settings-glass-english.png) |
 
 ### البداية السريعة
 
