@@ -1,5 +1,7 @@
 # Security
 
+[English](SECURITY.md) · [العربية](SECURITY.ar.md)
+
 ## What the app can do
 
 - **offline build:** no INTERNET permission. It cannot reach the network.

@@ -1,5 +1,7 @@
 # Install guide
 
+[English](INSTALL.md) · [العربية](INSTALL.ar.md)
+
 This is the exact order used on a Chromecast with Google TV 4K (Android 14). Read it once before you start.
 Every step that changes the TV can be undone, and the [rescue](#rescue) at the end works even if everything goes wrong.
 
