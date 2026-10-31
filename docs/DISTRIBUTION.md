@@ -52,6 +52,18 @@ read on 2026-10-31; neither page carries a date, so the rules are read again whe
   logbook with the date. The ESPN address in the docs is a template with a league placeholder, so it is expected not to
   answer.
 
+## Open decision for the release: `versionCode`
+
+Not changed here, but it blocks a store listing, so it is written down now. Every build keeps `versionCode 4` so that
+any build installs over any other with `adb install -r`. A store (IzzyOnDroid, F-Droid) decides that an update exists
+when the `versionCode` goes up, so a user who installed from a store would never be offered a new release.
+
+- Before the first store-listed release the `versionCode` has to start rising with each release. The changelog file
+  then follows it (`5.txt`, `6.txt`, and so on).
+- The cost: an older build, 2.9.0 included, then no longer installs over a newer one. Going back means uninstalling,
+  which removes `config.json` from the TV. The rollback APKs and the rollback text in `docs/INSTALL.md` must say so.
+- The maintainer decides this at the final upgrade, together with the release name (2.10 or 3.0).
+
 ## Definition of done
 
 - The five `fastlane` files exist, are English only, the short description is at most 80 characters, the changelog is
