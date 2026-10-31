@@ -1,7 +1,9 @@
 # Layout options: batch 5 design note
 
-Status: written before the code, as the other batches. Every default is today's look, so an upgrade changes nothing
-until the viewer picks.
+[English](LAYOUT_OPTIONS.md) · [العربية](LAYOUT_OPTIONS.ar.md)
+
+Status: **IMPLEMENTED in 3.0.0**, written before the code as the other batches. Every default is today's look, so an
+upgrade changes nothing until the viewer picks. Tried on a Chromecast 4K in eight combinations (see the conditions below).
 
 Three options in Launcher settings, each also a key in `config.json`. As for every look option, the TV's choice wins
 over the theme, a theme push does not clear it, and an unknown or out-of-range value counts as unset.
@@ -54,7 +56,7 @@ places all rest on that. A column cannot be made from a row by styling, so the s
 
 - **One data set, two lists.** `AppAdapter` stays the owner of the tiles. In the side layout two thin adapters show
   two slices of it: positions 0 to `COLUMNS - 1` (the dock, empty slots included, as today) in a vertical list on the
-  right, and the rest in a grid on the left. Both bind and create tiles through `AppAdapter`, so a tile looks and
+  right (left on the Arabic screen), and the rest in a grid beside it. Both bind and create tiles through `AppAdapter`, so a tile looks and
   behaves as it does now. Positions seen by the rest of `MainActivity` stay absolute.
 - **Sizes.** The column is 108 dp of tile plus the plate padding. It runs from the top-bar buttons down to the bottom
   margin and scrolls when there are more dock apps than fit (about four to five on 1080p). The grid has
@@ -62,18 +64,20 @@ places all rest on that. A column cannot be made from a row by styling, so the s
   because both are narrower.
 - **Plate.** A vertical version of `DockDecoration` draws the same two styles (band, floating glass) behind the
   column, with the same corner rule.
-- **Name of the focused dock app.** There is no free band above a column, so the name goes in a small glass pill to the
-  left of the focused tile, drawn over the grid for as long as the tile has focus. The glow in the app's colour works as
-  today.
+- **Name of the focused dock app.** There is no free band above a column, so the name goes in a small opaque pill
+  beside the focused tile (on the grid's side), drawn over the grid for as long as the tile has focus. The glow in the
+  app's colour works as today.
 - **Glass highlight.** It follows the tile in whichever list it is, and the scroll of both lists.
-- **Arrow keys** are decided by pure functions (`SideNav`) so they are tested on the JVM:
+- **Arrow keys** are decided by pure functions (`SideNav`) so they are tested on the JVM (the keys below are for the
+  English screen; on the mirrored Arabic screen Left and Right swap):
   - Dock: Up on the first tile goes to the top-bar buttons; Down on the last filled tile stays; Left goes to the grid
     tile nearest in height; Right stays.
   - Grid: Left at the first column stays; Right at the last column of a row goes to the nearest dock tile in height;
     Up on the first row goes to the strip, or the top bar when the strip is empty; Down on the last row stays.
   - Strip: Down from the last strip row goes to the grid, or to the dock when there is no grid.
-  - From the top-bar buttons, Down goes to the strip, else the grid, else the dock. Settings stays reachable from every
-    tile in at most three key presses.
+  - From the top-bar buttons, Down goes to the strip, else the grid, else the dock; a button above the dock goes
+    straight to it. Settings stays reachable from every tile by Up presses alone, and a test checks that no tile is a
+    dead end.
 - **Mirrored on the Arabic screen.** The owner decided, after seeing the first version on the TV, that the Arabic
   screen puts the dock on the left, the mirror image of English, as the Arabic header, strip and grid already are. The
   navigation functions take that as a flag (`rtl`), the margins and the name pill follow it, and the keys toward the dock

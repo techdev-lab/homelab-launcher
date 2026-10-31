@@ -1,6 +1,8 @@
 # Ramadan and prayer: batch 3 design note
 
-Status: implemented in the 2.10 line (Unreleased in `CHANGELOG.md`). Written before the code, as the other batches.
+[English](RAMADAN_PRAYER.md) · [العربية](RAMADAN_PRAYER.ar.md)
+
+Status: **implemented in 3.0.0**, tried on a Chromecast 4K. Written before the code, as the other batches.
 
 Three small features that belong together, because they all read the same two things: the Hijri date and today's
 prayer times. Nothing here needs the network, a permission or a sound. The offline build gets all three.
@@ -21,8 +23,8 @@ the family follows, and that moves the start of Ramadan with it.
 - It does not move prayer times by itself. Only the Ramadan flag follows the shifted date.
 - The calendar call stays on the device (ICU). The pure parts (range, which source wins) are unit tested on the JVM.
 
-This also makes the Ramadan card testable outside Ramadan: a shift cannot reach Ramadan from a distance of
-months, so the preview for the TV test is a separate throwaway build and is not part of the release.
+A shift cannot reach Ramadan from months away, so the Ramadan card is tried on the TV with a separate throwaway
+preview build (a forced Ramadan date and a shifted clock), which is never part of a release.
 
 ## 2. Prayer time alert (`prayer_alert_minutes`)
 

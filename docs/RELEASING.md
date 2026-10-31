@@ -1,5 +1,7 @@
 # Releasing
 
+[English](RELEASING.md) · [العربية](RELEASING.ar.md)
+
 Every release on the [Releases page](https://github.com/techdev-lab/homelab-launcher/releases) is built by the
 `Release APK` workflow (`.github/workflows/release.yml`) from a tag, not uploaded by hand. It runs the unit tests,
 builds both flavors, signs them with the project key, writes `SHA256SUMS.txt` and publishes the release with the
@@ -13,7 +15,11 @@ notes for that version from `CHANGELOG.md`.
 | `HomeLab-Launcher-<version>-offline.apk` | `offline`: no INTERNET permission at all |
 | `SHA256SUMS.txt` | SHA-256 of both APKs |
 
-Both keep `versionCode 4` (see `CHANGELOG.md`), so any release installs over another with `adb install -r`.
+Both keep `versionCode 4` (see `CHANGELOG.md`), so any release installs over another with `adb install -r`. A store
+needs the `versionCode` to rise with each release: see "Open decision for the release" in `docs/DISTRIBUTION.md`.
+
+The release page carries the notes in English and then in Arabic: the workflow takes the section of the version from
+`CHANGELOG.md` and from `CHANGELOG.ar.md`, so both files need a `## <version> (...)` heading before a tag.
 
 ## The signing key
 
@@ -52,7 +58,8 @@ with `adb install -r`, and the other way round.
 
 ## Making a release
 
-1. Bump `versionName` in `launcher/app/build.gradle` and add a `## <version> (<date>)` section to `CHANGELOG.md`.
+1. Bump `versionName` in `launcher/app/build.gradle` and add a `## <version> (<date>)` section to `CHANGELOG.md` and to
+   `CHANGELOG.ar.md`.
 2. Merge that to `main` through a pull request (the three checks must pass).
 3. Tag the merge commit and push the tag:
    ```bash

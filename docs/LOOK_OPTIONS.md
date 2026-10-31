@@ -1,6 +1,8 @@
 # Look options (design note)
 
-Status: **IMPLEMENTED in the unreleased build, waiting for the TV test.** Written before any code, as `docs/DESIGN.md` asks. It
+[English](LOOK_OPTIONS.md) · [العربية](LOOK_OPTIONS.ar.md)
+
+Status: **IMPLEMENTED in 3.0.0, tried on a Chromecast 4K.** Written before any code, as `docs/DESIGN.md` asks. It
 describes three small settings that let a viewer choose between today's look and a more "glass" look, on the TV, from Launcher
 settings. Decisions taken: option 3 is the glass clock (not the clock size), built last and to be dropped if the Arabic or
 English screenshots show any shift; the order is 1, 2, 3.

@@ -1,5 +1,7 @@
 # Remote and reliability options (design note, batch 2)
 
+[English](REMOTE_RELIABILITY.md) · [العربية](REMOTE_RELIABILITY.ar.md)
+
 Status: **IMPLEMENTED**, written before any code as `docs/DESIGN.md` asks. Three small changes found by reading the code and by
 the TV tests of 2.9 and the look options. Each keeps today's behaviour for anyone who changes nothing.
 
