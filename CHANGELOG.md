@@ -3,6 +3,7 @@
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
 ## Unreleased
+- **Digits and wallpaper dim** (Launcher settings): *Digits* draws every number on the home screen and the screensaver in Arabic-Indic digits on either language, and *Wallpaper dim* sets the veil over a wallpaper picture (15, 35, 55 or 75 percent; 35 is the veil of 2.9, so nothing changes until you pick). Also `"digits"` and `"wallpaper_dim"` in config.json; the TV's choice wins and a theme push does not clear it. Design note: `docs/LAYOUT_OPTIONS.md`.
 - **Store metadata and a corrected `SECURITY.md`**: `fastlane/metadata/android/en-US/` (title, short and full description, changelog, icon) so a store such as IzzyOnDroid can list the app; `SECURITY.md` no longer says releases use a debug key (they use the project key) and now shows the certificate fingerprint and how to check an APK. Design note: `docs/DISTRIBUTION.md`.
 - **Ramadan card**: only in Ramadan, one more card after the prayer card counts down to the iftar (Fajr to Maghrib) or to the end of suhoor (Maghrib to Fajr), with the day's two times and "Ramadan · day N". It needs the prayer place like the prayer card, has its own chip in the card row, and is gone after Maghrib on the last day. Suhoor ends at Fajr; use `prayer_adjust` if you want a margin.
 - **Prayer alert**: for 10 minutes (Off, 5, 10 or 15 in Launcher settings, or `"prayer_alert_minutes"`) after a prayer time the prayer card says "Asr time · Now" instead of counting down. Visual only: no sound, no permission.

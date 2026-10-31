@@ -42,6 +42,9 @@ public final class LauncherSettingsActivity extends Activity {
     private String prayerMethod;
     private int asrFactor;
     private int hijriShift, prayerAlertMinutes;
+    /** Layout options (docs/LAYOUT_OPTIONS.md): the digits and the veil over a wallpaper picture in percent. */
+    private String digits;
+    private int wallpaperDim;
     private TextView prayerMethodChoice;
     private float density;
 
@@ -50,7 +53,8 @@ public final class LauncherSettingsActivity extends Activity {
             colourViews = new ArrayList<>(), cardViews = new ArrayList<>(), motionViews = new ArrayList<>(),
             textSizeViews = new ArrayList<>(), asrViews = new ArrayList<>(), dockStyleViews = new ArrayList<>(),
             tileCornersViews = new ArrayList<>(), clockStyleViews = new ArrayList<>(),
-            hijriShiftViews = new ArrayList<>(), alertViews = new ArrayList<>();
+            hijriShiftViews = new ArrayList<>(), alertViews = new ArrayList<>(), digitsViews = new ArrayList<>(),
+            dimViews = new ArrayList<>();
 
     /** The chips for the prayer alert: minutes, 0 is off. Any other value in config.json still works, it just has no chip. */
     private static final int[] ALERT_CHOICES = {0, 5, 10, 15};
@@ -88,6 +92,8 @@ public final class LauncherSettingsActivity extends Activity {
         dockStyle = config.dockStyle;
         tileCorners = config.tileCorners;
         clockStyle = config.clockStyle;
+        digits = config.digits;
+        wallpaperDim = config.wallpaperDim;
         prayerMethod = s.prayerMethodKey;
         asrFactor = s.asrFactor;
 
@@ -208,6 +214,28 @@ public final class LauncherSettingsActivity extends Activity {
             }));
         }
         fill(R.id.clockStyleRow, clockStyleViews);
+
+        int[] digitNames = {R.string.digits_latin, R.string.digits_arabic};
+        for (int i = 0; i < DigitStyle.ALL.length; i++) {
+            final String style = DigitStyle.ALL[i];
+            digitsViews.add(chip(getString(digitNames[i]), v -> {
+                if (style.equals(digits)) return;
+                digits = style;
+                choices.edit().putString(Config.DIGITS_KEY, style).apply();
+                changed();
+            }));
+        }
+        fill(R.id.digitsRow, digitsViews);
+
+        for (int percent : WallpaperDim.CHOICES) {
+            dimViews.add(chip(getString(R.string.wallpaper_dim_percent, percent), v -> {
+                if (percent == wallpaperDim) return;
+                wallpaperDim = percent;
+                choices.edit().putInt(Config.WALLPAPER_DIM_KEY, percent).apply();
+                changed();
+            }));
+        }
+        fill(R.id.wallpaperDimRow, dimViews);
 
         prayerMethodChoice = findViewById(R.id.prayerMethodChoice);
         prayerMethodChoice.setOnClickListener(v -> choosePrayerMethod());
@@ -355,6 +383,8 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = 0; i < DockStyle.ALL.length; i++) dockStyleViews.get(i).setSelected(DockStyle.ALL[i].equals(dockStyle));
         for (int i = 0; i < TileShape.ALL.length; i++) tileCornersViews.get(i).setSelected(TileShape.ALL[i].equals(tileCorners));
         for (int i = 0; i < ClockStyle.ALL.length; i++) clockStyleViews.get(i).setSelected(ClockStyle.ALL[i].equals(clockStyle));
+        for (int i = 0; i < DigitStyle.ALL.length; i++) digitsViews.get(i).setSelected(DigitStyle.ALL[i].equals(digits));
+        for (int i = 0; i < WallpaperDim.CHOICES.length; i++) dimViews.get(i).setSelected(WallpaperDim.CHOICES[i] == wallpaperDim);
         for (int i = 0; i < ALERT_CHOICES.length; i++) alertViews.get(i).setSelected(ALERT_CHOICES[i] == prayerAlertMinutes);
         for (int i = 0; i < hijriShiftViews.size(); i++) hijriShiftViews.get(i).setSelected(HijriShift.MIN + i == hijriShift);
         asrViews.get(0).setSelected(asrFactor != Prayer.ASR_HANAFI);

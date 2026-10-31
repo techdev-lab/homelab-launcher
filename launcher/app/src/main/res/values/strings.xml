@@ -156,6 +156,13 @@
     <string name="clock_style_plain">Plain</string>
     <string name="clock_style_glass">Glass</string>
     <string name="clock_style_hint">Glass puts the time on a small glass capsule.</string>
+    <string name="digits_label">Digits</string>
+    <string name="digits_latin">Latin (0 1 2)</string>
+    <string name="digits_arabic">Arabic-Indic</string>
+    <string name="digits_hint">The numbers on the home screen and the screensaver: the clock, the dates, prayer times, scores and temperatures. On the English screen the clock is drawn in Outfit, which has no Arabic-Indic digits, so the font of the TV supplies them.</string>
+    <string name="wallpaper_dim_label">Wallpaper dim</string>
+    <string name="wallpaper_dim_percent">%1$d%%</string>
+    <string name="wallpaper_dim_hint">How dark the veil over a wallpaper picture is. 35% is the default. Lower shows more of the picture; higher is calmer. It has no effect with a plain colour.</string>
     <string name="prayer_method_unknown">Unknown prayer method: %1$s</string>
     <string name="prayer_method_label">Prayer times</string>
     <string name="prayer_method_choice">Method: %1$s</string>

@@ -43,6 +43,12 @@
 
         <TextView style="@style/SettingsHint" android:text="@string/wallpapers_hint" />
 
+        <TextView style="@style/SettingsHeading" android:text="@string/wallpaper_dim_label" />
+
+        <LinearLayout android:id="@+id/wallpaperDimRow" style="@style/SettingsChoiceRow" />
+
+        <TextView style="@style/SettingsHint" android:text="@string/wallpaper_dim_hint" />
+
         <TextView style="@style/SettingsHeading" android:text="@string/cards_label" />
 
         <LinearLayout android:id="@+id/cardsRow" style="@style/SettingsChoiceRow" />
@@ -72,6 +78,12 @@
         <LinearLayout android:id="@+id/clockStyleRow" style="@style/SettingsChoiceRow" />
 
         <TextView style="@style/SettingsHint" android:text="@string/clock_style_hint" />
+
+        <TextView style="@style/SettingsHeading" android:text="@string/digits_label" />
+
+        <LinearLayout android:id="@+id/digitsRow" style="@style/SettingsChoiceRow" />
+
+        <TextView style="@style/SettingsHint" android:text="@string/digits_hint" />
 
         <TextView style="@style/SettingsHeading" android:text="@string/prayer_method_label" />
 

@@ -170,6 +170,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private String textSize = StripSize.SMALL;
     /** Look options (DockStyle, TileShape, ClockStyle, docs/LOOK_OPTIONS.md): the defaults are the 2.9 look. */
     private String dockStyle = DockStyle.BAND, tileCorners = TileShape.NORMAL, clockStyle = ClockStyle.PLAIN;
+    /** Digits (DigitStyle) and the veil over a wallpaper picture in percent (WallpaperDim); the defaults are the 2.9 look. */
+    private String digits = DigitStyle.LATIN;
+    private int wallpaperDim = WallpaperDim.DEFAULT;
     private DockDecoration dockDecoration;
     /** Rebuild the tiles on resume: Home was fully hidden by an app, or Home was pressed. Not after a side panel such as Wi-Fi settings. */
     private boolean rebuildOnResume = true;
@@ -299,6 +302,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
         root = findViewById(R.id.root);
         root.setBackgroundColor(cfg.backgroundColor);
+        wallpaperDim = cfg.wallpaperDim;
         wallpapers = cfg.wallpapers;
         wallpaperMinutes = cfg.wallpaperMinutes;
         if (!wallpapers.isEmpty()) updateWallpaperRotation();
@@ -334,6 +338,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         tileCorners = cfg.tileCorners;
         clockStyle = cfg.clockStyle;
         if (ClockStyle.capsule(clockStyle)) glassClock();
+        digits = cfg.digits;
+        if (DigitStyle.arabic(digits)) {
+            // The header's numbers: the clock, the Gregorian and Hijri dates. The strip cards do the same in cardText.
+            for (int id : new int[]{R.id.clock, R.id.date, R.id.hijriDate, R.id.shamsiDate}) {
+                ((TextView) findViewById(id)).setTransformationMethod(DigitsTransformation.INSTANCE);
+            }
+        }
 
         grid = findViewById(R.id.grid);
         rtlAppGrid = getResources().getBoolean(R.bool.rtl_app_grid);
@@ -552,7 +563,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 root.addView(wallView, 0, full);
                 // A dark veil over any picture, so the clock and the cards keep their contrast on a bright one.
                 View scrim = new View(this);
-                scrim.setBackgroundColor(0x59000000);
+                scrim.setBackgroundColor(WallpaperDim.argb(wallpaperDim));
                 root.addView(scrim, 1, new FrameLayout.LayoutParams(
                         ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             }
@@ -1667,6 +1678,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             t.setSingleLine(true);
             t.setEllipsize(TextUtils.TruncateAt.END);
         }
+        // After setSingleLine: it installs its own transformation method and would replace this one.
+        if (DigitStyle.arabic(digits)) t.setTransformationMethod(DigitsTransformation.INSTANCE);
         return t;
     }
 
