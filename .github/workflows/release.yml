@@ -16,25 +16,33 @@ on:
         description: Tag to release (must exist, e.g. v2.7.0)
         required: true
 
-permissions:
-  contents: write
+permissions: {}
 
 jobs:
   release:
     name: Build, sign and publish
     runs-on: ubuntu-24.04
     timeout-minutes: 30
+    permissions:
+      contents: write   # creates the GitHub Release
     env:
       TAG: ${{ github.event.inputs.tag || github.ref_name }}
+      # SHA-256 of the project release certificate (public information). The job stops before publishing when an
+      # APK carries any other certificate. See docs/RELEASING.md.
+      EXPECTED_SIGNER_SHA256: 14849bdb3ed13523f75eede24e6b8cc36270d3a6f8f4bcb86f454311c616affe
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           ref: ${{ env.TAG }}
+          persist-credentials: false
       - uses: actions/setup-java@b843ebf9b913146b38da2eaa7aeddf76074ae1ad # v6.1.0
         with:
           distribution: temurin
           java-version: '17'
+      # No build cache in the job that signs and publishes: a poisoned cache entry would end up in a signed APK.
       - uses: gradle/actions/setup-gradle@3f5f9adaf7d9fecd50b5935e54106014257a94e6 # v6.4.0
+        with:
+          cache-disabled: true
       - name: Signing key
         env:
           KEYSTORE_B64: ${{ secrets.TVHOME_KEYSTORE_B64 }}
@@ -63,8 +71,18 @@ jobs:
           cd dist
           sha256sum *.apk > SHA256SUMS.txt
           cat SHA256SUMS.txt
-          signer="$(ls "$ANDROID_HOME"/build-tools | sort -V | tail -1)"
-          "$ANDROID_HOME/build-tools/$signer/apksigner" verify --print-certs "HomeLab-Launcher-$version.apk" | grep -i "SHA-256"
+          tool="$ANDROID_HOME/build-tools/$(ls "$ANDROID_HOME"/build-tools | sort -V | tail -1)/apksigner"
+          for apk in *.apk; do
+            certs="$("$tool" verify --print-certs "$apk")"
+            echo "$apk"
+            echo "$certs" | grep -i "SHA-256"
+            count="$(echo "$certs" | grep -c 'certificate SHA-256 digest:' || true)"
+            actual="$(echo "$certs" | sed -n 's/^Signer #[0-9]* certificate SHA-256 digest: \([0-9a-f]\{64\}\)$/\1/p')"
+            if [ "$count" != "1" ] || [ "$actual" != "$EXPECTED_SIGNER_SHA256" ]; then
+              echo "::error::$apk is not signed by exactly the project certificate (see docs/RELEASING.md)"
+              exit 1
+            fi
+          done
       - name: Release notes from CHANGELOG.md
         run: |
           version="${TAG#v}"

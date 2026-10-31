@@ -15,23 +15,40 @@ notes for that version from `CHANGELOG.md`.
 
 Both keep `versionCode 4` (see `CHANGELOG.md`), so any release installs over another with `adb install -r`.
 
-## One-time setup: the signing key
+## The signing key
 
-The workflow needs the project keystore as a repository secret. Without it the job stops on purpose: an APK signed
-with a throwaway key could never be updated by the next release.
+Every release is signed with one long-lived project key. Its certificate SHA-256 is
+`14849bdb3ed13523f75eede24e6b8cc36270d3a6f8f4bcb86f454311c616affe` (public information). `release.yml` and
+`scripts/Test-Release.ps1` both pin it, and the workflow stops before publishing when an APK carries any other
+certificate.
 
-1. On the maintainer's computer, turn the keystore into one line of base64 (PowerShell):
+The key was created by the Android tools on the maintainer's computer (`debug.keystore`), and the first TVs were
+installed with it. Android refuses an update signed by a different key unless the app is uninstalled first, which also
+removes `config.json` from the TV, so the project keeps this key. A debug keystore is unique to the computer that made
+it, but it is easy to lose and has a well-known default password, so treat it as a release key:
+
+- Keep the key in a project key file with its own strong password, outside the Android tools folder.
+  `keytool -importkeystore` copies the key and its certificate unchanged, so the digest above stays the same.
+- Keep two encrypted copies in different places. Check a copy with `keytool -list -v`: the SHA-256 must match.
+- If the key is lost, no installed TV can be updated without an uninstall. If it leaks, anyone can sign updates that
+  TVs accept.
+
+### One-time setup: the repository secrets
+
+The workflow needs the key as repository secrets. Without them the job stops on purpose: an APK signed with a
+throwaway key could never be updated by the next release.
+
+1. On the maintainer's computer, turn the key file into one line of base64 (PowerShell):
    ```powershell
-   [Convert]::ToBase64String([IO.File]::ReadAllBytes("$env:USERPROFILE\.android\debug.keystore")) | Set-Content -NoNewline keystore.b64
+   [Convert]::ToBase64String([IO.File]::ReadAllBytes("<path to the key file>")) | Set-Content -NoNewline keystore.b64
    ```
 2. GitHub: *Settings > Secrets and variables > Actions > New repository secret*. Name `TVHOME_KEYSTORE_B64`,
    value: the content of `keystore.b64`. Delete `keystore.b64` afterwards.
-3. Only if the keystore does not use the Android debug defaults, also add `TVHOME_KEYSTORE_PASSWORD`,
-   `TVHOME_KEY_ALIAS` and `TVHOME_KEY_PASSWORD`.
+3. Also add `TVHOME_KEYSTORE_PASSWORD`, `TVHOME_KEY_ALIAS` and `TVHOME_KEY_PASSWORD`. The defaults (`android` and
+   `androiddebugkey`) apply only when these are not set, which is the case for the original debug keystore.
 
-Using the same keystore as the maintainer's local builds means a TV that already runs a local build can take a
-release APK with `adb install -r`, and the other way round. A different key would need an uninstall first, which
-also removes `config.json` from the TV.
+Using the same key for the maintainer's local builds means a TV that already runs a local build can take a release APK
+with `adb install -r`, and the other way round.
 
 ## Making a release
 
@@ -52,6 +69,14 @@ To re-run for an existing tag: *Actions > Release APK > Run workflow*, and type 
 sha256sum -c SHA256SUMS.txt
 apksigner verify --print-certs HomeLab-Launcher-<version>.apk
 ```
+
+On Windows you can run both checks at once (needs the Android build-tools and Java):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/Test-Release.ps1 -Apk .\HomeLab-Launcher-<version>.apk
+```
+
+It prints `RESULT: OK` only when the file matches `SHA256SUMS.txt` and is signed with the project certificate.
 
 The workflow log prints the certificate's SHA-256 for every release, so you can compare it with the one on your
 download.
