@@ -2,7 +2,7 @@
 
 [English](INSTALL.md) · [العربية](INSTALL.ar.md)
 
-This is the exact order used on a Chromecast with Google TV 4K (Android 14). Read it once before you start.
+This is the exact order used on a Chromecast with Google TV 4K (Android 14) and, from zero, on a Xiaomi Mi TV (Android 11): see [Tested devices](TESTED_DEVICES.md). Read it once before you start.
 Every step that changes the TV can be undone, and the [rescue](#rescue) at the end works even if everything goes wrong.
 
 **Time:** about 30 minutes. **You need:** a computer on the same Wi-Fi as the TV, the TV remote, and your Wi-Fi password written down.

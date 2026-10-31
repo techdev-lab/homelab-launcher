@@ -29,7 +29,7 @@
 
 ## English
 
-Built and tested on a Chromecast with Google TV 4K (Android 14). No root. No account. Fully reversible.
+Built and tested on a Chromecast with Google TV 4K (Android 14) and a Xiaomi Mi TV (Android 11): [what was checked](docs/TESTED_DEVICES.md). No root. No account. Fully reversible.
 
 [How it was built](docs/JOURNEY.md) · [Use it with an AI assistant](docs/AI_ASSISTANT_PROMPTS.md)
 
@@ -58,6 +58,7 @@ The biggest release since the fork. Every new option defaults to the 2.9 look, s
 - **A dock at the side:** put your favourite apps in a column at the end of the reading side, on the **right** on the English screen and on the **left** on the Arabic one, with the other apps beside it. The bottom row of 2.9 is still the default.
 - **More looks, all on the TV:** floating-glass or flat dock, soft or normal corners, a glass clock, **Arabic-Indic digits** on either language, and how dark the wallpaper veil is.
 - **Hide apps** from the grid, **ignore a remote button** pressed by accident, and matches and weather that come back soon after a start with no network.
+- **A calmer settings screen, and a switch for TVs that stumble on held keys:** the Launcher settings are four glass sections with previews, and *Remote buttons* (On or Off) lets a TV where holding Volume changed the volume only one step per press repeat normally again.
 - **Arabic for everything on GitHub:** the install guide, configuration guide, security notes, changelog and release notes now come in Arabic too, and so does the store listing.
 
 ### 2.9
@@ -188,7 +189,7 @@ No analytics, no accounts, no crash reporting, no remote configuration. The full
 
 ### Status and limits
 
-- Tested on **Chromecast with Google TV 4K** (`sabrina`, Android 14). The HD model (`boreal`) should behave the same but was not tested. Other Android TV devices: the app runs, the Home switch steps differ.
+- Tested on **Chromecast with Google TV 4K** (`sabrina`, Android 14) and **Xiaomi Mi TV MOOR2** (Android 11), see [Tested devices](docs/TESTED_DEVICES.md). The HD model (`boreal`) should behave the same but was not tested. Other Android TV devices: the app runs, the Home switch steps differ.
 - Prayer times: **14 methods** (Umm al-Qura by default, Egyptian, Gulf, Dubai, Qatar, Kuwait, Jordan, Morocco, Algeria, Tunisia, Turkey, MWL, ISNA, Karachi) and standard or Hanafi Asr, picked on the TV or in the config, each tested against api.aladhan.com. A method can still differ by a few minutes from a printed national calendar; `prayer_adjust` shifts each time.
 - Football data comes from ESPN's public scoreboard (Saudi Pro League, the big European leagues, the AFC and CAF Champions Leagues, the Gulf Cup) and, for the **Egyptian, UAE, Qatari and Moroccan leagues**, from TheSportsDB's free API: next kick-off only, no live scores. Kuwait, Jordan, Tunisia and Algeria are still missing.
 - Arabic team names cover the Saudi league, the five big European leagues, the UEFA and AFC Champions League clubs (156 teams). Unknown teams show in English. Adding a league is a JSON edit: see [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -211,7 +212,7 @@ MIT License, see [LICENSE](LICENSE).
 
 <div dir="rtl">
 
-جُرّبت على Chromecast with Google TV 4K (أندرويد 14). بدون روت، وبدون حساب، وكل خطوة لها رجوع.
+جُرّبت على Chromecast with Google TV 4K (أندرويد 14) وعلى Xiaomi Mi TV (أندرويد 11): [وش انفحص](docs/TESTED_DEVICES.ar.md). بدون روت، وبدون حساب، وكل خطوة لها رجوع.
 
 [قصة المشروع](docs/JOURNEY.ar.md) · [أوامر جاهزة للذكاء الاصطناعي](docs/AI_ASSISTANT_PROMPTS.ar.md)
 
@@ -240,6 +241,7 @@ MIT License, see [LICENSE](LICENSE).
 - **رصيف على الجنب:** حط تطبيقاتك المفضلة في عمود في نهاية جهة القراءة، على **اليمين** في الشاشة الإنجليزية وعلى **اليسار** في العربية، وباقي التطبيقات بجانبه. والصف تحت (شكل 2.9) يبقى الافتراضي.
 - **أشكال أكثر، كلها من التلفزيون:** رصيف زجاجي عائم أو مسطح، وزوايا ناعمة أو عادية، وساعة زجاجية، و**أرقام عربية** بأي لغة، ودرجة تعتيم الخلفية.
 - **إخفاء التطبيقات** من الشبكة، و**تجاهل زر في الريموت** ينضغط بالغلط، ورجوع المباريات والطقس بسرعة بعد تشغيل بدون شبكة.
+- **شاشة إعدادات أهدى، ومفتاح لتلفزيونات تتعثر بالأزرار المضغوطة:** إعدادات المشغّل صارت أربعة أقسام زجاجية بمعاينات، و*أزرار الريموت* (تشغيل أو إيقاف) يخلّي تلفزيوناً كان الضغط المطوّل على الصوت فيه يغيّر خطوة واحدة فقط يتكرر عادي.
 - **العربي لكل شي في GitHub:** دليل التثبيت ودليل الإعدادات وملاحظات الأمان وسجل التغييرات وملاحظات الإصدار صارت بالعربي كذلك، وصفحة المتاجر بعد.
 
 ### 2.9
