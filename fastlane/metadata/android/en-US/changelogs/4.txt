@@ -1,0 +1,1 @@
+New: Ramadan card (iftar and suhoor countdown), prayer time alert, Hijri date adjustment, look options (floating dock, soft corners, glass clock), hide apps, ignore a remote key, and a faster retry when the network comes back. Full notes: CHANGELOG.md on GitHub.

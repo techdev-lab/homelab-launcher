@@ -12,7 +12,24 @@
 
 - Packages are only disabled (`pm disable-user`), never uninstalled. Every change has a written rollback.
 - Wireless debugging is needed during the install. **Turn it off when you are done**: anyone on your network who can pair could otherwise control the TV.
-- Release APKs built from this repository are signed with the builder's local debug key. Verify the SHA-256 of any APK you did not build yourself.
+- Release APKs are built and signed by GitHub Actions from the tagged source with the project key (see [docs/RELEASING.md](docs/RELEASING.md)). An APK you build yourself on your own computer is signed with your own debug key instead, so its fingerprint will differ. Verify any APK you did not build yourself, as below.
+
+## Checking an APK
+
+Every release publishes `SHA256SUMS.txt` next to the APKs. Check the file, then check who signed it:
+
+```
+sha256sum --ignore-missing -c SHA256SUMS.txt
+apksigner verify --print-certs HomeLab-Launcher-<version>.apk
+```
+
+The line `Signer #1 certificate SHA-256 digest` must be:
+
+```
+14849bdb3ed13523f75eede24e6b8cc36270d3a6f8f4bcb86f454311c616affe
+```
+
+This fingerprint is public. The release workflow and `scripts/Test-Release.ps1` both pin it, and the workflow stops before publishing an APK that carries any other certificate. The project signs every release with one long-lived key, so a different fingerprint on a file that claims to be a release means the file did not come from this project: do not install it, and open an issue or use the private reporting below. If the project ever has to change its key, the change will be announced in `CHANGELOG.md` and on the Releases page before any APK signed with the new key is published.
 
 ## Reporting a problem
 
