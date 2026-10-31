@@ -165,6 +165,7 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = 0; i < SECTIONS; i++) {
             LinearLayout section = new LinearLayout(this);
             section.setOrientation(LinearLayout.VERTICAL);
+            section.setClipChildren(false);   // the focused chip grows a little beyond its row
             sectionViews.add(section);
         }
         buildTabs();
@@ -605,8 +606,10 @@ public final class LauncherSettingsActivity extends Activity {
         LinearLayout line = new LinearLayout(this);
         line.setOrientation(LinearLayout.HORIZONTAL);
         line.setGravity(Gravity.CENTER_VERTICAL);
+        line.setClipChildren(false);
         LinearLayout box = new LinearLayout(this);
         box.setOrientation(LinearLayout.HORIZONTAL);
+        box.setClipChildren(false);
         box.setBaselineAligned(false);
         fill(box, chips, ViewGroup.LayoutParams.WRAP_CONTENT, CHIP_GAP_DP);
         LinearLayout.LayoutParams boxParams = new LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);

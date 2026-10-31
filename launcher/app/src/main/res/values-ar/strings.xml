@@ -199,8 +199,8 @@
     <string name="settings_section_motion_hint">مقدار حركة المشغّل.</string>
     <string name="language_hint">لغة المشغّل. «النظام» يتبع لغة التلفاز.</string>
     <string name="columns_hint">عدد التطبيقات في كل صف من شبكة التطبيقات.</string>
-    <string name="plain_colour_label">لون ساده</string>
-    <string name="plain_colour_hint">لون داكن ساده بدل صورة الخلفية.</string>
+    <string name="plain_colour_label">لون سادة</string>
+    <string name="plain_colour_hint">لون داكن سادة بدل صورة الخلفية.</string>
     <string name="asr_label">العصر</string>
     <string name="tv_settings_hint">يفتح إعدادات التلفاز نفسه.</string>
 </resources>
