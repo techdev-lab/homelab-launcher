@@ -92,6 +92,10 @@
     <string name="favorite_clubs_hint">اختر حتى %1$d أندية. تعرض الشاشة الرئيسية مباراتَي كل نادٍ القادمتين في أي بطولة (الدوري، الكأس، القارية)، مباراة كل %2$d ثوانٍ، بالترتيب الذي تختاره، وعليها نجمة ذهبية.</string>
     <string name="clubs_clear">مسح (استخدام أندية السمة)</string>
     <string name="clubs_limit">الحد %d أندية. احذف نادياً أولاً.</string>
+    <string name="hidden_apps_state">التطبيقات المخفية (%1$d)</string>
+    <string name="hidden_apps_hint">زر OK على التطبيق يخفيه أو يُظهره من جديد. التطبيق المخفي يبقى مثبّتاً ويفتح من أي مكان آخر.</string>
+    <string name="hidden_apps_reset">استخدام قائمة السمة</string>
+    <string name="hidden_apps_row_hidden">%1$s · مخفي</string>
     <string name="wallpapers_label">الخلفيات</string>
     <string name="wallpapers_homelab">هوم لاب</string>
     <string name="wallpapers_serene">سكينة</string>

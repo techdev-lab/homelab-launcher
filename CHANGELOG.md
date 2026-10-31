@@ -3,6 +3,9 @@
 All builds keep `versionCode 4` so any of them can replace another with `adb install -r`.
 
 ## Unreleased
+- **Hide apps on the TV** (Launcher settings > Hidden apps): OK on an app hides it or shows it again; a hidden app stays installed and opens from anywhere else. It wins over the theme's `hidden_apps` and a theme push does not clear it; "Use the theme's list" goes back. The launcher itself cannot be hidden.
+- **A remote button can be ignored**: `"app_keys": {"190": "ignore"}` swallows a button pressed by accident. Home, Back, the arrows, OK and Power can never be mapped, so a bad config cannot lock you out.
+- **Matches and weather come back soon after a start with no network**: while no card has data the next fetch comes after 1, 2, 4 and 8 minutes (instead of 15), and a network that comes back starts one fetch after 3 seconds. With data nothing changes.
 - **Look options** (Launcher settings): *Dock style* (the flat band, or floating glass that takes the colour of the focused app), *Tile corners* (normal or soft; the highlight and the dock plate follow) and *Clock style* (plain, or the time on a glass capsule). Every default is the 2.9 look, so an upgrade changes nothing until you pick. Also `"dock_style"`, `"tile_corners"` and `"clock_style"` in config.json; the TV's choice wins and a theme push does not clear it. The ideas came from the public description of tvOS Launcher (see NOTICE.md); no code or image was copied.
 
 ## 2.9.0 (2026-10-28)

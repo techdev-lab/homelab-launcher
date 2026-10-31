@@ -27,7 +27,8 @@ public final class LauncherSettingsActivity extends Activity {
     private final TextView[] columnChoices = new TextView[4];
     private TextView followThemeChoice;
     private TextView clubsChoice;
-    private static final int CLUBS_REQUEST = 1;
+    private TextView hiddenAppsChoice;
+    private static final int CLUBS_REQUEST = 1, HIDDEN_APPS_REQUEST = 2;
     private int columns;
     private boolean animations;
     private boolean advancedEffects;
@@ -228,6 +229,9 @@ public final class LauncherSettingsActivity extends Activity {
         clubsChoice.setVisibility(Feeds.AVAILABLE ? android.view.View.VISIBLE : android.view.View.GONE);
         clubsChoice.setOnClickListener(v ->
                 startActivityForResult(new Intent(this, ClubsActivity.class), CLUBS_REQUEST));
+        hiddenAppsChoice = findViewById(R.id.hiddenAppsChoice);
+        hiddenAppsChoice.setOnClickListener(v ->
+                startActivityForResult(new Intent(this, HiddenAppsActivity.class), HIDDEN_APPS_REQUEST));
         followThemeChoice = findViewById(R.id.followThemeChoice);
         followThemeChoice.setOnClickListener(v -> {
             if (!hasOnTvChoices()) return;
@@ -254,7 +258,7 @@ public final class LauncherSettingsActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == CLUBS_REQUEST && resultCode == RESULT_OK) changed();
+        if ((requestCode == CLUBS_REQUEST || requestCode == HIDDEN_APPS_REQUEST) && resultCode == RESULT_OK) changed();
     }
 
     /**
@@ -328,8 +332,10 @@ public final class LauncherSettingsActivity extends Activity {
                 m >= 0 ? getResources().getStringArray(R.array.prayer_method_names)[m] : prayerMethod));
         for (int i = 0; i < MOTIONS.length; i++) motionViews.get(i).setSelected(MOTIONS[i].equals(motion()));
         followThemeChoice.setSelected(!hasOnTvChoices());
+        Config now = Config.load(this);
         clubsChoice.setText(getString(R.string.favorite_clubs_state,
-                Config.load(this).interests.favoriteTeams.size(), Interests.MAX_CLUBS));
+                now.interests.favoriteTeams.size(), Interests.MAX_CLUBS));
+        hiddenAppsChoice.setText(getString(R.string.hidden_apps_state, now.hiddenApps.size()));
     }
 
     /** The list of methods in Prayer.METHODS order; OK on one saves it and closes the list. */

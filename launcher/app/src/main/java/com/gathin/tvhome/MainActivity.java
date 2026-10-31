@@ -182,6 +182,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         @Override
         public void onAvailable(@NonNull Network network) {
             handler.post(MainActivity.this::updateWifiLabel);
+            handler.post(MainActivity.this::feedNetworkBack);
         }
 
         @Override
@@ -245,19 +246,26 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     };
     /** Online build: matches, news and weather every 15 minutes, only while Home is on screen. */
     private static final long FEED_MS = 15 * MINUTE_MS;
-    /** When the last fetch started; returning to Home again and again must not fetch each time. */
-    private long lastFeedMs;
+    /**
+     * When the last fetch started and when the next one is due; returning to Home again and again must not fetch each
+     * time. While no card has data the next fetch is due sooner (FeedRetry).
+     */
+    private long lastFeedMs, feedDueMs;
+    /** Result of the last fetch, written by the fetch thread: does any card have data, and empty fetches in a row. */
+    private volatile boolean feedHadData;
+    private volatile int feedFailures;
+    /** True while Home is on screen: only then does a returning network start a fetch. */
+    private boolean feedActive;
     private final Runnable feedTick = new Runnable() {
         @Override
         public void run() {
             long now = System.currentTimeMillis();
-            long wait = lastFeedMs + FEED_MS - now;
-            if (lastFeedMs == 0 || wait <= 0) {
+            if (feedDueMs == 0 || now >= feedDueMs) {
                 lastFeedMs = now;
+                feedDueMs = now + FEED_MS;   // replaced by FeedRetry.waitMs when the fetch ends
                 fetchFeeds();
-                wait = FEED_MS;
             }
-            handler.postDelayed(this, wait);
+            handler.postDelayed(this, Math.max(1000L, feedDueMs - now));
         }
     };
 
@@ -611,6 +619,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         sky.update();
         updateWallpaperRotation();
         handler.postDelayed(minuteTick, MINUTE_MS);
+        feedActive = true;
         if (Feeds.AVAILABLE && (interestsCfg.wantsMatches() || interestsCfg.wantsNews()
                 || interestsCfg.wantsWeather() || interestsCfg.wantsClubs())) handler.post(feedTick);
         if (interestsCfg.wantsClubs()) handler.postDelayed(clubTick, interestsCfg.clubRotateSeconds * 1000L);
@@ -688,6 +697,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         heroName.animate().cancel();
         ambient.animate().cancel();
         handler.removeCallbacks(minuteTick);
+        feedActive = false;
         handler.removeCallbacks(feedTick);
         handler.removeCallbacks(clubTick);
         handler.removeCallbacks(stripTick);
@@ -977,6 +987,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         String pkg = appKeys.get(keyCode);
+        if (AppKeys.isIgnore(pkg)) return true;   // "ignore": the button does nothing
         if (pkg != null) {
             if (event.getRepeatCount() == 0) {
                 Intent i = getPackageManager().getLeanbackLaunchIntentForPackage(pkg);
@@ -1151,11 +1162,35 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 }
                 clubMatches = Feeds.refreshLive(c, now);
             }
+            // Did any card get data? If not (no network yet at boot), the next fetch comes sooner (FeedRetry).
+            boolean have = !m.isEmpty() || !h.isEmpty() || w != null || !clubMatches.isEmpty();
+            feedFailures = have ? 0 : Math.min(feedFailures + 1, 100);
+            feedHadData = have;
             matches = m;
             headlines = h;
             weather = w;
             handler.post(this::updateInterests);
+            handler.post(this::scheduleNextFeed);
         });
+    }
+
+    /** After a fetch: the next one is due after the normal wait, or sooner while there is nothing to show. */
+    private void scheduleNextFeed() {
+        feedDueMs = lastFeedMs + FeedRetry.waitMs(feedHadData, feedFailures, FEED_MS);
+        if (!feedActive) return;
+        handler.removeCallbacks(feedTick);
+        handler.postDelayed(feedTick, Math.max(1000L, feedDueMs - System.currentTimeMillis()));
+    }
+
+    /** A network came back: if nothing could be fetched so far, try again soon (FeedRetry). */
+    private void feedNetworkBack() {
+        boolean wanted = Feeds.AVAILABLE && (interestsCfg.wantsMatches() || interestsCfg.wantsNews()
+                || interestsCfg.wantsWeather() || interestsCfg.wantsClubs());
+        long now = System.currentTimeMillis();
+        if (!feedActive || !FeedRetry.refetchOnNetwork(wanted, feedHadData, lastFeedMs, now)) return;
+        feedDueMs = now + FeedRetry.NETWORK_DELAY_MS;
+        handler.removeCallbacks(feedTick);
+        handler.postDelayed(feedTick, FeedRetry.NETWORK_DELAY_MS);
     }
 
     /**

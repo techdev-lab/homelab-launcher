@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -47,6 +48,8 @@ final class Config {
     static final String TEXT_SIZE_KEY = "text_size";
     /** Look options picked on the TV (DockStyle, TileShape, ClockStyle): kept across theme pushes, like the text size. */
     static final String DOCK_STYLE_KEY = "dock_style", TILE_CORNERS_KEY = "tile_corners", CLOCK_STYLE_KEY = "clock_style";
+    /** Apps hidden on the TV, a comma list (HiddenApps); wins over the theme's "hidden_apps", kept across theme pushes. */
+    static final String HIDDEN_APPS_KEY = "hidden_apps";
     /** Prayer method and Asr convention picked on the TV (Prayer.METHODS keys, "standard"/"hanafi"); win over config. */
     static final String PRAYER_METHOD_KEY = "prayer_method", ASR_KEY = "asr_method";
     /** The six names "prayer_adjust" takes, in Prayer's order. */
@@ -232,7 +235,10 @@ final class Config {
         Festival festival = json == null ? Festival.NONE : Festival.parse(string(json, "festival", ""),
                 string(json, "festival_until", ""), string(json, "greeting", ""), string(json, "accent_color", ""));
 
-        return new Config(dock, fillDock, hidden, liveTv, liveTvAction, panelService, panelAction, inputAction,
+        // Apps hidden on the TV (HiddenAppsActivity) win over the theme's list, like the clubs; no choice: the theme's list.
+        List<String> hiddenNow = HiddenApps.effective(
+                choices.contains(HIDDEN_APPS_KEY) ? choices.getString(HIDDEN_APPS_KEY, "") : null, hidden);
+        return new Config(dock, fillDock, hiddenNow, liveTv, liveTvAction, panelService, panelAction, inputAction,
                 Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
                 shamsi, reducedMotion, vpn, homeSettings, background,
                 Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, wallpaper, applied,
@@ -243,27 +249,20 @@ final class Config {
                 ClockStyle.pick(choices.getString(CLOCK_STYLE_KEY, ""), json == null ? "" : string(json, "clock_style", "")));
     }
 
-    /** Default: the YouTube button. A theme's "app_keys" object replaces the whole map ({} turns it off). */
+    /**
+     * Default: the YouTube button. A theme's "app_keys" object replaces the whole map ({} turns it off). A key can also
+     * be mapped to "ignore" (swallowed); the rules, and the keys that can never be mapped, are in {@link AppKeys}.
+     */
     private static Map<Integer, String> appKeys(JSONObject json) {
-        Map<Integer, String> keys = new HashMap<>();
-        keys.put(190, "com.google.android.youtube.tv");
         Object v = json == null ? null : json.opt("app_keys");
-        if (!(v instanceof JSONObject)) return keys;
+        if (!(v instanceof JSONObject)) return AppKeys.parse(null);
         JSONObject o = (JSONObject) v;
-        Map<Integer, String> out = new HashMap<>();
+        Map<String, Object> raw = new LinkedHashMap<>();
         for (Iterator<String> it = o.keys(); it.hasNext(); ) {
             String k = it.next();
-            Object pkg = o.opt(k);
-            try {
-                int code = Integer.parseInt(k.trim());
-                if (code > 0 && pkg instanceof String && ((String) pkg).matches("[A-Za-z0-9_.]{3,150}")) {
-                    out.put(code, (String) pkg);
-                }
-            } catch (NumberFormatException ignored) {
-                // not a keycode: skip this entry
-            }
+            raw.put(k, o.opt(k));
         }
-        return out;
+        return AppKeys.parse(raw);
     }
 
     /** The interests keys; absent or bad values switch that part off. Nothing here fetches anything. */

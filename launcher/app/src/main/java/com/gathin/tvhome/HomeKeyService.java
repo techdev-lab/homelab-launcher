@@ -61,6 +61,7 @@ public class HomeKeyService extends AccessibilityService {
             return true;
         }
         String app = appKeys.get(event.getKeyCode());
+        if (AppKeys.isIgnore(app)) return true;   // "ignore": swallow the button, down and up, in every app
         if (app != null) {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
                 Intent open = getPackageManager().getLeanbackLaunchIntentForPackage(app);

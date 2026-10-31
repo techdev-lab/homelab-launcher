@@ -89,6 +89,11 @@
             style="@style/SettingsRow"
             android:layout_marginTop="12dp" />
 
+        <TextView
+            android:id="@+id/hiddenAppsChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="12dp" />
+
         <TextView style="@style/SettingsHeading" android:text="@string/motion_label" />
 
         <LinearLayout android:id="@+id/motionRow" style="@style/SettingsChoiceRow" />
