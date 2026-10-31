@@ -150,6 +150,9 @@ rm -f /data/local/tmp/tvhome-deadman.sh
 "@ -replace "`r`n", "`n"
 $tmp = Join-Path $env:TEMP "tvhome-deadman-$stamp.sh"
 [IO.File]::WriteAllText($tmp, $dm, (New-Object Text.UTF8Encoding $false))
+# A timer left by an earlier run (a failed run retried within the timer) must not fire later and undo this run:
+# it checks the cancel file, which the line below removes.
+sh 'ps -A -o PID,ARGS | grep tvhome-deadman.sh | grep -v grep | while read p rest; do kill $p; done' | Out-Null
 sh 'rm -f /data/local/tmp/tvhome-deadman.cancel /data/local/tmp/tvhome-deadman.fired' | Out-Null
 & $adb -s $env:AL_TV push $tmp /data/local/tmp/tvhome-deadman.sh | Out-Null
 & $adb -s $env:AL_TV shell 'nohup sh /data/local/tmp/tvhome-deadman.sh >/dev/null 2>&1 &' | Out-Null
