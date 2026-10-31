@@ -98,6 +98,15 @@ final class SettingsNav {
         return sideways(at, forward);
     }
 
+    /**
+     * True when {@code dir} at {@code from} leaves a row for another section. The Activity asks for a second press before it
+     * lets such a key through; the tabs, the footer and every move inside a section never need one.
+     */
+    boolean crossesSection(Spot from, int dir) {
+        Spot at = clamp(from);
+        return at.row >= 0 && move(at, dir).section != at.section;
+    }
+
     private Spot up(Spot at) {
         if (at.row == TABS) return at;
         if (at.row == FOOTER) {
