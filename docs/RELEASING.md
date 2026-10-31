@@ -53,5 +53,13 @@ sha256sum -c SHA256SUMS.txt
 apksigner verify --print-certs HomeLab-Launcher-<version>.apk
 ```
 
+On Windows you can run both checks at once (needs the Android build-tools and Java):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/Test-Release.ps1 -Apk .\HomeLab-Launcher-<version>.apk
+```
+
+It prints `RESULT: OK` only when the file matches `SHA256SUMS.txt` and is signed with the project certificate.
+
 The workflow log prints the certificate's SHA-256 for every release, so you can compare it with the one on your
 download.
