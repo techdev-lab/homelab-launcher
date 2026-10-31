@@ -124,6 +124,10 @@
     <string name="motion_lively">حيوية</string>
     <string name="motion_off">بدون</string>
     <string name="motion_hint">هادئة: تلاشي ناعم. حيوية: البطاقات ترتفع والأيقونات تكبر، وتستهلك ذاكرة أكثر. بدون: بلا حركة، الأفضل للتلفزيونات البطيئة.</string>
+    <string name="key_filter_label">أزرار الريموت</string>
+    <string name="key_filter_on">تشغيل</string>
+    <string name="key_filter_off">إيقاف</string>
+    <string name="key_filter_hint">تشغيل: يشتغل زر يوتيوب وأزرار التطبيقات وزر الإعدادات. إيقاف: تتوقف، وكل زر يوصل التلفزيون بلا تدخّل؛ اختر إيقاف لو الضغط المطوّل على الصوت ما يغيّره إلا خطوة وحدة في تلفزيونك.</string>
     <string-array name="plain_colour_names">
         <item>أسود</item>
         <item>كحلي</item>
@@ -196,7 +200,7 @@
     <string name="settings_section_look_hint">شكل المشغّل: اللغة والخلفية والألوان والأرقام والساعة.</string>
     <string name="settings_section_dock_hint">مكان تطبيقاتك وبطاقاتك وحجمها.</string>
     <string name="settings_section_prayer_hint">كيف تُحسب أوقات الصلاة وتُعرض، والتاريخ الهجري.</string>
-    <string name="settings_section_motion_hint">مقدار حركة المشغّل.</string>
+    <string name="settings_section_motion_hint">مقدار حركة المشغّل، وأزرار الريموت.</string>
     <string name="language_hint">لغة المشغّل. «النظام» يتبع لغة التلفاز.</string>
     <string name="columns_hint">عدد التطبيقات في كل صف من شبكة التطبيقات.</string>
     <string name="plain_colour_label">لون سادة</string>

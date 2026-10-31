@@ -114,7 +114,7 @@ adb shell settings put secure accessibility_enabled 1
 adb shell settings put secure screensaver_components com.gathin.tvhome/.ClockDream
 ```
 
-**Caution: held keys.** Android's key filtering can stop a held key from repeating on some TVs. On a Xiaomi Mi TV (MOOR2, Android 11) holding Volume up changed the volume by one step per press while this service was on, and repeated normally with it off. If you see that, turn the service off (the YouTube button and any `app_keys` or Settings button then stop working; test the remote's Home button too, because on remotes whose Home key sends `KEYCODE_ALL_APPS` this service is what delivers it):
+**Caution: held keys.** Android's key filtering can stop a held key from repeating on some TVs. On a Xiaomi Mi TV (MOOR2, Android 11) holding Volume up changed the volume by one step per press while this service was filtering, and repeated normally without it. If you see that, switch the filtering off and keep the service: **Launcher settings > Motion > Remote buttons > Off**, or `"key_filter": "off"` in `config.json`. The service stays enabled but filters nothing, so every key reaches the TV untouched, and the YouTube button, any `app_keys` or Settings button and a Home that sends `KEYCODE_ALL_APPS` stop working (test the remote's Home button too). Switching back to *On* restores them at once. Details: [KEY_FILTER.md](KEY_FILTER.md). Turning the service off in Android's settings has the same effect on the volume, and the same cost, but you do it with the two commands below:
 
 ```bash
 adb shell settings delete secure enabled_accessibility_services

@@ -131,6 +131,10 @@
     <string name="motion_lively">Lively</string>
     <string name="motion_off">Off</string>
     <string name="motion_hint">Calm: soft fades. Lively: tiles lift and icons zoom, which uses more memory. Off: no animation, best on slow TVs.</string>
+    <string name="key_filter_label">Remote buttons</string>
+    <string name="key_filter_on">On</string>
+    <string name="key_filter_off">Off</string>
+    <string name="key_filter_hint">On: the YouTube button, app buttons and the Settings button work. Off: they stop, so every key reaches the TV untouched; choose Off if holding Volume only steps once on your TV.</string>
     <string-array name="plain_colour_names" translatable="false">
         <item>Black</item>
         <item>Navy</item>
@@ -203,7 +207,7 @@
     <string name="settings_section_look_hint">How the launcher looks: language, wallpaper, colours, digits and the clock.</string>
     <string name="settings_section_dock_hint">Where your apps and cards are and how big they are.</string>
     <string name="settings_section_prayer_hint">How prayer times are computed and shown, and the Hijri date.</string>
-    <string name="settings_section_motion_hint">How much the launcher moves.</string>
+    <string name="settings_section_motion_hint">How much the launcher moves, and the buttons of the remote.</string>
     <string name="language_hint">The language of the launcher. System follows the TV.</string>
     <string name="columns_hint">How many apps sit in a row of the app grid.</string>
     <string name="plain_colour_label">Plain colour</string>
