@@ -83,6 +83,22 @@ Rules that make it safe, each with a test that fails without it:
 - **Every position reaches the strip and the footer by Up and Down presses alone**, and the strip reaches every section
   by one horizontal key per section. A test walks all positions and checks it, as `SideNavTest` does for the dock.
 
+### Polish after the first TV test (2026-10-31)
+
+Three cosmetic findings from the first test on the TV, fixed without changing what the model answers:
+
+1. **Crossing a section needs a second press.** The model still answers the same (the end of a row goes to the next
+   section), but the Activity asks `SettingsNav.crossesSection` first: a Left or Right that would cross from a row to
+   another section only arms on the first press, shows "Press again to open <section>" in the explanation line, and
+   crosses on a second press of the same key within 1.5 seconds (`EdgeBump`, pure Java, tested). A key held down never
+   crosses, and any other key disarms it. The section tabs stay the fast way across. Moves inside a row, Up, Down and the
+   tabs are unchanged.
+2. **The focus ring is never clipped.** The focused chip grows by at most about 5 dp whatever its width (a wide one-chip row
+   used to grow 4% of its width and hit the card edge), and the scroll area is wider than the content by 8 dp on each side.
+3. **Long sections scroll by whole rows.** The scroll area shows whole rows only (`RowWindow`, pure Java, tested): the
+   focused row decides the first row shown, no row is cut at the top or bottom, and a small arrow under the card says
+   there are more rows below (or, at the end, above). Focus moves exactly as before; only where the rows sit changes.
+
 The Activity feeds the model the chips that are actually visible (the offline build has no clubs and no weather or
 football cards) and moves focus itself. If the model has no view for a position, the key falls through to Android's own
 focus search, so the old behaviour is the fallback and the screen cannot be locked. Back is not touched: it closes the
@@ -131,6 +147,6 @@ The same four on the Arabic screen (the tabs, rows and the dock sketch are mirro
 
 ## Test plan
 
-JVM, written first and shown failing: `SettingsNavTest` (every rule above), `DockSketchTest` (bottom and side, mirrored
+JVM, written first and shown failing: `SettingsNavTest` (every rule above, and `crossesSection`), `EdgeBumpTest`, `RowWindowTest`, `DockSketchTest` (bottom and side, mirrored
 in Arabic, cells inside the frame and not overlapping), the new strings in `ResourcesTest`. Then lint and both flavors.
 On the TV: the eight combinations, remote only, and every chip still saves what it did.

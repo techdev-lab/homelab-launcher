@@ -303,6 +303,53 @@ public class SettingsNavTest {
         assertFalse(all(english()).isEmpty());
     }
 
+    // ---- which keys cross a section (the Activity asks for a second press) ----------------------
+
+    @Test
+    public void onlyAHorizontalKeyAtTheEdgeOfARowCrossesASection() {
+        SettingsNav nav = english();
+        assertTrue("end of a row", nav.crossesSection(at(0, 1, 2), SettingsNav.RIGHT));
+        assertTrue("start of a row", nav.crossesSection(at(1, 1, 0), SettingsNav.LEFT));
+        assertFalse("inside a row", nav.crossesSection(at(0, 1, 1), SettingsNav.RIGHT));
+        assertFalse("inside a row, left", nav.crossesSection(at(0, 2, 3), SettingsNav.LEFT));
+        assertFalse("vertical keys never cross", nav.crossesSection(at(0, 1, 2), SettingsNav.DOWN));
+        assertFalse(nav.crossesSection(at(0, 0, 0), SettingsNav.UP));
+        assertFalse("the outer edges stay and cross nothing", nav.crossesSection(at(0, 2, 0), SettingsNav.LEFT));
+        assertFalse(nav.crossesSection(at(3, 0, 2), SettingsNav.RIGHT));
+    }
+
+    @Test
+    public void aOneChipRowCrossesInBothDirections() {
+        SettingsNav nav = english();
+        assertTrue(nav.crossesSection(at(2, 0, 0), SettingsNav.RIGHT));
+        assertTrue(nav.crossesSection(at(2, 0, 0), SettingsNav.LEFT));
+    }
+
+    @Test
+    public void theTabStripAndTheFooterNeverNeedASecondPress() {
+        SettingsNav nav = english();
+        assertFalse(nav.crossesSection(SettingsNav.tab(1), SettingsNav.RIGHT));
+        assertFalse(nav.crossesSection(SettingsNav.tab(1), SettingsNav.LEFT));
+        assertFalse(nav.crossesSection(new SettingsNav.Spot(1, SettingsNav.FOOTER, 2), SettingsNav.RIGHT));
+        assertFalse(nav.crossesSection(new SettingsNav.Spot(1, SettingsNav.FOOTER, 0), SettingsNav.LEFT));
+    }
+
+    @Test
+    public void onTheMirroredScreenTheCrossingKeysSwap() {
+        SettingsNav ar = arabic();
+        assertTrue("left at the end of a row", ar.crossesSection(at(0, 1, 2), SettingsNav.LEFT));
+        assertFalse("right at the end of a row goes back inside", ar.crossesSection(at(0, 1, 2), SettingsNav.RIGHT));
+        assertTrue("right at the start of a row", ar.crossesSection(at(1, 1, 0), SettingsNav.RIGHT));
+        assertFalse("left in the last section stays", ar.crossesSection(at(3, 0, 2), SettingsNav.LEFT));
+    }
+
+    @Test
+    public void crossingIntoAnEmptySectionCountsAndAStalePositionDoesNotThrow() {
+        SettingsNav nav = new SettingsNav(new int[][]{{2}, {}, {2}}, 2, false);
+        assertTrue(nav.crossesSection(at(0, 0, 1), SettingsNav.RIGHT));
+        assertFalse(nav.crossesSection(at(40, 40, 40), SettingsNav.RIGHT));   // clamped to the last chip of the last section
+    }
+
     private static Set<SettingsNav.Spot> all(SettingsNav nav) {
         Set<SettingsNav.Spot> out = new HashSet<>();
         for (int s = 0; s < ROWS.length; s++) {

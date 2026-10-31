@@ -203,4 +203,5 @@
     <string name="plain_colour_hint">لون داكن سادة بدل صورة الخلفية.</string>
     <string name="asr_label">العصر</string>
     <string name="tv_settings_hint">يفتح إعدادات التلفاز نفسه.</string>
+    <string name="settings_press_again">اضغط مرة ثانية للانتقال إلى «%1$s»</string>
 </resources>

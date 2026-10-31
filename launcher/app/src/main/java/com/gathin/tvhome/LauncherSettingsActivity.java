@@ -1,5 +1,6 @@
 package com.gathin.tvhome;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.LocaleManager;
@@ -17,6 +18,7 @@ import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.LocaleList;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -44,6 +46,8 @@ import java.util.Map;
  * showing at a time, a strip of section tabs, one explanation line that follows focus and a footer of system buttons
  * (docs/SETTINGS_GLASS.md). Arrow keys are decided by {@link SettingsNav}; every chip saves what it always saved.
  */
+// The supportsRtl flag is off, so the screen mirrors itself by hand for Arabic and Hebrew (the rtl field): the gravities are explicit.
+@SuppressLint("RtlHardcoded")
 public final class LauncherSettingsActivity extends Activity {
     private SharedPreferences choices;
     private TextView followThemeChoice;
@@ -89,6 +93,9 @@ public final class LauncherSettingsActivity extends Activity {
     private static final int LOOK = 0, DOCK = 1, PRAYER = 2, MOTION = 3, SECTIONS = 4;
     private static final int LABEL_DP = 150, CHIP_GAP_DP = 10, ROW_GAP_DP = 10;
     private static final int THUMB_W_DP = 112, THUMB_H_DP = 63;
+    /** Room above and below the whole rows of a scrolling section, and how far a focused chip may grow past its row. */
+    private static final int ROW_MARGIN_DP = 4, GROW_DP = 5;
+    private static final long BUMP_WINDOW_MS = 1500;
 
     /** A row of a section: its chips (some may be hidden in this build), the hint that follows focus, its container. */
     private static final class Row {
@@ -118,6 +125,13 @@ public final class LauncherSettingsActivity extends Activity {
     private int activeSection = -1;
     private boolean switching;
     private ScrollView sectionScroll;
+    private ImageView moreMark;
+    /** The first row of the visible section that is on screen; the sections scroll by whole rows (RowWindow). */
+    private int topRow;
+    private final EdgeBump bump = new EdgeBump(BUMP_WINDOW_MS);
+    private final List<String> sectionTitles = new ArrayList<>();
+    /** Puts the explanation of the focused view back after "press again" has shown for a moment. */
+    private final Runnable restoreHint = this::putHintBack;
     private FrameLayout sectionHost;
     private TextView explainLine;
 
@@ -158,10 +172,15 @@ public final class LauncherSettingsActivity extends Activity {
         asrFactor = s.asrFactor;
 
         sectionScroll = findViewById(R.id.sectionScroll);
+        moreMark = findViewById(R.id.moreMark);
         explainLine = findViewById(R.id.explainLine);
         explainLine.setGravity((rtl ? Gravity.RIGHT : Gravity.LEFT) | Gravity.TOP);
         ((TextView) findViewById(R.id.settingsTitle)).setGravity((rtl ? Gravity.RIGHT : Gravity.LEFT) | Gravity.CENTER_VERTICAL);
         sectionHost = findViewById(R.id.sectionHost);
+        // Room for the rows to be scrolled to the top whatever is below them (the scroll is set by alignRows, not by focus).
+        sectionHost.setPadding(dp(8), dp(ROW_MARGIN_DP), dp(8), getResources().getDisplayMetrics().heightPixels);
+        sectionHost.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> alignRows(getCurrentFocus()));
+        sectionScroll.addOnLayoutChangeListener((v, l, t, r, b, ol, ot, or, ob) -> alignRows(getCurrentFocus()));
         for (int i = 0; i < SECTIONS; i++) {
             LinearLayout section = new LinearLayout(this);
             section.setOrientation(LinearLayout.VERTICAL);
@@ -220,6 +239,7 @@ public final class LauncherSettingsActivity extends Activity {
             tab.setOnKeyListener(keys);
             tabs.add(tab);
             sectionHints.add(getString(hintTexts[i]));
+            sectionTitles.add(getString(titles[i]));
         }
         LinearLayout strip = findViewById(R.id.tabStrip);
         fill(strip, tabs, ViewGroup.LayoutParams.WRAP_CONTENT, 8);
@@ -530,9 +550,22 @@ public final class LauncherSettingsActivity extends Activity {
         if (from == null) return false;
         if (event.getAction() != KeyEvent.ACTION_DOWN) return true;
         SettingsNav.Spot to = nav.move(from, dir);
-        if (to.equals(nav.clamp(from))) return true;   // an edge: stay, never wrap
-        // Holding a key must not run across the sections; it takes a new press to cross from one section's row to another's.
-        if (event.getRepeatCount() > 0 && from.row >= 0 && to.row >= 0 && to.section != from.section) return true;
+        if (to.equals(nav.clamp(from))) {   // an edge: stay, never wrap
+            bump.reset();
+            return true;
+        }
+        if (nav.crossesSection(from, dir)) {
+            // Leaving a row for another section takes a second press, and never a key that is held down.
+            if (event.getRepeatCount() > 0) return true;
+            if (!bump.pass(dir, SystemClock.uptimeMillis())) {
+                explainLine.setText(getString(R.string.settings_press_again, sectionTitles.get(to.section)));
+                explainLine.removeCallbacks(restoreHint);
+                explainLine.postDelayed(restoreHint, BUMP_WINDOW_MS);
+                return true;
+            }
+        } else {
+            bump.reset();
+        }
         View target = viewAt(to);
         if (target == null) return false;
         if (to.row != SettingsNav.FOOTER && to.section != activeSection) showSection(to.section);
@@ -583,11 +616,17 @@ public final class LauncherSettingsActivity extends Activity {
             switching = false;
         }
         for (int i = 0; i < SECTIONS; i++) tabs.get(i).setSelected(i == section);
+        topRow = 0;
         sectionScroll.scrollTo(0, 0);
 
     }
 
     /** Focus follows the tabs to their section, and the explanation line follows focus. */
+    private void putHintBack() {
+        String hint = hints.get(getCurrentFocus());
+        if (hint != null) explainLine.setText(hint);
+    }
+
     private void focusMoved(View oldFocus, View newFocus) {
         if (oldFocus != null && oldFocus.getScaleX() != 1f) oldFocus.animate().scaleX(1f).scaleY(1f).setDuration(120).start();
         if (newFocus == null) return;
@@ -596,8 +635,52 @@ public final class LauncherSettingsActivity extends Activity {
         String hint = hints.get(newFocus);
         if (hint != null) explainLine.setText(hint);
         if (animations && tab < 0 && hints.containsKey(newFocus)) {
-            newFocus.animate().scaleX(1.04f).scaleY(1.04f).setDuration(120).start();
+            // Grows by a few dp at most, however wide the chip is, so the ring is never cut at the edge of the card.
+            float grow = Math.min(0.04f, dp(GROW_DP) * 2f / Math.max(1, newFocus.getWidth()));
+            newFocus.animate().scaleX(1f + grow).scaleY(1f + grow).setDuration(120).start();
         }
+        alignRows(newFocus);
+    }
+
+    /**
+     * Scrolls the visible section by whole rows: the focused row decides the first row shown, the scroll area is cut right
+     * under the last row that fits whole, and the arrow under the card says whether there are more rows (RowWindow).
+     */
+    private void alignRows(View focus) {
+        if (activeSection < 0) return;
+        LinearLayout section = sectionViews.get(activeSection);
+        int height = sectionScroll.getHeight();
+        if (height == 0 || section.getHeight() == 0) return;
+        List<View> shown = new ArrayList<>();
+        for (int i = 0; i < section.getChildCount(); i++) {
+            if (section.getChildAt(i).getVisibility() == View.VISIBLE) shown.add(section.getChildAt(i));
+        }
+        int n = shown.size();
+        if (n == 0) return;
+        int[] tops = new int[n], bottoms = new int[n];
+        for (int i = 0; i < n; i++) {
+            tops[i] = shown.get(i).getTop();
+            bottoms[i] = shown.get(i).getBottom();
+        }
+        int margin = dp(ROW_MARGIN_DP), usable = height - 2 * margin;
+        int focused = topRow;
+        View row = focus;
+        while (row != null && row.getParent() != section) row = row.getParent() instanceof View ? (View) row.getParent() : null;
+        if (row != null && shown.indexOf(row) >= 0) focused = shown.indexOf(row);
+        boolean scrolls = RowWindow.scrolls(tops, bottoms, usable);
+        int padBottom = 0, target = 0, last = n - 1;
+        if (scrolls) {
+            topRow = RowWindow.top(tops, bottoms, usable, topRow, focused);
+            last = RowWindow.last(tops, bottoms, usable, topRow);
+            padBottom = Math.max(0, height - (bottoms[last] - tops[topRow]) - 2 * margin);
+            target = tops[topRow];
+        } else {
+            topRow = 0;
+        }
+        if (sectionScroll.getPaddingBottom() != padBottom) sectionScroll.setPadding(0, 0, 0, padBottom);
+        if (sectionScroll.getScrollY() != target) sectionScroll.smoothScrollTo(0, target);
+        moreMark.setVisibility(scrolls ? View.VISIBLE : View.INVISIBLE);
+        moreMark.setRotation(last < n - 1 ? 0f : 180f);
     }
 
     // ---- building blocks -------------------------------------------------------------------------
