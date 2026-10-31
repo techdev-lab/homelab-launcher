@@ -137,6 +137,10 @@
     <string name="text_size_medium">متوسط</string>
     <string name="text_size_large">كبير</string>
     <string name="text_size_hint">بطاقات الشاشة الرئيسية: الصغير يعرض ٥، والمتوسط ٤، والكبير ٣. ولو زادت، آخر مكان يعرض الباقي بالتناوب.</string>
+    <string name="dock_position_label">مكان الرصيف</string>
+    <string name="dock_position_bottom">تحت</string>
+    <string name="dock_position_side">جانبي</string>
+    <string name="dock_position_hint">مكان تطبيقاتك المفضلة: في صف تحت، أو في عمود جانبي وباقي التطبيقات بجانبه: على اليمين في الشاشة الإنجليزية وعلى اليسار في العربية. العمود يتسع لأربعة أو خمسة تطبيقات تقريباً ويتحرك لما يزيد، والبطاقات فوق تقل بمكان واحد.</string>
     <string name="dock_style_label">شكل الرصيف</string>
     <string name="dock_style_band">شريط</string>
     <string name="dock_style_floating">زجاج عائم</string>

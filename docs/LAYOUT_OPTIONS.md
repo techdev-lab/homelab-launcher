@@ -10,7 +10,7 @@ over the theme, a theme push does not clear it, and an unknown or out-of-range v
 |---|---|---|---|
 | Digits | `digits` | `latin`, `arabic` | `latin` |
 | Wallpaper dim | `wallpaper_dim` | whole percent, 0 to 80 (chips: 15, 35, 55, 75) | 35 |
-| Dock position | `dock_position` | `bottom`, `right` | `bottom` |
+| Dock position | `dock_position` | `bottom`, `side` | `bottom` |
 
 The ideas of a dock at the side, a dimmed wallpaper and Arabic digits came from looking at other launchers (see the
 logbook and NOTICE.md); the code is ours.
@@ -37,23 +37,26 @@ so nothing moves. It only exists where a picture is shown; the plain colours and
 
 ## 3. Dock position (`dock_position`)
 
-`right` puts the dock in a column on the right edge, under the top-bar buttons, and the other apps in the grid to its
-left. `bottom` is today's layout and the default.
+`side` puts the dock in a column at the end of the reading side, under the top-bar buttons: on the right on the
+English screen and on the left on the Arabic one, which is mirrored like the rest of that layout (the header, the strip
+and the app grid). The other apps are in a grid beside it, and in both languages the end of a row is the one next to the
+dock. (The first draft called the value `right`; it is `side` because it is not on the right in Arabic.) `bottom` is
+today's layout and the default.
 
 ### Why this is not just a style
 
 The dock is today the first row of the one app grid: `RecyclerView` positions 0 to `COLUMNS - 1`. The plate behind it,
 the focused app's name above it, the glass highlight, the arrow-key logic, `rows_below_dock` and the number of strip
-places all rest on that. A column cannot be made from a row by styling, so the right-hand layout is a second list.
+places all rest on that. A column cannot be made from a row by styling, so the side layout is a second list.
 `bottom` keeps the code path it has today.
 
 ### Design
 
-- **One data set, two lists.** `AppAdapter` stays the owner of the tiles. In the right-hand layout two thin adapters show
+- **One data set, two lists.** `AppAdapter` stays the owner of the tiles. In the side layout two thin adapters show
   two slices of it: positions 0 to `COLUMNS - 1` (the dock, empty slots included, as today) in a vertical list on the
   right, and the rest in a grid on the left. Both bind and create tiles through `AppAdapter`, so a tile looks and
   behaves as it does now. Positions seen by the rest of `MainActivity` stay absolute.
-- **Sizes.** The column is 132 dp of tile plus the plate padding. It runs from the top-bar buttons down to the bottom
+- **Sizes.** The column is 108 dp of tile plus the plate padding. It runs from the top-bar buttons down to the bottom
   margin and scrolls when there are more dock apps than fit (about four to five on 1080p). The grid has
   `max(3, COLUMNS - 1)` columns, and the strip has one place fewer than its text size gives (`StripSize.perRowSide`),
   because both are narrower.
@@ -71,8 +74,10 @@ places all rest on that. A column cannot be made from a row by styling, so the r
   - Strip: Down from the last strip row goes to the grid, or to the dock when there is no grid.
   - From the top-bar buttons, Down goes to the strip, else the grid, else the dock. Settings stays reachable from every
     tile in at most three key presses.
-- **Left to right in both languages.** The launcher already lays out left to right; the column is on the physical
-  right on the Arabic screen too. Whether Arabic should put it on the reading side is decided after seeing it on a TV.
+- **Mirrored on the Arabic screen.** The owner decided, after seeing the first version on the TV, that the Arabic
+  screen puts the dock on the left, the mirror image of English, as the Arabic header, strip and grid already are. The
+  navigation functions take that as a flag (`rtl`), the margins and the name pill follow it, and the keys toward the dock
+  are Right on English and Left on Arabic.
 - **No new permission, no network.**
 
 ### Conditions (from the council, 2026-10-31)

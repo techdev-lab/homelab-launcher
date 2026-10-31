@@ -43,7 +43,7 @@ public final class LauncherSettingsActivity extends Activity {
     private int asrFactor;
     private int hijriShift, prayerAlertMinutes;
     /** Layout options (docs/LAYOUT_OPTIONS.md): the digits and the veil over a wallpaper picture in percent. */
-    private String digits;
+    private String digits, dockPosition;
     private int wallpaperDim;
     private TextView prayerMethodChoice;
     private float density;
@@ -54,7 +54,7 @@ public final class LauncherSettingsActivity extends Activity {
             textSizeViews = new ArrayList<>(), asrViews = new ArrayList<>(), dockStyleViews = new ArrayList<>(),
             tileCornersViews = new ArrayList<>(), clockStyleViews = new ArrayList<>(),
             hijriShiftViews = new ArrayList<>(), alertViews = new ArrayList<>(), digitsViews = new ArrayList<>(),
-            dimViews = new ArrayList<>();
+            dimViews = new ArrayList<>(), dockPositionViews = new ArrayList<>();
 
     /** The chips for the prayer alert: minutes, 0 is off. Any other value in config.json still works, it just has no chip. */
     private static final int[] ALERT_CHOICES = {0, 5, 10, 15};
@@ -94,6 +94,7 @@ public final class LauncherSettingsActivity extends Activity {
         clockStyle = config.clockStyle;
         digits = config.digits;
         wallpaperDim = config.wallpaperDim;
+        dockPosition = config.dockPosition;
         prayerMethod = s.prayerMethodKey;
         asrFactor = s.asrFactor;
 
@@ -177,6 +178,18 @@ public final class LauncherSettingsActivity extends Activity {
             }));
         }
         fill(R.id.textSizeRow, textSizeViews);
+
+        int[] positionNames = {R.string.dock_position_bottom, R.string.dock_position_side};
+        for (int i = 0; i < DockPosition.ALL.length; i++) {
+            final String position = DockPosition.ALL[i];
+            dockPositionViews.add(chip(getString(positionNames[i]), v -> {
+                if (position.equals(dockPosition)) return;
+                dockPosition = position;
+                choices.edit().putString(Config.DOCK_POSITION_KEY, position).apply();
+                changed();
+            }));
+        }
+        fill(R.id.dockPositionRow, dockPositionViews);
 
         // The three look options: the viewer's choices, like the text size, so a theme push does not clear them.
         int[] dockNames = {R.string.dock_style_band, R.string.dock_style_floating};
@@ -380,6 +393,7 @@ public final class LauncherSettingsActivity extends Activity {
         }
         for (int i = 0; i < cards.length; i++) cardViews.get(i).setSelected(cards[i]);
         for (int i = 0; i < StripSize.ALL.length; i++) textSizeViews.get(i).setSelected(StripSize.ALL[i].equals(textSize));
+        for (int i = 0; i < DockPosition.ALL.length; i++) dockPositionViews.get(i).setSelected(DockPosition.ALL[i].equals(dockPosition));
         for (int i = 0; i < DockStyle.ALL.length; i++) dockStyleViews.get(i).setSelected(DockStyle.ALL[i].equals(dockStyle));
         for (int i = 0; i < TileShape.ALL.length; i++) tileCornersViews.get(i).setSelected(TileShape.ALL[i].equals(tileCorners));
         for (int i = 0; i < ClockStyle.ALL.length; i++) clockStyleViews.get(i).setSelected(ClockStyle.ALL[i].equals(clockStyle));

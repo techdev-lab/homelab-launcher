@@ -144,6 +144,10 @@
     <string name="text_size_medium">Medium</string>
     <string name="text_size_large">Large</string>
     <string name="text_size_hint">The cards on the home screen: small shows 5, medium 4, large 3. When there are more, the last place shows the rest in turn.</string>
+    <string name="dock_position_label">Dock position</string>
+    <string name="dock_position_bottom">Bottom</string>
+    <string name="dock_position_side">Side</string>
+    <string name="dock_position_hint">Where your favourite apps are: in a row at the bottom, or in a column at the side with the other apps beside it: on the right on the English screen and on the left on the Arabic one. The column fits about four or five apps and scrolls for more; the cards above get one place fewer.</string>
     <string name="dock_style_label">Dock style</string>
     <string name="dock_style_band">Band</string>
     <string name="dock_style_floating">Floating glass</string>
