@@ -149,6 +149,13 @@
     <string name="clock_style_plain">عادية</string>
     <string name="clock_style_glass">زجاجية</string>
     <string name="clock_style_hint">الزجاجية تضع الوقت على كبسولة زجاجية صغيرة.</string>
+    <string name="digits_label">الأرقام</string>
+    <string name="digits_latin">لاتينية (0 1 2)</string>
+    <string name="digits_arabic">عربية (٠ ١ ٢)</string>
+    <string name="digits_hint">الأرقام في الشاشة الرئيسية وشاشة التوقف: الساعة والتواريخ ومواقيت الصلاة والنتائج ودرجات الحرارة. في الشاشة الإنجليزية خط الساعة Outfit بلا أرقام عربية، فيرسمها خط التلفزيون نفسه.</string>
+    <string name="wallpaper_dim_label">تعتيم الخلفية</string>
+    <string name="wallpaper_dim_percent">%1$d%%</string>
+    <string name="wallpaper_dim_hint">درجة ظلمة الطبقة فوق صورة الخلفية. 35% هي الافتراضية. الأقل يُظهر الصورة أكثر، والأعلى أهدأ. لا أثر له مع لون سادة.</string>
     <string name="prayer_method_unknown">طريقة حساب الصلاة غير معروفة: %1$s</string>
     <string name="prayer_method_label">مواقيت الصلاة</string>
     <string name="prayer_method_choice">طريقة الحساب: %1$s</string>

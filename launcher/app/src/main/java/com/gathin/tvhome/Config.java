@@ -58,6 +58,8 @@ final class Config {
     static final String[] CARD_KEYS = {"card_prayer", "card_weather", "card_football", "card_clubs", "card_ramadan"};
     /** Hijri date shift in days and prayer alert minutes picked on the TV (HijriShift, PrayerAlert); win over config.json. */
     static final String HIJRI_SHIFT_KEY = "hijri_offset_days", PRAYER_ALERT_KEY = "prayer_alert_minutes";
+    /** Layout options picked on the TV (DigitStyle, WallpaperDim): kept across theme pushes, like the look options. */
+    static final String DIGITS_KEY = "digits", WALLPAPER_DIM_KEY = "wallpaper_dim";
     private static final String THEME_REVISION_NAME = "theme_revision";
     private static final String THEME_SIGNATURE_KEY = "theme_signature";
 
@@ -114,6 +116,9 @@ final class Config {
     final String textSize;
     /** Plate behind the dock (DockStyle), tile corners (TileShape) and header clock (ClockStyle); the defaults are the 2.9 look. */
     final String dockStyle, tileCorners, clockStyle;
+    /** Digits on the home screen (DigitStyle) and the veil over a wallpaper picture in percent (WallpaperDim). */
+    final String digits;
+    final int wallpaperDim;
 
     private Config(List<String> dockApps, boolean fillDock, List<String> hiddenApps, String liveTvPackage,
                    String liveTvAction, String sourcePanelService, String sourcePanelAction, String inputAction,
@@ -123,7 +128,8 @@ final class Config {
                    int[] settingsKeycodes, boolean settingsKeyPanel, File wallpaper, boolean overlayApplied,
                    Festival festival, Interests.Settings interests, Map<Integer, String> appKeys,
                    List<File> wallpapers, int wallpaperMinutes, String wallpaperMode,
-                   String textSize, String dockStyle, String tileCorners, String clockStyle) {
+                   String textSize, String dockStyle, String tileCorners, String clockStyle,
+                   String digits, int wallpaperDim) {
         this.dockApps = Collections.unmodifiableList(dockApps);
         this.fillDock = fillDock;
         this.hiddenApps = Collections.unmodifiableList(hiddenApps);
@@ -156,6 +162,8 @@ final class Config {
         this.dockStyle = dockStyle;
         this.tileCorners = tileCorners;
         this.clockStyle = clockStyle;
+        this.digits = digits;
+        this.wallpaperDim = wallpaperDim;
     }
 
     /** The folder the theme tools push into; null when external storage is unavailable. */
@@ -248,7 +256,9 @@ final class Config {
                 StripSize.pick(choices.getString(TEXT_SIZE_KEY, ""), json == null ? "" : string(json, "text_size", "")),
                 DockStyle.pick(choices.getString(DOCK_STYLE_KEY, ""), json == null ? "" : string(json, "dock_style", "")),
                 TileShape.pick(choices.getString(TILE_CORNERS_KEY, ""), json == null ? "" : string(json, "tile_corners", "")),
-                ClockStyle.pick(choices.getString(CLOCK_STYLE_KEY, ""), json == null ? "" : string(json, "clock_style", "")));
+                ClockStyle.pick(choices.getString(CLOCK_STYLE_KEY, ""), json == null ? "" : string(json, "clock_style", "")),
+                DigitStyle.pick(choices.getString(DIGITS_KEY, ""), json == null ? "" : string(json, "digits", "")),
+                WallpaperDim.pick(tvInt(choices, WALLPAPER_DIM_KEY), wholeNumber(json, WALLPAPER_DIM_KEY)));
     }
 
     /**
