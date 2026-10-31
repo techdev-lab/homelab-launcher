@@ -80,6 +80,24 @@
 
 الجديد: عناوين الأقسام الأربعة والشرحان الناقصان، في `values` و`values-ar` (و`ResourcesTest` يفشل أصلاً إن غاب العربي). الشروح القديمة تُستعمل كما هي. اللغات الباقية ترجع للإنجليزية كالمعتاد.
 
+## الأقسام الأربعة على التلفزيون
+
+اللقطات من Chromecast with Google TV 4K بمدينة العرض (الرياض) وبالريموت فقط، والتركيز في كل لقطة على أول زر في القسم.
+
+| المظهر | الرصيف والبطاقات |
+|---|---|
+| ![المظهر، بالعربي](screenshots/settings-glass-look-arabic.png) | ![الرصيف والبطاقات، بالعربي](screenshots/settings-glass-dock-and-cards-arabic.png) |
+| **الصلاة ورمضان** | **الحركة** |
+| ![الصلاة ورمضان، بالعربي](screenshots/settings-glass-prayer-and-ramadan-arabic.png) | ![الحركة، بالعربي](screenshots/settings-glass-motion-arabic.png) |
+
+والأربعة نفسها على الشاشة الإنجليزية:
+
+| المظهر | الرصيف والبطاقات |
+|---|---|
+| ![المظهر، بالإنجليزي](screenshots/settings-glass-look-english.png) | ![الرصيف والبطاقات، بالإنجليزي](screenshots/settings-glass-dock-and-cards-english.png) |
+| **الصلاة ورمضان** | **الحركة** |
+| ![الصلاة ورمضان، بالإنجليزي](screenshots/settings-glass-prayer-and-ramadan-english.png) | ![الحركة، بالإنجليزي](screenshots/settings-glass-motion-english.png) |
+
 ## الشروط (من المجلس، 2026-10-31)
 
 1. هذي الملاحظة أولاً، بالإنجليزية مع نسخة عربية.

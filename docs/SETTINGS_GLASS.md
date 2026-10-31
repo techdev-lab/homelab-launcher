@@ -102,6 +102,25 @@ warning) behave as today, and focus returns to the chip that opened them.
 New: four section titles and the two missing hints, in `values` and `values-ar` (`ResourcesTest` already fails if the
 Arabic one is missing). The old hints are reused. Other locales fall back to English as before.
 
+## The four sections on the TV
+
+Taken on a Chromecast with Google TV 4K, with the demo city (Riyadh) and the remote only. Each screenshot has the focus on
+the first choice of its section.
+
+| Look | Dock and cards |
+|---|---|
+| ![Look, English](screenshots/settings-glass-look-english.png) | ![Dock and cards, English](screenshots/settings-glass-dock-and-cards-english.png) |
+| **Prayer and Ramadan** | **Motion** |
+| ![Prayer and Ramadan, English](screenshots/settings-glass-prayer-and-ramadan-english.png) | ![Motion, English](screenshots/settings-glass-motion-english.png) |
+
+The same four on the Arabic screen (the tabs, rows and the dock sketch are mirrored):
+
+| Look | Dock and cards |
+|---|---|
+| ![Look, Arabic](screenshots/settings-glass-look-arabic.png) | ![Dock and cards, Arabic](screenshots/settings-glass-dock-and-cards-arabic.png) |
+| **Prayer and Ramadan** | **Motion** |
+| ![Prayer and Ramadan, Arabic](screenshots/settings-glass-prayer-and-ramadan-arabic.png) | ![Motion, Arabic](screenshots/settings-glass-motion-arabic.png) |
+
 ## Conditions (from the council, 2026-10-31)
 
 1. This note first, in English with an Arabic twin.
