@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -243,27 +244,20 @@ final class Config {
                 ClockStyle.pick(choices.getString(CLOCK_STYLE_KEY, ""), json == null ? "" : string(json, "clock_style", "")));
     }
 
-    /** Default: the YouTube button. A theme's "app_keys" object replaces the whole map ({} turns it off). */
+    /**
+     * Default: the YouTube button. A theme's "app_keys" object replaces the whole map ({} turns it off). A key can also
+     * be mapped to "ignore" (swallowed); the rules, and the keys that can never be mapped, are in {@link AppKeys}.
+     */
     private static Map<Integer, String> appKeys(JSONObject json) {
-        Map<Integer, String> keys = new HashMap<>();
-        keys.put(190, "com.google.android.youtube.tv");
         Object v = json == null ? null : json.opt("app_keys");
-        if (!(v instanceof JSONObject)) return keys;
+        if (!(v instanceof JSONObject)) return AppKeys.parse(null);
         JSONObject o = (JSONObject) v;
-        Map<Integer, String> out = new HashMap<>();
+        Map<String, Object> raw = new LinkedHashMap<>();
         for (Iterator<String> it = o.keys(); it.hasNext(); ) {
             String k = it.next();
-            Object pkg = o.opt(k);
-            try {
-                int code = Integer.parseInt(k.trim());
-                if (code > 0 && pkg instanceof String && ((String) pkg).matches("[A-Za-z0-9_.]{3,150}")) {
-                    out.put(code, (String) pkg);
-                }
-            } catch (NumberFormatException ignored) {
-                // not a keycode: skip this entry
-            }
+            raw.put(k, o.opt(k));
         }
-        return out;
+        return AppKeys.parse(raw);
     }
 
     /** The interests keys; absent or bad values switch that part off. Nothing here fetches anything. */

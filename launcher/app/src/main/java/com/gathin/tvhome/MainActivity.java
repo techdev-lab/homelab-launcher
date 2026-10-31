@@ -977,6 +977,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         String pkg = appKeys.get(keyCode);
+        if (AppKeys.isIgnore(pkg)) return true;   // "ignore": the button does nothing
         if (pkg != null) {
             if (event.getRepeatCount() == 0) {
                 Intent i = getPackageManager().getLeanbackLaunchIntentForPackage(pkg);
