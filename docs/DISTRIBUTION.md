@@ -1,5 +1,7 @@
 # Distribution and trust: batch 4 design note
 
+[English](DISTRIBUTION.md) · [العربية](DISTRIBUTION.ar.md)
+
 Status: written before the files it describes, as the other batches. Nothing here changes the app, its permissions or
 its version.
 
@@ -64,7 +66,7 @@ when the `versionCode` goes up, so a user who installed from a store would never
   then follows it (`5.txt`, `6.txt`, and so on).
 - The cost: an older build, 2.9.0 included, then no longer installs over a newer one. Going back means uninstalling,
   which removes `config.json` from the TV. The rollback APKs and the rollback text in `docs/INSTALL.md` must say so.
-- The maintainer decides this at the final upgrade, together with the release name (2.10 or 3.0).
+- The maintainer decides this at the final upgrade, together with the release name (decided: 3.0).
 
 ## Definition of done
 

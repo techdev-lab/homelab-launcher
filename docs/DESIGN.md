@@ -1,6 +1,8 @@
 # Design notes
 
-Status: **DRAFT for review** (describes the code as of version 2.5.4).
+[English](DESIGN.md) · [العربية](DESIGN.ar.md)
+
+Status: **DRAFT for review** (describes the code as of version 3.0.0; the notes of each batch of 2.10 and 3.0 are in `docs/LOOK_OPTIONS.md`, `docs/REMOTE_RELIABILITY.md`, `docs/RAMADAN_PRAYER.md`, `docs/DISTRIBUTION.md` and `docs/LAYOUT_OPTIONS.md`).
 
 ## Goal
 
@@ -35,6 +37,8 @@ One Java Android app (`launcher/`, package `com.gathin.tvhome`, minSdk 26, targe
 | Strip logic | `Interests.java` | Pure Java (unit tested): which match a card shows, card groups, league fetch list, ESPN day strings. |
 | Network | `src/online/.../Feeds.java` | Scoreboard day by day for up to 7 days (ESPN rejects a date range), weather, RSS. HTTPS only, 8 s timeouts, 512 KB cap, no redirects. The offline flavor has a stub. |
 | Arabic names | `NamesAr.java`, `assets/names_ar.json` | Apps by package, leagues by ESPN code, teams by ESPN team id. Used only on the Arabic screen. |
+| Look and layout options | `DockStyle`, `TileShape`, `ClockStyle`, `DigitStyle`, `WallpaperDim`, `DockPosition`, `SideNav`, `StripSize` | Pure Java, unit tested. The TV's choice wins over `config.json`, then the default; an unknown value counts as unset. `AppAdapter.Slice` gives the side dock its own list over the same tiles. |
+| Ramadan and prayer | `RamadanCountdown`, `PrayerAlert`, `HijriShift` | Pure Java, unit tested: the iftar and suhoor card, the on-screen alert at a prayer time, the Hijri date adjustment. |
 | Remote keys | `HomeKeyService.java` | Accessibility service that only filters key events (`capabilities=8`, no window content). Needed because the YouTube button is a global key routed to the stock launcher. |
 | Screensaver | `ClockDream.java` | DreamService: gliding clock, Hijri date, next prayer, minute hairline, colour-shifting glow. No network. |
 | VPN badge | `VpnBadge.java` | Green capsule while a VPN transport is up; red when `vpn_app` is set and no VPN is up. |
@@ -68,4 +72,4 @@ narrowest token permissions. Every action in every workflow is pinned to a commi
 
 - Live scores for the Arab domestic leagues (needs a paid source or one that allows it).
 - More Arabic team names (community contributions to `names_ar.json`).
-- Look options on the TV (dock style, tile corners, clock style): proposed in `docs/LOOK_OPTIONS.md`, nothing implemented yet.
+- "My looks" (save and restore a whole set of look choices), more clock faces, a recent-apps order if the platform allows it.
