@@ -114,6 +114,15 @@ adb shell settings put secure accessibility_enabled 1
 adb shell settings put secure screensaver_components com.gathin.tvhome/.ClockDream
 ```
 
+**Caution: held keys.** Android's key filtering can stop a held key from repeating on some TVs. On a Xiaomi Mi TV (MOOR2, Android 11) holding Volume up changed the volume by one step per press while this service was on, and repeated normally with it off. If you see that, turn the service off (the YouTube button and any `app_keys` or Settings button then stop working; test the remote's Home button too, because on remotes whose Home key sends `KEYCODE_ALL_APPS` this service is what delivers it):
+
+```bash
+adb shell settings delete secure enabled_accessibility_services
+adb shell settings put secure accessibility_enabled 0
+```
+
+`-EnableAppKeys` in step 5 is optional: leave it out if your remote has no such button, and turn the service on later with the two `settings put` commands of this step (the ones that name `HomeKeyService` and set `accessibility_enabled` to 1).
+
 Order matters: set the accessibility service **after** any `force-stop` (a force-stop afterwards clears it), and again after every reinstall of tvhome. Test the YouTube button with the real remote; keys sent with `adb shell input` do not pass through the service.
 
 The screensaver uses the same language as the home screen (see step 4). Your old screensaver value can be read first with `adb shell settings get secure screensaver_components` if you want to go back to it.

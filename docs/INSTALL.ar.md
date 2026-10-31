@@ -116,6 +116,15 @@ adb shell settings put secure accessibility_enabled 1
 adb shell settings put secure screensaver_components com.gathin.tvhome/.ClockDream
 ```
 
+**تنبيه: الأزرار المضغوطة.** تصفية الأزرار في أندرويد قد توقف تكرار الزر المضغوط على بعض التلفزيونات. على Xiaomi Mi TV (MOOR2، أندرويد 11) كان الضغط المطوّل على رفع الصوت يغيّر الصوت خطوة واحدة لكل ضغطة والخدمة شغالة، ويتكرر عادي وهي مطفأة. لو شفت هذا، أطفئ الخدمة (فيتوقف زر يوتيوب وأي زر عيّنته في `app_keys` أو الإعدادات؛ وجرّب زر Home بالريموت، لأن الريموتات اللي يرسل زر Home فيها `KEYCODE_ALL_APPS` هذي الخدمة هي اللي توصّله):
+
+```bash
+adb shell settings delete secure enabled_accessibility_services
+adb shell settings put secure accessibility_enabled 0
+```
+
+و`-EnableAppKeys` في الخطوة 5 اختياري: اتركه لو ريموتك ما فيه زر من هذا النوع، وشغّل الخدمة لاحقاً بأمري `settings put` اللي في هذي الخطوة (اللي يذكر `HomeKeyService` واللي يضبط `accessibility_enabled` على 1).
+
 الترتيب مهم: فعّل خدمة الوصول **بعد** أي `force-stop` (لأن الإيقاف القسري بعدها يمسحها)، وكذلك بعد كل إعادة تثبيت لـ tvhome. جرّب زر يوتيوب بالريموت الحقيقي؛ المفاتيح اللي تنرسل بـ `adb shell input` ما تمر على الخدمة.
 
 شاشة التوقف تستعمل نفس لغة الشاشة الرئيسية (شوف الخطوة 4). تقدر تقرأ قيمة شاشة التوقف القديمة أول بالأمر `adb shell settings get secure screensaver_components` لو تبي ترجع لها.
