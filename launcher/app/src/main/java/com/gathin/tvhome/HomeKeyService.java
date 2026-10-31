@@ -1,7 +1,9 @@
 package com.gathin.tvhome;
 
 import android.accessibilityservice.AccessibilityService;
+import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
@@ -13,6 +15,10 @@ import java.util.Map;
  * Sends the remote's Home button to this launcher on remotes that emit KEYCODE_ALL_APPS for Home
  * (Xiaomi sticks and boxes). Android TV 9 routes that key only to the system-image launcher, so once
  * the stock launcher is disabled the button does nothing. Every other key passes through untouched.
+ *
+ * Android's key filter is all or nothing and on some TVs a filtered key loses its auto repeat (a held Volume key steps
+ * once), so the viewer can switch the filtering off (KeyFilter, docs/KEY_FILTER.md): the service then stays enabled but
+ * asks Android not to filter, and the buttons above stop working.
  *
  * Enable over adb:
  *   settings put secure enabled_accessibility_services com.gathin.tvhome/.HomeKeyService
@@ -31,6 +37,12 @@ public class HomeKeyService extends AccessibilityService {
      */
     private Map<Integer, String> appKeys = Collections.emptyMap();
 
+    private SharedPreferences choices;
+    /** Held in a field: SharedPreferences keeps its listeners weakly, so a lambda alone would be collected. */
+    private final SharedPreferences.OnSharedPreferenceChangeListener choiceListener = (prefs, key) -> {
+        if (Config.KEY_FILTER_KEY.equals(key)) applyKeyFilter(Config.load(this).keyFilter);
+    };
+
     @Override
     protected void onServiceConnected() {
         super.onServiceConnected();
@@ -40,6 +52,26 @@ public class HomeKeyService extends AccessibilityService {
         settingsKeycodes = config.settingsKeycodes;
         settingsPanel = config.settingsKeyPanel;
         appKeys = config.appKeys;
+        applyKeyFilter(config.keyFilter);
+        // Launcher settings > Remote buttons takes effect at once, without turning the service off and on.
+        if (choices == null) choices = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE);
+        choices.registerOnSharedPreferenceChangeListener(choiceListener);
+    }
+
+    /** Asks Android to filter the remote's keys or not; every other service flag stays as declared. */
+    private void applyKeyFilter(String choice) {
+        AccessibilityServiceInfo info = getServiceInfo();
+        if (info == null) return;
+        int flags = KeyFilter.flags(choice, info.flags);
+        if (flags == info.flags) return;
+        info.flags = flags;
+        setServiceInfo(info);
+    }
+
+    @Override
+    public boolean onUnbind(Intent intent) {
+        if (choices != null) choices.unregisterOnSharedPreferenceChangeListener(choiceListener);
+        return super.onUnbind(intent);
     }
 
     private boolean isSettingsKey(KeyEvent event) {

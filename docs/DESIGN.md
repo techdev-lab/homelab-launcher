@@ -2,7 +2,7 @@
 
 [English](DESIGN.md) · [العربية](DESIGN.ar.md)
 
-Status: **DRAFT for review** (describes the code as of version 3.0.0; the notes of each batch of 2.10 and 3.0 are in `docs/LOOK_OPTIONS.md`, `docs/REMOTE_RELIABILITY.md`, `docs/RAMADAN_PRAYER.md`, `docs/DISTRIBUTION.md` and `docs/LAYOUT_OPTIONS.md`; the glass Launcher settings screen is in `docs/SETTINGS_GLASS.md`).
+Status: **DRAFT for review** (describes the code as of version 3.0.0; the notes of each batch of 2.10 and 3.0 are in `docs/LOOK_OPTIONS.md`, `docs/REMOTE_RELIABILITY.md`, `docs/RAMADAN_PRAYER.md`, `docs/DISTRIBUTION.md` and `docs/LAYOUT_OPTIONS.md`, `docs/KEY_FILTER.md`; the glass Launcher settings screen is in `docs/SETTINGS_GLASS.md`).
 
 ## Goal
 

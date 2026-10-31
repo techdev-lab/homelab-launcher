@@ -69,6 +69,8 @@ public final class LauncherSettingsActivity extends Activity {
     private int hijriShift, prayerAlertMinutes, clubSeconds;
     /** Layout options (docs/LAYOUT_OPTIONS.md): the digits and the veil over a wallpaper picture in percent. */
     private String digits, dockPosition;
+    /** Whether the key service filters the remote's keys (docs/KEY_FILTER.md): on or off. */
+    private String keyFilter;
     private int wallpaperDim;
     private TextView prayerMethodChoice;
     private float density;
@@ -80,7 +82,8 @@ public final class LauncherSettingsActivity extends Activity {
             motionViews = new ArrayList<>(), textSizeViews = new ArrayList<>(), asrViews = new ArrayList<>(),
             dockStyleViews = new ArrayList<>(), tileCornersViews = new ArrayList<>(), clockStyleViews = new ArrayList<>(),
             hijriShiftViews = new ArrayList<>(), alertViews = new ArrayList<>(), digitsViews = new ArrayList<>(),
-            dimViews = new ArrayList<>(), dockPositionViews = new ArrayList<>(), footerViews = new ArrayList<>();
+            dimViews = new ArrayList<>(), dockPositionViews = new ArrayList<>(), keyFilterViews = new ArrayList<>(),
+            footerViews = new ArrayList<>();
 
     /** The chips for the prayer alert: minutes, 0 is off. Any other value in config.json still works, it just has no chip. */
     private static final int[] ALERT_CHOICES = {0, 5, 10, 15};
@@ -168,6 +171,7 @@ public final class LauncherSettingsActivity extends Activity {
         digits = config.digits;
         wallpaperDim = config.wallpaperDim;
         dockPosition = config.dockPosition;
+        keyFilter = config.keyFilter;
         prayerMethod = s.prayerMethodKey;
         asrFactor = s.asrFactor;
 
@@ -479,6 +483,19 @@ public final class LauncherSettingsActivity extends Activity {
             motionViews.add(chip(getString(motionNames[i]), v -> setMotion(motion)));
         }
         addRow(MOTION, R.string.motion_label, getString(R.string.motion_hint), motionViews);
+
+        int[] keyFilterNames = {R.string.key_filter_on, R.string.key_filter_off};
+        for (int i = 0; i < KeyFilter.ALL.length; i++) {
+            final String choice = KeyFilter.ALL[i];
+            keyFilterViews.add(chip(getString(keyFilterNames[i]), v -> {
+                if (choice.equals(keyFilter)) return;
+                keyFilter = choice;
+                // The viewer's choice, like the text size: a theme push does not clear it. The key service listens.
+                choices.edit().putString(Config.KEY_FILTER_KEY, choice).apply();
+                changed();
+            }));
+        }
+        addRow(MOTION, R.string.key_filter_label, getString(R.string.key_filter_hint), keyFilterViews);
     }
 
     /** The three buttons that are not preferences, under the card and reachable from every section. */
@@ -939,6 +956,7 @@ public final class LauncherSettingsActivity extends Activity {
         prayerMethodChoice.setText(getString(R.string.prayer_method_choice,
                 m >= 0 ? getResources().getStringArray(R.array.prayer_method_names)[m] : prayerMethod));
         for (int i = 0; i < MOTIONS.length; i++) motionViews.get(i).setSelected(MOTIONS[i].equals(motion()));
+        for (int i = 0; i < KeyFilter.ALL.length; i++) keyFilterViews.get(i).setSelected(KeyFilter.ALL[i].equals(keyFilter));
         followThemeChoice.setSelected(!hasOnTvChoices());
         Config now = Config.load(this);
         clubsChoice.setText(getString(R.string.favorite_clubs_state,
