@@ -21,8 +21,8 @@ android {
         // release; the changelog file in fastlane/metadata/android/*/changelogs/ is named after it. A lower
         // versionCode needs `install -d`, which Android allows for debuggable packages only and ours are not, so going
         // back to 2.9 or older means uninstalling first (copy config.json before: an uninstall removes it).
-        versionCode 5
-        versionName '3.0.0'
+        versionCode 6
+        versionName '3.0.1'
     }
 
     // Releases on GitHub are signed with the project key from the environment (see docs/RELEASING.md); a local build

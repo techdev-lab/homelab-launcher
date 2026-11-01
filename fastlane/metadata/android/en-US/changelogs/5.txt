@@ -1,1 +1,0 @@
-New in 3.0: a dock at the side (right on English, left on Arabic), a Ramadan card for iftar and suhoor, a prayer time alert, Hijri date adjustment, optional Arabic digits, wallpaper dim, new dock and clock looks, hidden apps, and every GitHub document in Arabic too. Details: CHANGELOG.md.

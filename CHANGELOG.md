@@ -4,7 +4,8 @@
 
 From 3.0.0 the `versionCode` is 5 (every earlier build had 4) and it rises by one with each release, so a store or an update checker sees an update. 3.0.0 installs over 2.9.0 and earlier with `adb install -r`; going back to 2.9.0 or older needs an uninstall first, which removes `config.json` from the TV, so copy it before.
 
-## Unreleased
+## 3.0.1 (2026-11-01)
+A small release: one new choice for the remote buttons, found on a TCL TV. Everything else is as in 3.0.0, and 3.0.1 installs over it with `adb install -r`.
 - **Remote buttons: a "Home screen only" choice** (Launcher settings > Motion > Remote buttons, or `"key_filter": "home"` in `config.json`): the key service filters only while one of the launcher's screens is in front, so the YouTube button, `app_keys` and the Settings button keep working on the home screen and a held Volume key repeats inside other apps (where those buttons do not work). Measured on a TCL Smart TV Pro (Android 14): there the service never receives the Volume key, so repeating it from the service is not possible, and TCL's own button mapping is a fixed system overlay. *On* is still the default and today's behaviour. The launcher gains an `Application` class that counts its started screens; no new permission or service. The rules are `KeyFilter` and `LauncherFront`, with JVM tests. Design note: `docs/KEY_FILTER.md`.
 
 ## 3.0.0 (2026-10-31)

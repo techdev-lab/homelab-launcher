@@ -1,0 +1,1 @@
+New in 3.0.1: a "Home screen only" choice for the remote buttons (Launcher settings > Motion > Remote buttons), so a held Volume key repeats inside other apps while the YouTube and app buttons keep working on the home screen. Found on a TCL TV. Details: CHANGELOG.md.
