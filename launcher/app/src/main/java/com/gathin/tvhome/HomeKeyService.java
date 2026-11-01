@@ -17,8 +17,9 @@ import java.util.Map;
  * the stock launcher is disabled the button does nothing. Every other key passes through untouched.
  *
  * Android's key filter is all or nothing and on some TVs a filtered key loses its auto repeat (a held Volume key steps
- * once), so the viewer can switch the filtering off (KeyFilter, docs/KEY_FILTER.md): the service then stays enabled but
- * asks Android not to filter, and the buttons above stop working.
+ * once), so the viewer can switch the filtering off, or to the home screen only (KeyFilter, docs/KEY_FILTER.md): the
+ * service then stays enabled but asks Android not to filter, always or while another app is in front, and the buttons
+ * above stop working meanwhile.
  *
  * Enable over adb:
  *   settings put secure enabled_accessibility_services com.gathin.tvhome/.HomeKeyService
@@ -38,10 +39,19 @@ public class HomeKeyService extends AccessibilityService {
     private Map<Integer, String> appKeys = Collections.emptyMap();
 
     private SharedPreferences choices;
+    /** The remote buttons choice (KeyFilter) as last read; "home" needs it again whenever a launcher screen starts or stops. */
+    private String keyFilter = KeyFilter.ON;
+    /** The connected service, for TvHomeApp to tell when the launcher goes in or out of front; main thread only. */
+    private static HomeKeyService current;
     /** Held in a field: SharedPreferences keeps its listeners weakly, so a lambda alone would be collected. */
     private final SharedPreferences.OnSharedPreferenceChangeListener choiceListener = (prefs, key) -> {
         if (Config.KEY_FILTER_KEY.equals(key)) applyKeyFilter(Config.load(this).keyFilter);
     };
+
+    /** A launcher screen started or stopped: "home" asks for the filter again (TvHomeApp). */
+    static void frontChanged() {
+        if (current != null) current.applyKeyFilter(current.keyFilter);
+    }
 
     @Override
     protected void onServiceConnected() {
@@ -52,6 +62,7 @@ public class HomeKeyService extends AccessibilityService {
         settingsKeycodes = config.settingsKeycodes;
         settingsPanel = config.settingsKeyPanel;
         appKeys = config.appKeys;
+        current = this;
         applyKeyFilter(config.keyFilter);
         // Launcher settings > Remote buttons takes effect at once, without turning the service off and on.
         if (choices == null) choices = getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE);
@@ -60,9 +71,10 @@ public class HomeKeyService extends AccessibilityService {
 
     /** Asks Android to filter the remote's keys or not; every other service flag stays as declared. */
     private void applyKeyFilter(String choice) {
+        keyFilter = choice;
         AccessibilityServiceInfo info = getServiceInfo();
         if (info == null) return;
-        int flags = KeyFilter.flags(choice, info.flags);
+        int flags = KeyFilter.flags(choice, info.flags, TvHomeApp.FRONT.inFront());
         if (flags == info.flags) return;
         info.flags = flags;
         setServiceInfo(info);
@@ -70,6 +82,7 @@ public class HomeKeyService extends AccessibilityService {
 
     @Override
     public boolean onUnbind(Intent intent) {
+        if (current == this) current = null;
         if (choices != null) choices.unregisterOnSharedPreferenceChangeListener(choiceListener);
         return super.onUnbind(intent);
     }

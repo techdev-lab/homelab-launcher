@@ -36,41 +36,76 @@ public class KeyFilterTest {
         assertFalse(KeyFilter.valid(""));
         assertFalse(KeyFilter.valid(" off"));
         assertTrue(KeyFilter.valid("on"));
+        assertTrue(KeyFilter.valid("home"));
         assertTrue(KeyFilter.valid("off"));
     }
 
     @Test
-    public void onlyOffTurnsTheFilterOff() {
-        assertTrue(KeyFilter.filtering(KeyFilter.ON));
-        assertFalse(KeyFilter.filtering(KeyFilter.OFF));
-        assertTrue("an unknown value is the default, which filters", KeyFilter.filtering("maybe"));
-        assertTrue(KeyFilter.filtering(null));
+    public void homeIsPickedLikeTheOthers() {
+        assertEquals(KeyFilter.HOME, KeyFilter.pick("home", "on"));
+        assertEquals(KeyFilter.HOME, KeyFilter.pick("", "home"));
+        assertEquals("the TV's choice still wins", KeyFilter.ON, KeyFilter.pick("on", "home"));
+        assertEquals("case matters", KeyFilter.ON, KeyFilter.pick("Home", null));
+    }
+
+    @Test
+    public void onAlwaysFiltersAndOffNever() {
+        for (boolean front : new boolean[]{true, false}) {
+            assertTrue(KeyFilter.filtering(KeyFilter.ON, front));
+            assertFalse(KeyFilter.filtering(KeyFilter.OFF, front));
+        }
+    }
+
+    @Test
+    public void homeFiltersOnlyWhileALauncherScreenIsInFront() {
+        assertTrue(KeyFilter.filtering(KeyFilter.HOME, true));
+        assertFalse(KeyFilter.filtering(KeyFilter.HOME, false));
+    }
+
+    @Test
+    public void anUnknownChoiceFiltersWhateverIsInFront() {
+        for (boolean front : new boolean[]{true, false}) {
+            assertTrue("an unknown value is the default, which filters", KeyFilter.filtering("maybe", front));
+            assertTrue(KeyFilter.filtering(null, front));
+            assertTrue("case matters", KeyFilter.filtering("HOME", front));
+        }
     }
 
     @Test
     public void onSetsOnlyTheFilterBit() {
-        assertEquals(FILTER_BIT, KeyFilter.flags(KeyFilter.ON, 0));
-        assertEquals(FILTER_BIT | 0x2, KeyFilter.flags(KeyFilter.ON, 0x2));
-        assertEquals("already set stays set", FILTER_BIT | 0x2, KeyFilter.flags(KeyFilter.ON, FILTER_BIT | 0x2));
+        assertEquals(FILTER_BIT, KeyFilter.flags(KeyFilter.ON, 0, false));
+        assertEquals(FILTER_BIT | 0x2, KeyFilter.flags(KeyFilter.ON, 0x2, true));
+        assertEquals("already set stays set", FILTER_BIT | 0x2, KeyFilter.flags(KeyFilter.ON, FILTER_BIT | 0x2, true));
     }
 
     @Test
     public void offClearsOnlyTheFilterBitAndKeepsTheRest() {
-        assertEquals(0, KeyFilter.flags(KeyFilter.OFF, FILTER_BIT));
-        assertEquals(0x2 | 0x40, KeyFilter.flags(KeyFilter.OFF, FILTER_BIT | 0x2 | 0x40));
-        assertEquals("already clear stays clear", 0x2, KeyFilter.flags(KeyFilter.OFF, 0x2));
+        assertEquals(0, KeyFilter.flags(KeyFilter.OFF, FILTER_BIT, true));
+        assertEquals(0x2 | 0x40, KeyFilter.flags(KeyFilter.OFF, FILTER_BIT | 0x2 | 0x40, false));
+        assertEquals("already clear stays clear", 0x2, KeyFilter.flags(KeyFilter.OFF, 0x2, true));
+    }
+
+    @Test
+    public void homeFollowsTheFrontAndKeepsEveryOtherBit() {
+        assertEquals(FILTER_BIT | 0x2, KeyFilter.flags(KeyFilter.HOME, 0x2, true));
+        assertEquals("another app in front clears only the filter bit", 0x2 | 0x40,
+                KeyFilter.flags(KeyFilter.HOME, FILTER_BIT | 0x2 | 0x40, false));
+        assertEquals("leaving and coming back is symmetric", FILTER_BIT,
+                KeyFilter.flags(KeyFilter.HOME, KeyFilter.flags(KeyFilter.HOME, FILTER_BIT, false), true));
     }
 
     @Test
     public void anUnknownChoiceKeepsTheFilterOn() {
-        assertEquals(FILTER_BIT, KeyFilter.flags("maybe", 0));
-        assertEquals(FILTER_BIT, KeyFilter.flags(null, 0));
+        assertEquals(FILTER_BIT, KeyFilter.flags("maybe", 0, false));
+        assertEquals(FILTER_BIT, KeyFilter.flags(null, 0, false));
     }
 
     @Test
     public void everyChoiceInAllIsValidAndOnComesFirst() {
-        assertEquals(2, KeyFilter.ALL.length);
+        assertEquals(3, KeyFilter.ALL.length);
         assertEquals(KeyFilter.ON, KeyFilter.ALL[0]);
+        assertEquals(KeyFilter.HOME, KeyFilter.ALL[1]);
+        assertEquals(KeyFilter.OFF, KeyFilter.ALL[2]);
         for (String s : KeyFilter.ALL) assertTrue(KeyFilter.valid(s));
     }
 }

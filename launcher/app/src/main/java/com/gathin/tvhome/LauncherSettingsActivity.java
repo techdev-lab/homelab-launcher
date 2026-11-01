@@ -484,7 +484,7 @@ public final class LauncherSettingsActivity extends Activity {
         }
         addRow(MOTION, R.string.motion_label, getString(R.string.motion_hint), motionViews);
 
-        int[] keyFilterNames = {R.string.key_filter_on, R.string.key_filter_off};
+        int[] keyFilterNames = {R.string.key_filter_on, R.string.key_filter_home, R.string.key_filter_off};
         for (int i = 0; i < KeyFilter.ALL.length; i++) {
             final String choice = KeyFilter.ALL[i];
             keyFilterViews.add(chip(getString(keyFilterNames[i]), v -> {
