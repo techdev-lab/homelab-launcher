@@ -56,6 +56,13 @@ which turns the choice into `AccessibilityServiceInfo.flags`), unit tested on th
 - No new permission, no new file, no new component. The accessibility service was already declared with
   `canRequestFilterKeyEvents`.
 
+### The other key service
+
+`InputKeyService` (the optional Input button, enabled only with `INPUT_KEY_SERVICE=1` or `-InputKeyService`) declares the
+key filter in its own `res/xml/input_key_service.xml` and this switch does not change it. If you also enable it, Android
+keeps filtering keys whatever the choice is (`home` or `off`), so a held Volume key can still step once. Leave it disabled
+on a TV that shows the problem.
+
 ### Where it is in Launcher settings
 
 One row, **Remote buttons: On / Home screen only / Off**, in the Motion section (it is the section with one row; the Dock and cards section
