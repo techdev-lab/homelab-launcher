@@ -29,7 +29,7 @@
 
 ## English
 
-Built and tested on a Chromecast with Google TV 4K (Android 14) and a Xiaomi Mi TV (Android 11): [what was checked](docs/TESTED_DEVICES.md). No root. No account. Fully reversible.
+Built and tested on a Chromecast with Google TV 4K (Android 14), a Xiaomi Mi TV (Android 11) and a TCL Smart TV Pro (Android 14): [what was checked](docs/TESTED_DEVICES.md). No root. No account. Fully reversible.
 
 [How it was built](docs/JOURNEY.md) · [Use it with an AI assistant](docs/AI_ASSISTANT_PROMPTS.md)
 
@@ -189,7 +189,7 @@ No analytics, no accounts, no crash reporting, no remote configuration. The full
 
 ### Status and limits
 
-- Tested on **Chromecast with Google TV 4K** (`sabrina`, Android 14) and **Xiaomi Mi TV MOOR2** (Android 11), see [Tested devices](docs/TESTED_DEVICES.md). The HD model (`boreal`) should behave the same but was not tested. Other Android TV devices: the app runs, the Home switch steps differ.
+- Tested on **Chromecast with Google TV 4K** (`sabrina`, Android 14), **Xiaomi Mi TV MOOR2** (Android 11) and **TCL Smart TV Pro G08** (Android 14), see [Tested devices](docs/TESTED_DEVICES.md). The HD model (`boreal`) should behave the same but was not tested. Other Android TV devices: the app runs, the Home switch steps differ.
 - Prayer times: **14 methods** (Umm al-Qura by default, Egyptian, Gulf, Dubai, Qatar, Kuwait, Jordan, Morocco, Algeria, Tunisia, Turkey, MWL, ISNA, Karachi) and standard or Hanafi Asr, picked on the TV or in the config, each tested against api.aladhan.com. A method can still differ by a few minutes from a printed national calendar; `prayer_adjust` shifts each time.
 - Football data comes from ESPN's public scoreboard (Saudi Pro League, the big European leagues, the AFC and CAF Champions Leagues, the Gulf Cup) and, for the **Egyptian, UAE, Qatari and Moroccan leagues**, from TheSportsDB's free API: next kick-off only, no live scores. Kuwait, Jordan, Tunisia and Algeria are still missing.
 - Arabic team names cover the Saudi league, the five big European leagues, the UEFA and AFC Champions League clubs (156 teams). Unknown teams show in English. Adding a league is a JSON edit: see [CONTRIBUTING.md](CONTRIBUTING.md).
@@ -212,7 +212,7 @@ MIT License, see [LICENSE](LICENSE).
 
 <div dir="rtl">
 
-جُرّبت على Chromecast with Google TV 4K (أندرويد 14) وعلى Xiaomi Mi TV (أندرويد 11): [وش انفحص](docs/TESTED_DEVICES.ar.md). بدون روت، وبدون حساب، وكل خطوة لها رجوع.
+جُرّبت على Chromecast with Google TV 4K (أندرويد 14) وعلى Xiaomi Mi TV (أندرويد 11) وعلى TCL Smart TV Pro (أندرويد 14): [وش انفحص](docs/TESTED_DEVICES.ar.md). بدون روت، وبدون حساب، وكل خطوة لها رجوع.
 
 [قصة المشروع](docs/JOURNEY.ar.md) · [أوامر جاهزة للذكاء الاصطناعي](docs/AI_ASSISTANT_PROMPTS.ar.md)
 

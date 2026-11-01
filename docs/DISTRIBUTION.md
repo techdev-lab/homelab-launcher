@@ -21,7 +21,7 @@ read on 2026-10-31; neither page carries a date, so the rules are read again whe
 | `title.txt` | `HomeLab Launcher` |
 | `short_description.txt` | One line, at most 80 characters. |
 | `full_description.txt` | What it does, the two builds, privacy, how an APK is built and signed. Plain text. |
-| `changelogs/5.txt` | At most 500 bytes. The file name is the `versionCode` (5 from 3.0.0), so the file is renamed with each release. |
+| `changelogs/6.txt` | At most 500 bytes. The file name is the `versionCode` (6 in 3.0.1), so the file is renamed with each release. |
 | `images/icon.png` | 512 by 512, made from the app's own launcher icon. |
 
 - English in `en-US` and Arabic in `ar`. The first plan had English only, because the repository keeps Arabic in
