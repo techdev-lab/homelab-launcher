@@ -133,8 +133,9 @@
     <string name="motion_hint">Calm: soft fades. Lively: tiles lift and icons zoom, which uses more memory. Off: no animation, best on slow TVs.</string>
     <string name="key_filter_label">Remote buttons</string>
     <string name="key_filter_on">On</string>
+    <string name="key_filter_home">Home screen only</string>
     <string name="key_filter_off">Off</string>
-    <string name="key_filter_hint">On: the YouTube button, app buttons and the Settings button work. Off: they stop, so every key reaches the TV untouched; choose Off if holding Volume only steps once on your TV.</string>
+    <string name="key_filter_hint">On: the YouTube button, app buttons and the Settings button work. Home screen only: they work on the home screen but not inside other apps, where holding Volume repeats. Off: they stop everywhere; choose Home screen only or Off if holding Volume only steps once on your TV.</string>
     <string-array name="plain_colour_names" translatable="false">
         <item>Black</item>
         <item>Navy</item>
