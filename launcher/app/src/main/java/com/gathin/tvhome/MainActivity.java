@@ -47,6 +47,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.SoundEffectConstants;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.AnimationUtils;
 import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
@@ -233,6 +234,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         public void onLost(@NonNull Network network) {
             handler.post(MainActivity.this::updateWifiLabel);
         }
+    };
+    /** Hides the glass when focus leaves the tiles; a field so onDestroy can remove it (see onCreate). */
+    private final ViewTreeObserver.OnGlobalFocusChangeListener focusListener = (oldF, newF) -> {
+        boolean onTile = newF != null && newF.getId() == R.id.card;
+        if (!onTile) hideGlass();
     };
     private final IntentFilter packageFilter = new IntentFilter();
     private final BroadcastReceiver packageReceiver = new BroadcastReceiver() {
@@ -515,19 +521,17 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         if (festive) applyFestiveSkin((TextView) btnInputs, (TextView) btnSettings);
 
-        // Hide the glass when focus leaves the tiles.
-        getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener((oldF, newF) -> {
-            boolean onTile = newF != null && newF.getId() == R.id.card;
-            if (!onTile) hideGlass();
-        });
+        // Hide the glass when focus leaves the tiles. Kept in a field so onDestroy can remove it: recreate() keeps the
+        // window, and a listener nobody removes keeps every old Home screen (its views and bitmaps) in memory.
+        getWindow().getDecorView().getViewTreeObserver().addOnGlobalFocusChangeListener(focusListener);
 
         packageFilter.addAction(Intent.ACTION_PACKAGE_ADDED);
         packageFilter.addAction(Intent.ACTION_PACKAGE_REMOVED);
         packageFilter.addAction(Intent.ACTION_PACKAGE_CHANGED);
         packageFilter.addDataScheme("package");
 
-        ConnectivityManager cm = getSystemService(ConnectivityManager.class);
-        TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
+        ConnectivityManager cm = connectivity();
+        TvInputManager tim = tvInputs();
         if (tim != null) tim.registerCallback(inputCallback, handler);
         if (cm != null) {
             cm.registerDefaultNetworkCallback(networkCallback);
@@ -538,6 +542,18 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         // Not after recreate(): the launch intent survives it and would open the settings again.
         if (savedInstanceState == null) openLauncherSettingsIfAsked(getIntent());
+    }
+
+    /**
+     * Long-lived system services come from the application context: a manager obtained from an Activity can keep that
+     * Activity reachable (seen on Android 12), and Home is recreated at every settings change.
+     */
+    private ConnectivityManager connectivity() {
+        return getApplicationContext().getSystemService(ConnectivityManager.class);
+    }
+
+    private TvInputManager tvInputs() {
+        return (TvInputManager) getApplicationContext().getSystemService(TV_INPUT_SERVICE);
     }
 
     private boolean openLauncherSettingsIfAsked(Intent intent) {
@@ -749,8 +765,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     protected void onDestroy() {
         super.onDestroy();
         if (feedThread != null) feedThread.shutdownNow();
-        ConnectivityManager cm = getSystemService(ConnectivityManager.class);
-        TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
+        ViewTreeObserver focusObserver = getWindow().getDecorView().getViewTreeObserver();
+        if (focusObserver.isAlive()) focusObserver.removeOnGlobalFocusChangeListener(focusListener);
+        ConnectivityManager cm = connectivity();
+        TvInputManager tim = tvInputs();
         if (tim != null) tim.unregisterCallback(inputCallback);
         if (cm != null) {
             cm.unregisterNetworkCallback(networkCallback);
@@ -1952,7 +1970,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         int flame = 0;
         boolean steady = false;
         try {
-            ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            ConnectivityManager cm = connectivity();
             boolean wifi = false, ethernet = false;
             // All networks, not just the active one: with a VPN up the active network is the VPN itself.
             for (Network net : cm != null ? cm.getAllNetworks() : new Network[0]) {
@@ -2091,7 +2109,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** Hides the Inputs pill when it would have nothing to list: streaming boxes have no HDMI-in, AV or tuner. */
     private void updateInputsButton() {
         boolean any = liveTvIntent() != null || !sourcePanelService.isEmpty();
-        TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
+        TvInputManager tim = tvInputs();
         if (!any && tim != null) {
             for (TvInputInfo info : tim.getTvInputList()) {
                 if (info.isPassthroughInput()) {
@@ -2162,7 +2180,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         int width = Math.max(anchor.getWidth(), (int) (150 * density));
         final PopupWindow popup = glassPopup(panel, width);
 
-        TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
+        TvInputManager tim = tvInputs();
         boolean sawNonHdmi = false;
         String tunerId = null;
         boolean tunerIsHw = false;
