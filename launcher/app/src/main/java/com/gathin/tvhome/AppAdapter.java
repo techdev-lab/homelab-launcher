@@ -278,19 +278,14 @@ public class AppAdapter extends RecyclerView.Adapter<AppAdapter.Holder> {
         h.card.setTranslationZ(focused && advancedEffects ? 8f * ctx.getResources().getDisplayMetrics().density : 0f);
         h.banner.setScaleX(focused && advancedEffects ? 1.035f : 1f);
         h.banner.setScaleY(focused && advancedEffects ? 1.035f : 1f);
-        if (e.banner != null) {
-            h.banner.setImageDrawable(e.banner);
-            h.banner.setVisibility(View.VISIBLE);
-            h.icon.setVisibility(View.GONE);
-            h.label.setVisibility(View.GONE);
-        } else {
-            h.banner.setImageDrawable(null);
-            h.banner.setVisibility(View.GONE);
-            h.icon.setImageDrawable(e.icon);
-            h.icon.setVisibility(View.VISIBLE);
-            h.label.setText(e.label);
-            h.label.setVisibility(View.VISIBLE);
-        }
+        // One picture per tile; the view that is not shown holds no drawable (TileFace).
+        TileFace face = TileFace.of(e.banner != null);
+        h.banner.setImageDrawable(face.clearBanner() ? null : e.banner);
+        h.banner.setVisibility(face.showBanner ? View.VISIBLE : View.GONE);
+        h.icon.setImageDrawable(face.clearIcon() ? null : e.icon);
+        h.icon.setVisibility(face.showIcon ? View.VISIBLE : View.GONE);
+        if (face.showLabel) h.label.setText(e.label);
+        h.label.setVisibility(face.showLabel ? View.VISIBLE : View.GONE);
         h.card.setOnClickListener(v -> launch(e));
     }
 
