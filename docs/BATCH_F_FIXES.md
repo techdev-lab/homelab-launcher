@@ -18,7 +18,9 @@ the whole screen (views, bitmaps) in memory. Two things do.
 
 **Where (`MainActivity.java` on `main`).**
 - `:519` adds a global focus listener to the decor view as an inline lambda; `onDestroy` (`:749-759`) never removes it.
-  `recreate()` keeps the window and its `ViewTreeObserver`, so every old activity stays on the listener list.
+  Our **hypothesis** (not proved) is that `recreate()` keeps the window and its `ViewTreeObserver`, so every old activity
+  stays on the listener list. The proof is the `dumpsys meminfo` loop on a TV described below; until it is run, this
+  is an educated guess from the code, not a measured leak.
 - `ConnectivityManager` and `TvInputManager` are taken from the activity at `:529`, `:530`, `:752`, `:753`, `:1955`, `:2094`
   and `:2165`. On Android 12 a manager obtained from an Activity can keep that Activity reachable. For `TvInputManager`
   this is not known; taking it from the application context is harmless either way.
@@ -33,7 +35,7 @@ without a matching removal, or if `ConnectivityManager` or `TvInputManager` is t
 (1 listener added, 0 removed; 7 services taken from the activity); after the fix it passes. The checker is also tested on
 small samples of good and bad code. This is a source-level guard, not a leak test: the leak needs the Android framework.
 
-**Cannot be tested without a TV.** That the memory really stays flat. The test on a device (not run here): `adb shell dumpsys
+**Cannot be tested without a TV.** That the leak exists at all and that the memory really stays flat after the fix. The test on a device (not run here): `adb shell dumpsys
 meminfo com.gathin.tvhome`, note `Activities:` and TOTAL PSS, change a Launcher setting 8 times, read again. Expected after
 the fix: `Activities` 1 to 2 and PSS within a few MB. This is also the acceptance test of the memory work planned for 3.1.
 
@@ -88,15 +90,20 @@ open an empty stub, so the row looks dead. The action resolves, so a plain "does
 
 **Fix.** A pure class `SettingsRoute` returns the first candidate the system can resolve, in order. For the Picture row the
 candidates are the TV settings app's own picture screen (component
-`com.android.tv.settings/com.xiaomi.mitv.settings.picture.PictureActivity`, tested with `PackageManager.resolveActivity`)
-and then `ACTION_DISPLAY_SETTINGS`. On a TV without that component the row behaves exactly as before. No
-`Build.MANUFACTURER` or model check. The component's package is added to `<queries>` in the manifest so the check works
-on Android 11 and later (package visibility); this is not a permission. If no candidate resolves, the existing "Not
+`com.android.tv.settings/com.xiaomi.mitv.settings.picture.PictureActivity`) and then `ACTION_DISPLAY_SETTINGS`. The own
+screen is a candidate only if `PackageManager.resolveActivity` finds it **and its `ResolveInfo.activityInfo.exported` is
+true** (`SettingsRoute.usable`): a screen that resolves but that we may not start would otherwise end in the "Not
+available" toast, which is worse than today's stub. When the row is pressed the candidates are started in order
+(`SettingsRoute.startInOrder`); if the own screen still throws `SecurityException` or `ActivityNotFoundException`, the row
+falls back once to `ACTION_DISPLAY_SETTINGS` before any toast. On a TV without the component the row behaves exactly as
+before. No `Build.MANUFACTURER` or model check. The component's package is added to `<queries>` in the manifest so the
+check works on Android 11 and later (package visibility); this is not a permission. If nothing starts, the existing "Not
 available on this TV" toast stays; the row is not hidden, because a visibility filter could hide a row that works.
-The row's `startActivity` also catches `SecurityException`.
 
 **Failure-case test.** `SettingsRouteTest`: the first resolvable candidate wins; an unresolvable first candidate falls
-through to the second; none resolvable returns nothing (the caller then uses the generic action); an empty list is safe.
+through to the second; none resolvable returns nothing; an empty list is safe; a screen that resolves but is not exported is
+not usable; a first screen that refuses to start falls back to the standard action exactly once, in order; a screen that
+starts is not followed by the next; if every screen refuses, nothing starts and the caller shows the toast.
 
 **Cannot be tested without a TV.** **NOT TESTED on a Xiaomi TV** (no reachable one). The component name comes from another
 project's report and is unverified here; if it is wrong, `resolveActivity` returns null and nothing changes.
@@ -117,11 +124,13 @@ which finishes at once. On Android 14 the system's Default home picker is transl
 through its text.
 
 **Fix.** `HomeSettingsActivity` gets a theme with a solid black window background and stays on screen (behind the picker)
-until the picker closes, then finishes on its next resume. A pure class `HomePickerGate` holds that rule: finish at once if
+until the picker closes, then finishes on its next resume. Plainly: the solid black backdrop now shows behind the picker
+on **every** Android version, not only on 14 (the theme is not version-specific; on a picker that is already opaque it is
+simply never seen). It can be tested on an Android 14 Google TV such as the Chromecast with Google TV 4K. A pure class `HomePickerGate` holds that rule: finish at once if
 the picker could not be started; otherwise finish on the second resume. `noHistory` is not used: the translucent picker only
 pauses the activity, so it would not be finished at the right time.
 
-**Failure-case test.** `TileFaceTest` (banner clears the icon, icon clears the banner, empty clears both) and
+**Failure-case test.** `TileFaceTest` (banner clears the icon, icon clears the banner, never both) and
 `HomePickerGateTest` (a failed start finishes at once; the first resume keeps it; the second resume finishes; a resume
 before the start was tried does not finish).
 
