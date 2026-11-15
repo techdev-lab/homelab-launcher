@@ -2,7 +2,7 @@
 
 [English](TESTED_DEVICES.md) · [العربية](TESTED_DEVICES.ar.md)
 
-What 3.0.0 was run on, and what was and was not checked (2026-10-31). Nothing here is a promise for another model: the app is an ordinary Android TV launcher, and the steps that make it the Home screen differ per TV (see [INSTALL.md](INSTALL.md)).
+What 3.0.0 was run on, and what was and was not checked (2026-10-31; the Chromecast section also covers 3.0.2, 2026-11-15). Nothing here is a promise for another model: the app is an ordinary Android TV launcher, and the steps that make it the Home screen differ per TV (see [INSTALL.md](INSTALL.md)).
 
 ## Chromecast with Google TV 4K (Android 14, Google TV)
 
@@ -13,6 +13,7 @@ The maintainer's living-room TV, used every day since 2.x.
 - **Ramadan card:** it only shows in Ramadan, so it was seen on a throwaway preview build with a fixed Ramadan date and the real clock, never on a release build.
 - **Reboot:** Home comes back as tvhome, the key service is bound, the choices are kept and the cards fill within minutes.
 - **Remote:** the YouTube button works with the key service on (the default).
+- **3.0.2 (batch F, [BATCH_F_FIXES.md](BATCH_F_FIXES.md)):** 20 round trips through Launcher settings left the object counters at their starting values (no leak seen on this build; the earlier build was not measured the same way). The remote's YouTube, Settings and Home buttons work (reported by the owner). The Default home picker shows a solid dark backdrop (seen by the owner on the TV).
 
 ## TCL Smart TV Pro, model G08 (Android 14, Google TV, 32-bit)
 
@@ -32,5 +33,7 @@ A second TV, set up from zero with this guide after an old build was removed.
 - **Known on this TV:** with the key service on, holding the remote's Volume key changed the volume one step per press. *Launcher settings > Motion > Remote buttons > Off* fixes it (confirmed with the physical remote); On keeps the YouTube button. See [KEY_FILTER.md](KEY_FILTER.md).
 
 ## Not tested
+
+On 3.0.2: the clock fix on Android 9 and older (no such TV), the quick settings Picture row on Xiaomi TVs, and the Xiaomi Mi TV and the TCL on this build.
 
 The Chromecast with Google TV HD, the Google TV Streamer, other Xiaomi models, Fire TV, and Samsung (Tizen) and LG (webOS) TVs, which are not Android and are not supported. If you run it on another device, a bug report with the model and Android version helps.
