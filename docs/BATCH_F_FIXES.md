@@ -88,7 +88,7 @@ open an empty stub, so the row looks dead. The action resolves, so a plain "does
 
 **Where.** `QuickSettingsActivity.java:29`.
 
-**Fix.** A pure class `SettingsRoute` returns the first candidate the system can resolve, in order. For the Picture row the
+**Fix.** A pure class `SettingsRoute` holds the rules for the candidates, most specific first. For the Picture row the
 candidates are the TV settings app's own picture screen (component
 `com.android.tv.settings/com.xiaomi.mitv.settings.picture.PictureActivity`) and then `ACTION_DISPLAY_SETTINGS`. The own
 screen is a candidate only if `PackageManager.resolveActivity` finds it **and its `ResolveInfo.activityInfo.exported` is
@@ -100,9 +100,8 @@ before. No `Build.MANUFACTURER` or model check. The component's package is added
 check works on Android 11 and later (package visibility); this is not a permission. If nothing starts, the existing "Not
 available on this TV" toast stays; the row is not hidden, because a visibility filter could hide a row that works.
 
-**Failure-case test.** `SettingsRouteTest`: the first resolvable candidate wins; an unresolvable first candidate falls
-through to the second; none resolvable returns nothing; an empty list is safe; a screen that resolves but is not exported is
-not usable; a first screen that refuses to start falls back to the standard action exactly once, in order; a screen that
+**Failure-case test.** `SettingsRouteTest`: a screen that resolves but is not exported is
+not usable (and neither is one that does not resolve); a first screen that refuses to start falls back to the standard action exactly once, in order; a screen that
 starts is not followed by the next; if every screen refuses, nothing starts and the caller shows the toast.
 
 **Cannot be tested without a TV.** **NOT TESTED on a Xiaomi TV** (no reachable one). The component name comes from another

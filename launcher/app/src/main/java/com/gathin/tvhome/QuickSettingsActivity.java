@@ -60,10 +60,8 @@ public final class QuickSettingsActivity extends Activity {
         List<Intent> order = new ArrayList<>();
         Intent own = new Intent().setComponent(new ComponentName(PICTURE_PACKAGE, PICTURE_ACTIVITY));
         ResolveInfo found = getPackageManager().resolveActivity(own, 0);
-        if (found != null && found.activityInfo != null
-                && SettingsRoute.usable(true, found.activityInfo.exported)) {
-            order.add(own);
-        }
+        boolean exported = found != null && found.activityInfo != null && found.activityInfo.exported;
+        if (SettingsRoute.usable(found != null, exported)) order.add(own);
         order.add(new Intent(Settings.ACTION_DISPLAY_SETTINGS));
         return order;
     }
