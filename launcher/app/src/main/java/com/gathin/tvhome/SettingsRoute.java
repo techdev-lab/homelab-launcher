@@ -12,6 +12,22 @@ final class SettingsRoute {
     private SettingsRoute() {
     }
 
+    /** A screen of another app is worth trying only if the system resolves it and the app lets us start it (exported). */
+    static boolean usable(boolean resolved, boolean exported) {
+        return resolved && exported;
+    }
+
+    /**
+     * Tries the candidates in order and stops at the first one that starts; false when none does. Used so a screen that
+     * resolves but refuses to start falls back to the next one instead of ending in an error.
+     */
+    static <T> boolean startInOrder(List<T> candidates, Predicate<T> start) {
+        for (T candidate : candidates) {
+            if (start.test(candidate)) return true;
+        }
+        return false;
+    }
+
     /** The first candidate for which {@code resolves} is true, or null when none is (or the list is empty). */
     static <T> T firstAvailable(List<T> candidates, Predicate<T> resolves) {
         for (T candidate : candidates) {
