@@ -261,6 +261,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             handler.postDelayed(this, MINUTE_MS);
         }
     };
+    /**
+     * Before Android 12 the clocks move only on the system's minute tick, which some TVs stop sending after standby
+     * (ClockRefresh, docs/BATCH_F_FIXES.md). On such a TV Home re-reads the time at every minute while it is resumed, and
+     * when the screen turns on. Never registered or scheduled on Android 12 and later.
+     */
+    private final Runnable clockTick = new Runnable() {
+        @Override
+        public void run() {
+            refreshClocks();
+            handler.postDelayed(this, ClockRefresh.delayToNextMinute(System.currentTimeMillis()));
+        }
+    };
+    private final BroadcastReceiver screenOnReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            refreshClocks();
+        }
+    };
+    private boolean clockPushed;
     /** The club card moves to the next favourite club every club_rotate_seconds (default 5) while Home shows. */
     private final Runnable clubTick = new Runnable() {
         @Override
@@ -667,6 +686,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         sky.update();
         updateWallpaperRotation();
         handler.postDelayed(minuteTick, MINUTE_MS);
+        startClockPush();
         feedActive = true;
         if (Feeds.AVAILABLE && (interestsCfg.wantsMatches() || interestsCfg.wantsNews()
                 || interestsCfg.wantsWeather() || interestsCfg.wantsClubs())) handler.post(feedTick);
@@ -745,6 +765,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         heroName.animate().cancel();
         ambient.animate().cancel();
         handler.removeCallbacks(minuteTick);
+        stopClockPush();
         feedActive = false;
         handler.removeCallbacks(feedTick);
         handler.removeCallbacks(clubTick);
@@ -790,6 +811,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         Locale want = getResources().getConfiguration().getLocales().get(0);
         if (want.equals(Locale.getDefault())) return;
         Locale.setDefault(want);
+        refreshClocks();
+    }
+
+    /** Setting a TextClock's format makes it read the time again, whether or not the system's tick arrived. */
+    private void refreshClocks() {
         for (int id : new int[]{R.id.clock, R.id.ampm, R.id.date}) {
             View v = findViewById(id);
             if (v instanceof android.widget.TextClock) {
@@ -797,6 +823,26 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 c.setFormat12Hour(c.getFormat12Hour());
                 c.setFormat24Hour(c.getFormat24Hour());
             }
+        }
+    }
+
+    /** Pushes the clocks now, at every minute and when the screen turns on; only where the system's tick is not enough. */
+    private void startClockPush() {
+        if (!ClockRefresh.needed(Build.VERSION.SDK_INT)) return;
+        refreshClocks();
+        handler.postDelayed(clockTick, ClockRefresh.delayToNextMinute(System.currentTimeMillis()));
+        if (!clockPushed) {
+            // Below Android 12, so no RECEIVER_NOT_EXPORTED flag is needed (a system broadcast either way).
+            registerReceiver(screenOnReceiver, new IntentFilter(Intent.ACTION_SCREEN_ON));
+            clockPushed = true;
+        }
+    }
+
+    private void stopClockPush() {
+        handler.removeCallbacks(clockTick);
+        if (clockPushed) {
+            unregisterReceiver(screenOnReceiver);
+            clockPushed = false;
         }
     }
 
