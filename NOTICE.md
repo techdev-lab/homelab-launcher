@@ -12,6 +12,8 @@ The *Dock style* (floating glass) and *Clock style* (glass) options in Launcher 
 
 The *ignore* action for a remote button (`app_keys`) and the option to hide apps from the grid were inspired by features in the public 3.x releases of CleanYourTV (see Upstream, MIT License). The code for both is written here, not copied.
 
+The five fixes of batch F (`docs/BATCH_F_FIXES.md`: the leaked focus listener, guarded `startActivity` calls in the key services, the clock refresh before Android 12, the Xiaomi picture settings route, the banner icon and the Default home backdrop) were prompted by problems found and fixed in later CleanYourTV commits. Thanks to its author for finding them. Only the ideas were taken: the later commits carry no clear licence of their own, none of their code is in this project, and the code is written here.
+
 The ideas of the *side dock*, the *wallpaper dim* and *Arabic digits for the clock* were inspired by the public README of [sukoon-tv](https://github.com/MultiX0/sukoon-tv) by MultiX0. It states no licence, so only the ideas were taken: its README was read, no code or image from it is in this project, and the implementation is ours.
 
 ## Fonts
