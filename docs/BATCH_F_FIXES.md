@@ -9,7 +9,7 @@ otherwise keeps today's behaviour.
 
 The five problems are known from another Android TV launcher that shares part of our code history. We only took the
 **ideas** (what breaks and where); the code below is written here. The line numbers are those of `main` at `8b33e2b`, each
-one re-read before this note was written. Nothing was run on a TV: section 7 lists what only a TV can show.
+one re-read before this note was written. Section 7 says what was and was not seen on a TV (the Chromecast with Google TV 4K, Android 14, in the device phase before 3.0.2).
 
 ## 1. F1: a settings change leaves the old Home screen in memory
 
@@ -145,11 +145,11 @@ build, turned on by that TV's own `config.json`; no device has its own copy of t
 
 | Item | JVM tests | On a TV |
 |---|---|---|
-| F1 | source guard fails on `main`, passes after | NOT TESTED (`dumpsys meminfo` loop above) |
-| F2 | `SafeStartTest` | NOT TESTED |
-| F3 | `ClockRefreshTest` | NOT TESTED on Android 9 |
-| F4 | `SettingsRouteTest` | NOT TESTED on Xiaomi |
-| F5 | `TileFaceTest`, `HomePickerGateTest` | NOT TESTED on Android 14 |
+| F1 | source guard fails on `main`, passes after | Chromecast (Android 14): 20 Launcher-settings round trips, object counters back to their starting values, no leak seen on the fixed build; the earlier build was not measured the same way |
+| F2 | `SafeStartTest` | Chromecast: the YouTube, Settings and Home buttons work (reported by the owner); a refused start was not provoked |
+| F3 | `ClockRefreshTest` | NOT TESTED on Android 9 and older (no such TV) |
+| F4 | `SettingsRouteTest` | NOT TESTED on Xiaomi TVs |
+| F5 | `TileFaceTest`, `HomePickerGateTest` | Chromecast (Android 14): a solid dark backdrop behind the picker, seen by the owner |
 
 Size and budget: no new dependency; the APK size before and after is in the pull request.
 

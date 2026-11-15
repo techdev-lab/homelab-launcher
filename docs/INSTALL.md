@@ -202,9 +202,9 @@ adb shell pm enable com.google.android.apps.tv.launcherx
 adb shell cmd package set-home-activity --user 0 com.google.android.apps.tv.launcherx/.home.HomeActivity
 ```
 
-## Going back to 3.0.0, 2.9.0 or older
+## Going back to 3.0.1, 3.0.0, 2.9.0 or older
 
-3.0.1 has `versionCode` 6, 3.0.0 has 5 and every older release has 4. Android installs a newer release over them, but it refuses to install an older
+3.0.2 has `versionCode` 7, 3.0.1 has 6, 3.0.0 has 5 and every older release has 4. Android installs a newer release over them, but it refuses to install an older
 build over a newer one because the APKs are not debuggable. To go back: copy `config.json` from the TV first
 (`adb pull /sdcard/Android/data/com.gathin.tvhome/files/config.json`), run `adb uninstall com.gathin.tvhome`, install the older
 APK, and push `config.json` back. The uninstall removes the app's own choices made on the TV (language, wallpaper, columns).
