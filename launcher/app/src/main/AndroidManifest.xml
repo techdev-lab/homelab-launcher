@@ -23,6 +23,8 @@
         </intent>
         <!-- China-market MIUI TV firmware: the Settings and Wi-Fi pills fall back to Xiaomi's settings app. -->
         <package android:name="com.xiaomi.mitv.settings" />
+        <!-- The TV settings app's own picture screen, for the Picture row of the quick settings panel. -->
+        <package android:name="com.android.tv.settings" />
     </queries>
 
     <application
