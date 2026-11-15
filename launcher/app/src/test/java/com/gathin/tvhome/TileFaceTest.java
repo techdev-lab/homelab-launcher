@@ -27,13 +27,6 @@ public class TileFaceTest {
     }
 
     @Test
-    public void aFreeSlotClearsBothPictures() {
-        TileFace face = TileFace.empty();
-        assertFalse(face.showBanner || face.showIcon || face.showLabel);
-        assertTrue(face.clearBanner() && face.clearIcon());
-    }
-
-    @Test
     public void noTileEverShowsBothPictures() {
         for (boolean hasBanner : new boolean[]{true, false}) {
             TileFace face = TileFace.of(hasBanner);

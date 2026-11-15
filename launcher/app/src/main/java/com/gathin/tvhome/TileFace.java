@@ -21,11 +21,6 @@ final class TileFace {
         return hasBanner ? new TileFace(true, false, false) : new TileFace(false, true, true);
     }
 
-    /** A free dock slot shows nothing at all. */
-    static TileFace empty() {
-        return new TileFace(false, false, false);
-    }
-
     /** The banner view must be cleared when it is not shown. */
     boolean clearBanner() {
         return !showBanner;
