@@ -5,6 +5,7 @@ import android.accessibilityservice.AccessibilityServiceInfo;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
@@ -37,6 +38,11 @@ public class HomeKeyService extends AccessibilityService {
      * it, so with launcherx disabled only this service, which filters keys first, can catch it.
      */
     private Map<Integer, String> appKeys = Collections.emptyMap();
+
+    private static final String TAG = "HomeKeyService";
+    /** A refused start (a protected app, one that was removed) is logged once and never stops this service. */
+    private final SafeStart safeStart = new SafeStart((what, why) ->
+            Log.w(TAG, "could not open " + what + ": " + why.getClass().getSimpleName()));
 
     private SharedPreferences choices;
     /** The remote buttons choice (KeyFilter) as last read; "home" needs it again whenever a launcher screen starts or stops. */
@@ -101,7 +107,7 @@ public class HomeKeyService extends AccessibilityService {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
                 Intent open = settingsPanel ? new Intent(this, QuickSettingsActivity.class)
                         : new Intent(Settings.ACTION_SETTINGS);
-                startActivity(open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                safeStart.attempt("settings", () -> startActivity(open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
             }
             return true;
         }
@@ -111,7 +117,10 @@ public class HomeKeyService extends AccessibilityService {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
                 Intent open = getPackageManager().getLeanbackLaunchIntentForPackage(app);
                 if (open == null) open = getPackageManager().getLaunchIntentForPackage(app);
-                if (open != null) startActivity(open.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                if (open != null) {
+                    final Intent target = open;
+                    safeStart.attempt("app key", () -> startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
+                }
             }
             return true;
         }
@@ -121,7 +130,7 @@ public class HomeKeyService extends AccessibilityService {
                     .addCategory(Intent.CATEGORY_HOME)
                     .setPackage(getPackageName())
                     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-            startActivity(home);
+            safeStart.attempt("home", () -> startActivity(home));
         }
         return true;
     }

@@ -1,15 +1,21 @@
 package com.gathin.tvhome;
 
 import android.app.Activity;
-import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.os.Bundle;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * The panel the remote's Settings button opens when {@code settings_key_panel} is on (HomeKeyService):
@@ -19,6 +25,14 @@ import android.widget.Toast;
  */
 public final class QuickSettingsActivity extends Activity {
 
+    /** The settings app's own picture screen, where the TV has one (see pictureIntent). */
+    private static final String PICTURE_PACKAGE = "com.android.tv.settings";
+    private static final String PICTURE_ACTIVITY = "com.xiaomi.mitv.settings.picture.PictureActivity";
+    private static final String TAG = "QuickSettings";
+    /** A target the system refuses (or that is gone) is logged once; the next candidate is tried. */
+    private final SafeStart safeStart = new SafeStart((what, why) ->
+            Log.w(TAG, "could not open " + what + ": " + why.getClass().getSimpleName()));
+
     @Override
     protected void onCreate(Bundle state) {
         super.onCreate(state);
@@ -26,7 +40,7 @@ public final class QuickSettingsActivity extends Activity {
         findViewById(R.id.scrim).setOnClickListener(v -> finish());
         LinearLayout rows = findViewById(R.id.rows);
         addRow(rows, R.drawable.ic_settings, R.string.tv_settings, 0, new Intent(Settings.ACTION_SETTINGS));
-        addRow(rows, R.drawable.ic_picture, R.string.quick_picture, 0, new Intent(Settings.ACTION_DISPLAY_SETTINGS));
+        addRow(rows, R.drawable.ic_picture, R.string.quick_picture, 0, pictureIntents());
         addRow(rows, R.drawable.ic_wifi, R.string.quick_network, 0, new Intent(Settings.ACTION_WIFI_SETTINGS));
         addRow(rows, R.drawable.ic_apps, R.string.quick_apps, R.string.quick_apps_hint,
                 new Intent(Settings.ACTION_MANAGE_APPLICATIONS_SETTINGS));
@@ -34,6 +48,28 @@ public final class QuickSettingsActivity extends Activity {
         addRow(rows, R.drawable.ic_home_settings, R.string.launcher_settings, 0,
                 new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_LAUNCHER_SETTINGS));
         rows.getChildAt(0).requestFocus();
+    }
+
+    /**
+     * The TV's picture settings, in the order to try. On some TVs the standard display action opens an empty stub while
+     * the settings app has its own picture screen, so that screen goes first when this TV has it and lets us start it
+     * (it resolves and is exported); the standard action is always the last candidate, so a screen that then refuses to
+     * start falls back to it once. Any other TV behaves as before (docs/BATCH_F_FIXES.md, F4).
+     */
+    private List<Intent> pictureIntents() {
+        List<Intent> order = new ArrayList<>();
+        Intent own = new Intent().setComponent(new ComponentName(PICTURE_PACKAGE, PICTURE_ACTIVITY));
+        ResolveInfo found = getPackageManager().resolveActivity(own, 0);
+        boolean exported = found != null && found.activityInfo != null && found.activityInfo.exported;
+        if (SettingsRoute.usable(found != null, exported)) order.add(own);
+        order.add(new Intent(Settings.ACTION_DISPLAY_SETTINGS));
+        return order;
+    }
+
+    /** A short name for a target in the log: its component, else its action. */
+    private static String describe(Intent target) {
+        return target.getComponent() != null
+                ? target.getComponent().flattenToShortString() : String.valueOf(target.getAction());
     }
 
     /** Settings pressed again while the panel is up. */
@@ -52,6 +88,10 @@ public final class QuickSettingsActivity extends Activity {
     }
 
     private void addRow(LinearLayout rows, int icon, int title, int status, Intent target) {
+        addRow(rows, icon, title, status, Collections.singletonList(target));
+    }
+
+    private void addRow(LinearLayout rows, int icon, int title, int status, List<Intent> targets) {
         View row = getLayoutInflater().inflate(R.layout.item_input, rows, false);
         ((ImageView) row.findViewById(R.id.icon)).setImageResource(icon);
         ((TextView) row.findViewById(R.id.title)).setText(title);
@@ -60,11 +100,9 @@ public final class QuickSettingsActivity extends Activity {
         if (status != 0) hint.setText(status);
         else hint.setVisibility(View.GONE);
         row.setOnClickListener(v -> {
-            try {
-                startActivity(target.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            } catch (ActivityNotFoundException e) {
-                Toast.makeText(this, R.string.not_available, Toast.LENGTH_SHORT).show();
-            }
+            boolean started = SettingsRoute.startInOrder(targets, t -> safeStart.attempt(describe(t),
+                    () -> startActivity(t.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))));
+            if (!started) Toast.makeText(this, R.string.not_available, Toast.LENGTH_SHORT).show();
             finish();
         });
         rows.addView(row);
