@@ -1,0 +1,1 @@
+New in 3.0.2: five small fixes. Home no longer stays in memory after a settings change, a refused app start cannot stop the remote-button service, the clock is pushed on Android 11 and older, the quick settings Display row uses the TV's own picture screen when it has one, and the Default home picker gets a solid backdrop. Details: CHANGELOG.md.
