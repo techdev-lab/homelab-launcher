@@ -1,8 +1,8 @@
 package com.gathin.tvhome;
 
 import android.accessibilityservice.AccessibilityService;
-import android.content.ActivityNotFoundException;
 import android.content.Intent;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
 
@@ -15,15 +15,17 @@ import android.view.accessibility.AccessibilityEvent;
 public class InputKeyService extends AccessibilityService {
 
     private static final String ACTION_VIEW_INPUTS = "com.android.tv.action.VIEW_INPUTS";
+    private static final String TAG = "InputKeyService";
+    /** A missing or refused input screen is logged once and never stops this service. */
+    private final SafeStart safeStart = new SafeStart((what, why) ->
+            Log.w(TAG, "could not open " + what + ": " + why.getClass().getSimpleName()));
 
     @Override
     protected boolean onKeyEvent(KeyEvent event) {
         if (event.getKeyCode() != KeyEvent.KEYCODE_TV) return false;
         if (event.getAction() == KeyEvent.ACTION_UP) {
-            try {
-                startActivity(new Intent(ACTION_VIEW_INPUTS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            } catch (ActivityNotFoundException ignored) {
-            }
+            safeStart.attempt("inputs", () ->
+                    startActivity(new Intent(ACTION_VIEW_INPUTS).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)));
         }
         return true;
     }
