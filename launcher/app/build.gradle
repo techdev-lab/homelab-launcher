@@ -74,11 +74,12 @@ android {
 }
 
 // The HomeLab, Serene and Kids wallpaper sets live once in the repository (../../wallpapers) and are copied into the APK's
-// assets at build time, so the downloadable APK is complete without pushing pictures to the TV.
+// assets at build time. Only the lossy .webp files go in; the .jpg files beside them are the masters that
+// wallpapers/to-webp.py converts from (docs/BATCH_L_LIGHT.md), so the downloadable APK is complete without pushing pictures to the TV.
 def wallpaperAssets = layout.buildDirectory.dir('generated/wallpaperAssets')
 tasks.register('syncWallpaperAssets', Sync) {
     from(rootProject.file('../wallpapers')) {
-        include 'homelab/*.jpg', 'serene/*.jpg', 'kids/*.jpg'
+        include 'homelab/*.webp', 'serene/*.webp', 'kids/*.webp'
     }
     into wallpaperAssets.map { it.dir('wallpapers') }
 }

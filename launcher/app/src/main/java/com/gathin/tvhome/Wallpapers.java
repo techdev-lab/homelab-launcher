@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.Locale;
 
 /**
- * Rotating wallpapers: JPEG or PNG files in {@code wallpapers/} beside config.json, shown in name order, one every
+ * Rotating wallpapers: JPEG, PNG or WebP files in {@code wallpapers/} beside config.json, shown in name order, one every
  * {@code wallpaper_interval_min} minutes (MainActivity). Pure file and index rules, unit-tested.
  */
 final class Wallpapers {
@@ -64,7 +64,8 @@ final class Wallpapers {
 
     static boolean accepted(String name, long bytes) {
         String n = name.toLowerCase(Locale.ROOT);
-        boolean picture = n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".png");
+        boolean picture = n.endsWith(".jpg") || n.endsWith(".jpeg") || n.endsWith(".png")
+                || n.endsWith(".webp");
         return picture && !n.startsWith(".") && bytes > 0 && bytes <= MAX_BYTES;
     }
 

@@ -853,7 +853,7 @@ public final class LauncherSettingsActivity extends Activity {
             Arrays.sort(names);
             String first = null;
             for (String name : names) {
-                if (name.endsWith(".jpg")) {
+                if (Wallpapers.accepted(name, 1)) {
                     first = name;
                     break;
                 }
