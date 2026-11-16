@@ -4,6 +4,21 @@
 
 From 3.0.0 the `versionCode` is 5 (every earlier build had 4) and it rises by one with each release, so a store or an update checker sees an update. 3.0.0 installs over 2.9.0 and earlier with `adb install -r`; going back to 2.9.0 or older needs an uninstall first, which removes `config.json` from the TV, so copy it before.
 
+## Unreleased
+Batch L, "lighter on small TVs". No new permission, service or dependency. Design note: `docs/BATCH_L_LIGHT.md`.
+- **The APK is about two thirds smaller**: the 22 bundled wallpapers are lossy WebP (quality 80) instead of JPEG, same pixel size, none dropped. `wallpapers/to-webp.py` makes them from the JPEG masters, which stay in the repository; the quality is one number per folder (`--quality serene=90` for a run), so a folder that shows banding on a TV can be raised. Pictures you push to `files/wallpapers/` can now be `.webp` as well as `.jpg`, `.jpeg` and `.png`; yours are never touched by the upgrade. The built-in copies on the TV are replaced once (the stamp now also names the picture format). Picture quality on a TV is not verified yet.
+- **Small-memory gate**: a TV that Android marks as low-RAM, or that gives Android about 2.1 GB or less (2,200 MiB), starts with *Lively* effects off unless the TV's own choice or `advanced_effects` in `config.json` says otherwise (the default was already off, so nothing looks different today). The Motion row in Launcher settings shows what the launcher read, for example `Memory: small (1938 MiB)`. Rule in `SmallMemory`, with JVM tests. Later work reads this gate.
+- **R8 full mode and resource shrinking checked**: both already apply (full mode off makes the APK about 15 KB bigger), so nothing changed in the build.
+
+| APK size and memory | 3.0.2 | This build |
+|---|---|---|
+| Online APK | 3,897,304 B | 1,314,438 B |
+| Offline APK | 3,888,880 B | 1,306,038 B |
+| 22 bundled wallpapers | 3,181,869 B | 598,374 B |
+| Memory on the home screen, cold start, settings-loop counters | not measured for this change | not measured for this change |
+
+Sizes are from a local release build signed with the debug key; a build with the project key differs by a few hundred bytes.
+
 ## 3.0.2 (2026-11-15)
 A small release of five fixes, found by comparing with another launcher that shares part of our code history. Nothing new to configure, no new permission, service or dependency, and 3.0.2 installs over 3.0.1 with `adb install -r`. Checked on the Chromecast with Google TV 4K (Android 14); the clock fix on Android 9 and older and the picture row on Xiaomi TVs are not tested. See `docs/BATCH_F_FIXES.md` for what each fix does, its JVM tests and what was and was not seen on a TV.
 - **Home no longer stays in memory after a settings change**: the focus listener of the home screen was never removed, and the connectivity and TV-input managers came from the activity, so each `recreate()` could leave a whole old Home screen reachable. The listener is removed in `onDestroy` and the managers come from the application context. A JVM test reads the source and fails if either pattern returns. On the Chromecast, 20 round trips through Launcher settings left the object counters at their starting values (no leak seen on this build; the earlier build was not measured the same way).
