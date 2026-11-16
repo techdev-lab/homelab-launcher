@@ -123,6 +123,7 @@
     <string name="motion_calm">هادئة</string>
     <string name="motion_lively">حيوية</string>
     <string name="motion_off">بدون</string>
+    <string name="memory_line">الذاكرة: %1$s</string>
     <string name="motion_hint">هادئة: تلاشي ناعم. حيوية: البطاقات ترتفع والأيقونات تكبر، وتستهلك ذاكرة أكثر. بدون: بلا حركة، الأفضل للتلفزيونات البطيئة.</string>
     <string name="key_filter_label">أزرار الريموت</string>
     <string name="key_filter_on">تشغيل</string>

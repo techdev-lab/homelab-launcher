@@ -1,5 +1,6 @@
 package com.gathin.tvhome;
 
+import android.app.ActivityManager;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
@@ -77,6 +78,10 @@ final class Config {
     final int columns;
     final boolean animations;
     final boolean advancedEffects;
+    /** Small-memory gate (SmallMemory): the TV is low-RAM or has about 2 GB or less. Later batches read it. */
+    final boolean smallMemory;
+    /** What Android reported as total memory, in bytes; 0 when it could not be read. */
+    final long totalMemBytes;
     final int rowsBelowDock;
     final boolean shamsiDate;
     /** Calmer motion for weak GPUs (config.xml, reduced_motion): stiff spring, short fades, no replay. */
@@ -129,6 +134,7 @@ final class Config {
     private Config(List<String> dockApps, boolean fillDock, List<String> hiddenApps, String liveTvPackage,
                    String liveTvAction, String sourcePanelService, String sourcePanelAction, String inputAction,
                    int columns, int rowsBelowDock, boolean animations, boolean advancedEffects,
+                   boolean smallMemory, long totalMemBytes,
                    boolean shamsiDate, boolean reducedMotion, String vpnApp,
                    boolean showHomeSettingsShortcut, int backgroundColor, int skyIntensity,
                    int[] settingsKeycodes, boolean settingsKeyPanel, File wallpaper, boolean overlayApplied,
@@ -148,6 +154,8 @@ final class Config {
         this.rowsBelowDock = rowsBelowDock;
         this.animations = animations;
         this.advancedEffects = advancedEffects;
+        this.smallMemory = smallMemory;
+        this.totalMemBytes = totalMemBytes;
         this.shamsiDate = shamsiDate;
         this.reducedMotion = reducedMotion;
         this.vpnApp = vpnApp;
@@ -192,7 +200,8 @@ final class Config {
         int columns = res.getInteger(R.integer.columns);
         int rowsBelow = res.getInteger(R.integer.rows_below_dock);
         boolean animations = res.getBoolean(R.bool.animations);
-        boolean advancedEffects = res.getBoolean(R.bool.advanced_effects);
+        boolean advancedDefault = res.getBoolean(R.bool.advanced_effects);
+        Boolean advancedFromTheme = null;
         boolean shamsi = res.getBoolean(R.bool.shamsi_date);
         boolean reducedMotion = res.getBoolean(R.bool.reduced_motion);
         String vpn = res.getString(R.string.vpn_app).trim();
@@ -219,7 +228,7 @@ final class Config {
             columns = integer(json, "columns", columns, 1, 8);
             rowsBelow = integer(json, "rows_below_dock", rowsBelow, 0, 3);
             animations = bool(json, "animations", animations);
-            advancedEffects = bool(json, "advanced_effects", advancedEffects);
+            if (json.opt("advanced_effects") instanceof Boolean) advancedFromTheme = json.optBoolean("advanced_effects");
             shamsi = bool(json, "shamsi_date", shamsi);
             reducedMotion = bool(json, "reduced_motion", reducedMotion);
             vpn = string(json, "vpn_app", vpn);
@@ -236,7 +245,20 @@ final class Config {
         int chosenColumns = choices.getInt("columns", columns);
         if (chosenColumns >= 4 && chosenColumns <= 7) columns = chosenColumns;
         animations = choices.getBoolean("animations", animations);
-        advancedEffects = choices.getBoolean("advanced_effects", advancedEffects);
+        // Heavy effects: the TV's choice, then config.json, then the small-memory gate (SmallMemory).
+        ActivityManager am = (ActivityManager) ctx.getSystemService(Context.ACTIVITY_SERVICE);
+        long totalMem = 0;
+        boolean lowRam = false;
+        if (am != null) {
+            ActivityManager.MemoryInfo mem = new ActivityManager.MemoryInfo();
+            am.getMemoryInfo(mem);
+            totalMem = mem.totalMem;
+            lowRam = am.isLowRamDevice();
+        }
+        boolean small = SmallMemory.isSmall(lowRam, totalMem);
+        boolean advancedEffects = SmallMemory.resolve(
+                choices.contains("advanced_effects") ? choices.getBoolean("advanced_effects", false) : null,
+                advancedFromTheme, small, advancedDefault);
         if (choices.contains(BACKGROUND_COLOR_KEY)) background = 0xFF000000 | choices.getInt(BACKGROUND_COLOR_KEY, background);
         File wallpaper = dir != null ? new File(dir, WALLPAPER_NAME) : null;
         if (wallpaper != null && !(wallpaper.isFile() && wallpaper.length() > 0)) wallpaper = null;
@@ -257,7 +279,7 @@ final class Config {
         List<String> hiddenNow = HiddenApps.effective(
                 choices.contains(HIDDEN_APPS_KEY) ? choices.getString(HIDDEN_APPS_KEY, "") : null, hidden);
         return new Config(dock, fillDock, hiddenNow, liveTv, liveTvAction, panelService, panelAction, inputAction,
-                Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects,
+                Math.max(1, columns), Math.max(0, rowsBelow), animations, advancedEffects, small, totalMem,
                 shamsi, reducedMotion, vpn, homeSettings, background,
                 Math.max(0, Math.min(100, skyIntensity)), settingsKeycodes, settingsKeyPanel, wallpaper, applied,
                 festival, interests(json, choices), appKeys(json), rotation, wallMinutes, wallMode,
