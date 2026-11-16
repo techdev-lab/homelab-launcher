@@ -73,4 +73,30 @@ public class WallpapersTest {
         assertEquals("03-c.jpg", got.get(2).getName());
         assertTrue(Wallpapers.list(new File(dir, "missing")).isEmpty());
     }
+
+    @Test
+    public void acceptsJpegPngAndWebpButNothingElse() {
+        assertTrue(Wallpapers.accepted("a.jpg", 10));
+        assertTrue(Wallpapers.accepted("a.JPEG", 10));
+        assertTrue(Wallpapers.accepted("a.png", 10));
+        assertTrue(Wallpapers.accepted("a.webp", 10));
+        assertFalse(Wallpapers.accepted("a.gif", 10));
+        assertFalse(Wallpapers.accepted("a.webp.txt", 10));
+        assertFalse(Wallpapers.accepted(".hidden.webp", 10));
+        assertFalse(Wallpapers.accepted("empty.webp", 0));
+    }
+
+    @Test
+    public void usersJpegAndWebpPicturesAreListedTogether() throws Exception {
+        File dir = Files.createTempDirectory("walls").toFile();
+        for (String n : new String[]{"02-b.webp", "01-a.jpg", "03-c.jpeg"}) {
+            try (FileOutputStream out = new FileOutputStream(new File(dir, n))) {
+                out.write(1);
+            }
+        }
+        List<File> got = Wallpapers.list(dir);
+        assertEquals(3, got.size());
+        assertEquals("01-a.jpg", got.get(0).getName());
+        assertEquals("02-b.webp", got.get(1).getName());
+    }
 }

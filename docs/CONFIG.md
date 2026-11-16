@@ -108,6 +108,7 @@ one card for the four Arab leagues. Still not available (no free source checked 
 | `wallpaper_interval_min` | `1` to `240` (default 5) | Minutes per picture, for `rotate` and for the built-in sets. |
 | `background_color` | `"#0B0B0C"` | Behind everything. |
 | `animations`, `reduced_motion` | `true` / `false` | Turn effects down on slow TVs. |
+| `advanced_effects` | `true` / `false` | The *Lively* motion choice: lifted tiles, icon zoom, smooth colour transitions. Default `false`. A TV with about 2 GB of memory or less (or one Android marks as low-RAM) counts as small and always starts with it off unless this key or the TV's own choice says otherwise; the TV's choice wins, then this key, then the default. *Launcher settings > Motion* shows the memory class the launcher read, for example `Memory: small (1938 MiB)`. |
 | `sky_intensity` | `0` to `100` | Optional time-of-day sky behind the screen; 0 hides it. |
 | `shamsi_date`, `festival` | | Inherited from the upstream launcher; off in the examples. |
 
@@ -134,5 +135,7 @@ Two generated sets, no photos and no third-party images. Both are copied into th
 | `wallpapers/kids/` | 6 | `wallpapers/gen-kids.html` (open in a browser, `?s=1` to `?s=6`, export) | A children's TV: a rocket in space, under the sea, a rainbow castle, dinosaurs, balloons, a night garden. |
 | `wallpapers/serene/` | 10 | `wallpapers/gen-serene.py` (Python, Pillow and numpy) | Any TV: dusk, ridges, still water, dunes, ribbons, circles, night stars, aurora, sea at dawn, a faint geometric lattice. Nothing that points to a household. (Called "general" in 2.6.0.) |
 
-To use your own pictures instead, push them to `files/wallpapers/` and set `"wallpaper_mode": "rotate"`.
+The pictures are stored twice in the repository: the `.jpg` files are the masters and the `.webp` files beside them (same name, same pixel size) are what goes into the APK, about a fifth of the size. `python wallpapers/to-webp.py` makes them (quality 80 per folder, set in the script; `--quality serene=90` for one run; `--check` verifies the pairs). After changing a `.jpg`, run it again. If a folder shows banding on a TV, raise its number in the script.
+
+To use your own pictures instead, push them to `files/wallpapers/` (`.jpg`, `.jpeg`, `.png` or `.webp`) and set `"wallpaper_mode": "rotate"`.
 `config/examples/general.json` is a neutral starting point for a TV you set up for someone else (Serene, no leagues).

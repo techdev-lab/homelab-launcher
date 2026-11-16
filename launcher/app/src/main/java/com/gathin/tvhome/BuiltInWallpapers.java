@@ -19,6 +19,8 @@ import java.util.List;
 final class BuiltInWallpapers {
     private static final String TAG = "TvHome.Walls";
     private static final String STAMP = ".version";
+    /** Changes when the format of the bundled pictures changes, so one clean copy happens even with the same versionName. */
+    static final String FORMAT = "webp1";
 
     private BuiltInWallpapers() {
     }
@@ -28,7 +30,7 @@ final class BuiltInWallpapers {
         File dir = new File(new File(ctx.getFilesDir(), "builtin-wallpapers"), set);
         File stamp = new File(dir, STAMP);
         try {
-            if (!BuildConfig.VERSION_NAME.equals(read(stamp))) copy(ctx.getAssets(), "wallpapers/" + set, dir, stamp);
+            if (!stampValue().equals(read(stamp))) copy(ctx.getAssets(), "wallpapers/" + set, dir, stamp);
         } catch (Exception e) {
             Log.w(TAG, set + ": " + e);
             return Collections.emptyList();
@@ -37,8 +39,7 @@ final class BuiltInWallpapers {
     }
 
     private static void copy(AssetManager assets, String from, File dir, File stamp) throws Exception {
-        File[] old = dir.listFiles();
-        if (old != null) for (File f : old) f.delete();
+        clearSet(dir);
         if (!dir.isDirectory() && !dir.mkdirs()) throw new IllegalStateException("cannot create " + dir);
         String[] names = assets.list(from);
         for (String name : names == null ? new String[0] : names) {
@@ -50,8 +51,24 @@ final class BuiltInWallpapers {
             }
         }
         try (OutputStream out = new FileOutputStream(stamp)) {
-            out.write(BuildConfig.VERSION_NAME.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            out.write(stampValue().getBytes(java.nio.charset.StandardCharsets.UTF_8));
         }
+    }
+
+    /** What the stamp file holds: the app version and the picture format. */
+    static String stampValue() {
+        return BuildConfig.VERSION_NAME + "+" + FORMAT;
+    }
+
+    /**
+     * Removes the files of one built-in set (the stamp included) before a fresh copy, so pictures of an older version or
+     * format never stay beside the new ones. Only plain files inside {@code setDir} go; the folder itself, other folders
+     * and a user's own pictures (which live in files/wallpapers, never here) are not touched.
+     */
+    static void clearSet(File setDir) {
+        File[] old = setDir == null ? null : setDir.listFiles();
+        if (old == null) return;
+        for (File f : old) if (f.isFile()) f.delete();
     }
 
     private static String read(File f) {

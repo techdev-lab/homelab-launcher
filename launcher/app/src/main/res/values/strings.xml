@@ -130,6 +130,7 @@
     <string name="motion_calm">Calm</string>
     <string name="motion_lively">Lively</string>
     <string name="motion_off">Off</string>
+    <string name="memory_line">Memory: %1$s</string>
     <string name="motion_hint">Calm: soft fades. Lively: tiles lift and icons zoom, which uses more memory. Off: no animation, best on slow TVs.</string>
     <string name="key_filter_label">Remote buttons</string>
     <string name="key_filter_on">On</string>

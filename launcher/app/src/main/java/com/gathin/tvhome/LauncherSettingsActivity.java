@@ -57,6 +57,8 @@ public final class LauncherSettingsActivity extends Activity {
     private int columns;
     private boolean animations;
     private boolean advancedEffects;
+    /** The read-only "Memory: small (1938 MiB)" line shown with the Motion row. */
+    private String memoryLine = "";
     private String language;
     private String wallMode;
     private int backgroundColor;
@@ -154,6 +156,7 @@ public final class LauncherSettingsActivity extends Activity {
         columns = config.columns;
         animations = config.animations;
         advancedEffects = config.animations && config.advancedEffects;
+        memoryLine = getString(R.string.memory_line, SmallMemory.describe(config.smallMemory, config.totalMemBytes));
         // The language in force: the TV choice or config.json, else the app language Android keeps for the launcher.
         String inForce = Language.pick(Config.language(this), Language.appLocaleTag(this));
         language = "ar".equals(inForce) || "en".equals(inForce) ? inForce : "system";
@@ -482,7 +485,8 @@ public final class LauncherSettingsActivity extends Activity {
             final String motion = MOTIONS[i];
             motionViews.add(chip(getString(motionNames[i]), v -> setMotion(motion)));
         }
-        addRow(MOTION, R.string.motion_label, getString(R.string.motion_hint), motionViews);
+        addRow(MOTION, R.string.motion_label, getString(R.string.motion_hint) + "\n"
+                + memoryLine, motionViews);
 
         int[] keyFilterNames = {R.string.key_filter_on, R.string.key_filter_home, R.string.key_filter_off};
         for (int i = 0; i < KeyFilter.ALL.length; i++) {
@@ -849,7 +853,7 @@ public final class LauncherSettingsActivity extends Activity {
             Arrays.sort(names);
             String first = null;
             for (String name : names) {
-                if (name.endsWith(".jpg")) {
+                if (Wallpapers.accepted(name, 1)) {
                     first = name;
                     break;
                 }
