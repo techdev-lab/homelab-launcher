@@ -73,6 +73,11 @@ public final class LauncherSettingsActivity extends Activity {
     private String digits, dockPosition;
     /** Whether the key service filters the remote's keys (docs/KEY_FILTER.md): on or off. */
     private String keyFilter;
+    /** The home look and the Scenes look (docs/BATCH_S_SCENES.md). */
+    private String homeLook, sceneScrim;
+    private List<String> scenesOn;
+    private int sceneSeconds;
+    private boolean sceneSun;
     private int wallpaperDim;
     private TextView prayerMethodChoice;
     private float density;
@@ -85,6 +90,8 @@ public final class LauncherSettingsActivity extends Activity {
             dockStyleViews = new ArrayList<>(), tileCornersViews = new ArrayList<>(), clockStyleViews = new ArrayList<>(),
             hijriShiftViews = new ArrayList<>(), alertViews = new ArrayList<>(), digitsViews = new ArrayList<>(),
             dimViews = new ArrayList<>(), dockPositionViews = new ArrayList<>(), keyFilterViews = new ArrayList<>(),
+            homeLookViews = new ArrayList<>(), sceneViews = new ArrayList<>(), sceneSecondsViews = new ArrayList<>(),
+            sceneSunViews = new ArrayList<>(), sceneScrimViews = new ArrayList<>(),
             footerViews = new ArrayList<>();
 
     /** The chips for the prayer alert: minutes, 0 is off. Any other value in config.json still works, it just has no chip. */
@@ -175,6 +182,11 @@ public final class LauncherSettingsActivity extends Activity {
         wallpaperDim = config.wallpaperDim;
         dockPosition = config.dockPosition;
         keyFilter = config.keyFilter;
+        homeLook = config.homeLook;
+        scenesOn = new ArrayList<>(config.scenes);
+        sceneSeconds = config.sceneSeconds;
+        sceneSun = config.sceneFollowSun;
+        sceneScrim = config.sceneScrim;
         prayerMethod = s.prayerMethodKey;
         asrFactor = s.asrFactor;
 
@@ -347,6 +359,75 @@ public final class LauncherSettingsActivity extends Activity {
             }));
         }
         addRow(LOOK, R.string.clock_style_label, getString(R.string.clock_style_hint), clockStyleViews);
+        buildScenes();
+    }
+
+    /** The Scenes look (docs/BATCH_S_SCENES.md): the home look, which scenes, how long each, the sun and the top scrim. */
+    private void buildScenes() {
+        int[] lookNames = {R.string.home_look_classic, R.string.home_look_scenes, R.string.home_look_oled};
+        for (int i = 0; i < HomeLook.ALL.length; i++) {
+            final String look = HomeLook.ALL[i];
+            homeLookViews.add(chip(getString(lookNames[i]), v -> {
+                if (look.equals(homeLook)) return;
+                homeLook = look;
+                choices.edit().putString(Config.HOME_LOOK_KEY, look).apply();
+                changed();
+            }));
+        }
+        addRow(LOOK, R.string.home_look_label, getString(R.string.home_look_hint) + " " + getString(R.string.scenes_credit),
+                homeLookViews);
+
+        int[] sceneNames = {R.string.scene_night, R.string.scene_fog, R.string.scene_golden, R.string.scene_dawn,
+                R.string.scene_water};
+        for (int i = 0; i < SceneList.ALL.length; i++) {
+            final String id = SceneList.ALL[i];
+            sceneViews.add(chip(getString(sceneNames[i]), v -> {
+                List<String> next = new ArrayList<>(scenesOn);
+                if (next.contains(id)) {
+                    if (next.size() == 1) return;   // one scene always stays on
+                    next.remove(id);
+                } else {
+                    next.add(id);
+                }
+                scenesOn = SceneList.enabled(next);
+                choices.edit().putString(Config.SCENES_KEY, SceneList.toCsv(scenesOn)).apply();
+                changed();
+            }));
+        }
+        addRow(LOOK, R.string.scenes_label, getString(R.string.scenes_hint), sceneViews);
+
+        for (int seconds : SceneRotation.CHOICES) {
+            sceneSecondsViews.add(chip(getString(R.string.scene_seconds_value, seconds), v -> {
+                if (seconds == sceneSeconds) return;
+                sceneSeconds = seconds;
+                choices.edit().putInt(Config.SCENE_SECONDS_KEY, seconds).apply();
+                changed();
+            }));
+        }
+        addRow(LOOK, R.string.scene_seconds_label, getString(R.string.scene_seconds_hint), sceneSecondsViews);
+
+        for (int i = 0; i < 2; i++) {
+            final boolean on = i == 1;
+            sceneSunViews.add(chip(getString(on ? R.string.on : R.string.off), v -> {
+                if (on == sceneSun) return;
+                sceneSun = on;
+                choices.edit().putBoolean(Config.SCENE_FOLLOW_SUN_KEY, on).apply();
+                changed();
+            }));
+        }
+        addRow(LOOK, R.string.scene_sun_label, getString(R.string.scene_sun_hint), sceneSunViews);
+
+        int[] scrimNames = {R.string.scrim_off, R.string.scrim_auto, R.string.scrim_on};
+        for (int i = 0; i < SceneScrim.ALL.length; i++) {
+            final String setting = SceneScrim.ALL[i];
+            sceneScrimViews.add(chip(getString(scrimNames[i]), v -> {
+                if (setting.equals(sceneScrim)) return;
+                sceneScrim = setting;
+                choices.edit().putString(Config.SCENE_SCRIM_KEY, setting).apply();
+                changed();
+            }));
+        }
+        addRow(LOOK, R.string.scene_scrim_label, getString(R.string.scene_scrim_hint), sceneScrimViews);
     }
 
     private void buildDock() {
@@ -951,6 +1032,14 @@ public final class LauncherSettingsActivity extends Activity {
         for (int i = 0; i < TileShape.ALL.length; i++) tileCornersViews.get(i).setSelected(TileShape.ALL[i].equals(tileCorners));
         for (int i = 0; i < ClockStyle.ALL.length; i++) clockStyleViews.get(i).setSelected(ClockStyle.ALL[i].equals(clockStyle));
         for (int i = 0; i < DigitStyle.ALL.length; i++) digitsViews.get(i).setSelected(DigitStyle.ALL[i].equals(digits));
+        for (int i = 0; i < HomeLook.ALL.length; i++) homeLookViews.get(i).setSelected(HomeLook.ALL[i].equals(homeLook));
+        for (int i = 0; i < SceneList.ALL.length; i++) sceneViews.get(i).setSelected(scenesOn.contains(SceneList.ALL[i]));
+        for (int i = 0; i < SceneRotation.CHOICES.length; i++) {
+            sceneSecondsViews.get(i).setSelected(SceneRotation.CHOICES[i] == sceneSeconds);
+        }
+        sceneSunViews.get(0).setSelected(!sceneSun);
+        sceneSunViews.get(1).setSelected(sceneSun);
+        for (int i = 0; i < SceneScrim.ALL.length; i++) sceneScrimViews.get(i).setSelected(SceneScrim.ALL[i].equals(sceneScrim));
         for (int i = 0; i < WallpaperDim.CHOICES.length; i++) dimViews.get(i).setSelected(WallpaperDim.CHOICES[i] == wallpaperDim);
         for (int i = 0; i < ALERT_CHOICES.length; i++) alertViews.get(i).setSelected(ALERT_CHOICES[i] == prayerAlertMinutes);
         for (int i = 0; i < hijriShiftViews.size(); i++) hijriShiftViews.get(i).setSelected(HijriShift.MIN + i == hijriShift);
