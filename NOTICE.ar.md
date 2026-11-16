@@ -18,6 +18,12 @@
 
 وأفكار *الرصيف الجانبي* و*تعتيم الخلفية* و*الأرقام العربية للساعة* استُلهمت من الوصف العلني في README لمشروع [sukoon-tv](https://github.com/MultiX0/sukoon-tv) للمطوّر MultiX0. المشروع ما يعلن رخصة، فما أُخذ منه إلا الأفكار: قُرئ README فقط، وما في هذا المشروع أي كود أو صورة منه، والتنفيذ من عندنا.
 
+## مظهر «مشاهد» (couch-tv)
+
+مظهر الشاشة الرئيسية *مشاهد* (`docs/BATCH_S_SCENES.ar.md`) مستوحى من الشاشة الرئيسية في [couch-tv](https://github.com/Seagey/couch-tv) للمطوّر Seagey، رخصة MIT. المأخوذ: صور المشاهد الخمس (`scene-night` و`scene-fog` و`scene-golden` و`scene-dawn` و`scene-water`، لكل منها قصاصتها ونسختها المموّهة) من الإيداع `31b8f26f445aa023ff1df3cda660740a30a8a8a5`. يقول ملف `CREDITS.md` عندهم عنها: "Use them however you like". صُنعت لـ couch-tv من نص فقط بلا صورة مصدر، وحالة حقوقها خارج هذه العبارة غير مؤكدة عندنا. الأصول محفوظة كما هي في `scenes/master/` (بصمة SHA-256 لكل ملف في `scenes/manifest.json`)، والـ APK يحمل نسخاً WebP أعاد ترميزها `scenes/to-scenes.py`. غير المأخوذ: أي كود أو CSS أو نص أو خط. كود الرسم مكتوب هنا. لا نستعمل صور Classic عندهم (رخصة مشاركة بالمثل). الاسم *مشاهد* وصفي ولا يوحي أن صاحب المشروع يصونه أو يزكّيه.
+
+نص رخصة couch-tv كما نُشر موجود في [النسخة الإنجليزية](NOTICE.md#scenes-look-couch-tv)، وحقوقه: `Copyright (c) 2026 Seagey`.
+
 ## الخطوط
 
 الخطوط غير مشمولة برخصة MIT في [LICENSE](LICENSE). خط Outfit حقوقه لـThe Outfit Project Authors، وخط IBM Plex Sans Arabic حقوقه لشركة IBM Corp.، والاثنان برخصة SIL Open Font License 1.1.
@@ -26,6 +32,7 @@
 |---|---|---|---|
 | Outfit | `launcher/app/src/main/res/font/outfit*.ttf` | SIL OFL 1.1 (`launcher/FONT-LICENSE-OFL.txt`) | جاء مع الأصل |
 | IBM Plex Sans Arabic | `launcher/app/src/main/res/font/plex_arabic.ttf` (عادي) و`plex_arabic_light.ttf` (خفيف) و`plex_arabic_medium.ttf` (متوسط) | SIL OFL 1.1 (`launcher/FONT-LICENSE-IBMPLEXSANSARABIC-OFL.txt`) | [google/fonts](https://github.com/google/fonts) عند الـcommit `9862abc066c9b83bf84c3e8ed1fc2d8d48f9bbf0`، الملفات `ofl/ibmplexsansarabic/IBMPlexSansArabic-{Regular,Light,Medium}.ttf`، بصمات SHA-256 مذكورة في النسخة الإنجليزية |
+| Antonio (الأرقام والنقطتان فقط، وزن 300) | `launcher/app/src/main/res/font/antonio_digits.ttf` | SIL OFL 1.1 (`launcher/FONT-LICENSE-ANTONIO-OFL.txt`)، حقوقها The Antonio Project Authors | [google/fonts](https://github.com/google/fonts) عند الإيداع `95f4904fc8bcf26d3420fe315560c96417c6dec7`، الملف `ofl/antonio/Antonio[wght].ttf` (74,104 بايت)، SHA-256 `9E95A2258ECDF3E45C72C5BBEA1C4CD350E8F7BEBC87C9DBA53B29B1890B8903`؛ المجموعة الجزئية من `scenes/make-clock-font.py` (2,900 بايت) |
 
 خط Readex Pro (كان للبطاقات لين 2.8) أُزيل في 2.9.
 
