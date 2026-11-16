@@ -4,7 +4,7 @@
 
 From 3.0.0 the `versionCode` is 5 (every earlier build had 4) and it rises by one with each release, so a store or an update checker sees an update. 3.0.0 installs over 2.9.0 and earlier with `adb install -r`; going back to 2.9.0 or older needs an uninstall first, which removes `config.json` from the TV, so copy it before.
 
-## Unreleased
+## 3.1.0 (2026-11-16)
 Batch L, "lighter on small TVs". No new permission, service or dependency. Design note: `docs/BATCH_L_LIGHT.md`.
 - **The APK is about two thirds smaller**: the 22 bundled wallpapers are lossy WebP (quality 80) instead of JPEG, same pixel size, none dropped. `wallpapers/to-webp.py` makes them from the JPEG masters, which stay in the repository; the quality is one number per folder (`--quality serene=90` for a run), so a folder that shows banding on a TV can be raised. Pictures you push to `files/wallpapers/` can now be `.webp` as well as `.jpg`, `.jpeg` and `.png`; yours are never touched by the upgrade. The built-in copies on the TV are replaced once (the stamp now also names the picture format). Picture quality on a TV is not verified yet.
 - **Small-memory gate**: a TV that Android marks as low-RAM, or that gives Android about 2.1 GB or less (2,200 MiB), starts with *Lively* effects off unless the TV's own choice or `advanced_effects` in `config.json` says otherwise (the default was already off, so nothing looks different today). The Motion row in Launcher settings shows what the launcher read, for example `Memory: small (1938 MiB)`. Rule in `SmallMemory`, with JVM tests. Later work reads this gate.
