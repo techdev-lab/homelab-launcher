@@ -109,6 +109,11 @@ one card for the four Arab leagues. Still not available (no free source checked 
 | `background_color` | `"#0B0B0C"` | Behind everything. |
 | `animations`, `reduced_motion` | `true` / `false` | Turn effects down on slow TVs. |
 | `advanced_effects` | `true` / `false` | The *Lively* motion choice: lifted tiles, icon zoom, smooth colour transitions. Default `false`. A TV with about 2 GB of memory or less (or one Android marks as low-RAM) counts as small and always starts with it off unless this key or the TV's own choice says otherwise; the TV's choice wins, then this key, then the default. *Launcher settings > Motion* shows the memory class the launcher read, for example `Memory: small (1938 MiB)`. |
+| `home_look` | `classic`, `scenes`, `oled` | The look of the whole home screen. `classic` is the home as it has always been (`wallpaper_mode` decides the picture). `scenes` draws a full-screen scene with a large clock behind the tiles (inspired by couch-tv, see [NOTICE.md](../NOTICE.md)); it uses no wallpaper, sky or veil. `oled` is plain black `#000000`. Default `classic`. The TV's choice (*Launcher settings > Home look*) wins. |
+| `scenes` | any of `"night"`, `"fog"`, `"golden"`, `"dawn"`, `"water"` | The scenes the Scenes look shows, always in that order. Unknown names are ignored; an empty list means `night` alone. Default: all five. The TV's choice wins. |
+| `scene_seconds` | `5` to `600` (default `20`) | Seconds each scene stays. A value outside the range is clamped. The TV offers 10, 20, 30, 60 and 120. |
+| `scene_follow_sun` | `true` / `false` (default `false`) | Picks the scene from the time of day instead of rotating: dawn from Fajr to 45 minutes after sunrise, then the day scene (`water`, or `fog` if `water` is off), then `golden` from Asr to 15 minutes after Maghrib, then `night`. It uses the place in `prayer_lat` and `prayer_lng`; without a valid place it uses the clock (05-08 dawn, 08-16 day, 16-19 golden, else night). No permission is needed. |
+| `scene_scrim` | `off`, `auto`, `on` (default `auto`) | A soft shade at the top behind the header. `auto` adds it only for the bright scenes (golden, dawn). |
 | `sky_intensity` | `0` to `100` | Optional time-of-day sky behind the screen; 0 hides it. |
 | `shamsi_date`, `festival` | | Inherited from the upstream launcher; off in the examples. |
 
@@ -123,6 +128,7 @@ one card for the four Arab leagues. Still not available (no free source checked 
 | Cards: prayer times, weather, football, my clubs | a card that is off never shows, whatever the config says | switching it on again |
 | Favourite clubs | `favorite_teams` | *Clear* on the clubs screen |
 | Text size, dock position, dock style, tile corners, clock style, digits, wallpaper dim, remote buttons, prayer method and Asr, prayer alert, Hijri date, hidden apps | `text_size`, `dock_position`, `dock_style`, `tile_corners`, `clock_style`, `digits`, `wallpaper_dim`, `key_filter`, `prayer_method`, `asr_method`, `prayer_alert_minutes`, `hijri_offset_days`, `hidden_apps` | **A theme push does not clear them**; change them on the same screen (hidden apps: *Use the theme's list*) |
+| Home look, scenes, seconds per scene, follow the sun, top shade | `home_look`, `scenes`, `scene_seconds`, `scene_follow_sun`, `scene_scrim` | **A theme push does not clear them**; change them on the same screen |
 
 ## Wallpapers
 

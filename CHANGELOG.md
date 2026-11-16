@@ -19,6 +19,13 @@ Batch L, "lighter on small TVs". No new permission, service or dependency. Desig
 
 Sizes are from a local release build signed with the debug key; a build with the project key differs by a few hundred bytes.
 
+Batch S, the *Scenes* home look (off by default). No new permission, service or dependency. Design note: `docs/BATCH_S_SCENES.md`.
+- **Scenes look**: a full-screen scene, a large clock whose digits show the blurred copy of the picture, and the scenery over the bottom of the digits. Five scenes (Night, Fog, Golden, Dawn, Waterline) rotate on their own timer (`scene_seconds`, default 20), each can be turned off, and *Follow the sun* picks the scene from the time of day. Pick it in *Launcher settings > Home look*, or with `"home_look": "scenes"`. The pictures are from [couch-tv](https://github.com/Seagey/couch-tv) by Seagey (MIT), re-encoded; see `NOTICE.md`.
+- **OLED look**: plain black, no wallpaper, sky or veil (`"home_look": "oled"`).
+- **Small-memory TVs** show one scene at a time and swap without a cross-fade.
+- New keys: `home_look`, `scenes`, `scene_seconds`, `scene_follow_sun`, `scene_scrim` (see `docs/CONFIG.md`). New page: `docs/UNINSTALL.md`.
+- Sizes: the Scenes pictures add 999,120 B; offline APK 2,320,457 B, online APK 2,328,293 B (local release build, debug key). Memory of the Scenes look on a TV: not measured.
+
 ## 3.0.2 (2026-11-15)
 A small release of five fixes, found by comparing with another launcher that shares part of our code history. Nothing new to configure, no new permission, service or dependency, and 3.0.2 installs over 3.0.1 with `adb install -r`. Checked on the Chromecast with Google TV 4K (Android 14); the clock fix on Android 9 and older and the picture row on Xiaomi TVs are not tested. See `docs/BATCH_F_FIXES.md` for what each fix does, its JVM tests and what was and was not seen on a TV.
 - **Home no longer stays in memory after a settings change**: the focus listener of the home screen was never removed, and the connectivity and TV-input managers came from the activity, so each `recreate()` could leave a whole old Home screen reachable. The listener is removed in `onDestroy` and the managers come from the application context. A JVM test reads the source and fails if either pattern returns. On the Chromecast, 20 round trips through Launcher settings left the object counters at their starting values (no leak seen on this build; the earlier build was not measured the same way).
