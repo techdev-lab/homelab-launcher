@@ -63,6 +63,9 @@ final class Config {
     static final String DIGITS_KEY = "digits", WALLPAPER_DIM_KEY = "wallpaper_dim", DOCK_POSITION_KEY = "dock_position";
     /** Remote buttons picked on the TV (KeyFilter): whether the key service filters keys; wins over config.json, kept across theme pushes. */
     static final String KEY_FILTER_KEY = "key_filter";
+    /** The Scenes look (docs/BATCH_S_SCENES.md) picked on the TV: look, scenes on, seconds, follow the sun, top scrim. Kept across theme pushes. */
+    static final String HOME_LOOK_KEY = "home_look", SCENES_KEY = "scenes", SCENE_SECONDS_KEY = "scene_seconds",
+            SCENE_FOLLOW_SUN_KEY = "scene_follow_sun", SCENE_SCRIM_KEY = "scene_scrim";
     private static final String THEME_REVISION_NAME = "theme_revision";
     private static final String THEME_SIGNATURE_KEY = "theme_signature";
 
@@ -130,6 +133,11 @@ final class Config {
     final String dockPosition;
     /** Whether the key service filters the remote's keys (KeyFilter): on, as in 2.9, or off. */
     final String keyFilter;
+    /** The home look (HomeLook) and the Scenes look settings (SceneList, SceneRotation, SceneScrim). */
+    final String homeLook, sceneScrim;
+    final List<String> scenes;
+    final int sceneSeconds;
+    final boolean sceneFollowSun;
 
     private Config(List<String> dockApps, boolean fillDock, List<String> hiddenApps, String liveTvPackage,
                    String liveTvAction, String sourcePanelService, String sourcePanelAction, String inputAction,
@@ -141,7 +149,8 @@ final class Config {
                    Festival festival, Interests.Settings interests, Map<Integer, String> appKeys,
                    List<File> wallpapers, int wallpaperMinutes, String wallpaperMode,
                    String textSize, String dockStyle, String tileCorners, String clockStyle,
-                   String digits, int wallpaperDim, String dockPosition, String keyFilter) {
+                   String digits, int wallpaperDim, String dockPosition, String keyFilter,
+                   String homeLook, List<String> scenes, int sceneSeconds, boolean sceneFollowSun, String sceneScrim) {
         this.dockApps = Collections.unmodifiableList(dockApps);
         this.fillDock = fillDock;
         this.hiddenApps = Collections.unmodifiableList(hiddenApps);
@@ -180,6 +189,11 @@ final class Config {
         this.wallpaperDim = wallpaperDim;
         this.dockPosition = dockPosition;
         this.keyFilter = keyFilter;
+        this.homeLook = homeLook;
+        this.scenes = Collections.unmodifiableList(scenes);
+        this.sceneSeconds = sceneSeconds;
+        this.sceneFollowSun = sceneFollowSun;
+        this.sceneScrim = sceneScrim;
     }
 
     /** The folder the theme tools push into; null when external storage is unavailable. */
@@ -290,7 +304,39 @@ final class Config {
                 DigitStyle.pick(choices.getString(DIGITS_KEY, ""), json == null ? "" : string(json, "digits", "")),
                 WallpaperDim.pick(tvInt(choices, WALLPAPER_DIM_KEY), wholeNumber(json, WALLPAPER_DIM_KEY)),
                 DockPosition.pick(choices.getString(DOCK_POSITION_KEY, ""), json == null ? "" : string(json, "dock_position", "")),
-                KeyFilter.pick(choices.getString(KEY_FILTER_KEY, ""), json == null ? "" : string(json, "key_filter", "")));
+                KeyFilter.pick(choices.getString(KEY_FILTER_KEY, ""), json == null ? "" : string(json, "key_filter", "")),
+                HomeLook.pick(choices.getString(HOME_LOOK_KEY, ""), json == null ? "" : string(json, "home_look", "")),
+                scenesOn(json, choices),
+                SceneRotation.pick(tvInt(choices, SCENE_SECONDS_KEY), wholeNumber(json, SCENE_SECONDS_KEY)),
+                SceneSun.follow(tvBool(choices, SCENE_FOLLOW_SUN_KEY), jsonBool(json, "scene_follow_sun")),
+                SceneScrim.pick(choices.getString(SCENE_SCRIM_KEY, ""), json == null ? "" : string(json, "scene_scrim", "")));
+    }
+
+    private static Boolean tvBool(SharedPreferences choices, String key) {
+        try {
+            return choices.contains(key) ? choices.getBoolean(key, false) : null;
+        } catch (ClassCastException e) {
+            return null;
+        }
+    }
+
+    /** A boolean from config.json, or null when the key is missing or not a boolean. */
+    private static Boolean jsonBool(JSONObject json, String key) {
+        Object v = json == null ? null : json.opt(key);
+        return v instanceof Boolean ? (Boolean) v : null;
+    }
+
+    /** The scenes that are on: the TV's comma list, else config.json "scenes", else all of them (SceneList keeps the order). */
+    private static List<String> scenesOn(JSONObject json, SharedPreferences choices) {
+        String tv = null;
+        try {
+            if (choices.contains(SCENES_KEY)) tv = choices.getString(SCENES_KEY, "");
+        } catch (ClassCastException e) {
+            // a stored value of the wrong type is ignored
+        }
+        List<String> theme = json != null && json.opt("scenes") instanceof JSONArray
+                ? stringList(json, "scenes", new ArrayList<>()) : null;
+        return SceneList.pick(tv, theme);
     }
 
     /**

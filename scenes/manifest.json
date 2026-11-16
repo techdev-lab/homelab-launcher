@@ -1,0 +1,68 @@
+{
+  "source": "couch-tv 31b8f26f445aa023ff1df3cda660740a30a8a8a5",
+  "scenes": {
+    "night": {
+      "masters": {
+        "scene-night.jpg": "0a896b2ba859f7310b0f7cf6d1304d444f27223b7255f09d7949313e11e866a5",
+        "scene-night-glass.jpg": "4a852ba319a280e69f7cc69357c6dfc2ee33084bf86d8bbec5b080a390893ce0",
+        "scene-night-fg.webp": "034b3525f3f405c1458304932aec05ffc9791782fdbc76b5592b60173556ae8e"
+      },
+      "files": {
+        "bg.webp": 118376,
+        "glass.webp": 5302,
+        "cut.webp": 98814
+      },
+      "cut_first_row": 154
+    },
+    "fog": {
+      "masters": {
+        "scene-fog.jpg": "ed7950658a0eb1fc07618ecbb5d66bf3918e128b2b61fe23c2724918d00951fc",
+        "scene-fog-glass.jpg": "59b29acfb7cc8459cf25079c3505c23cab0ac0b65b7a74d07d09618293e81212",
+        "scene-fog-fg.webp": "46f82bbf405f14afab0ded816703b5bb3d72d57ca8724b7ce826ad2ee2a07b36"
+      },
+      "files": {
+        "bg.webp": 93572,
+        "glass.webp": 2872,
+        "cut.webp": 77798
+      },
+      "cut_first_row": 491
+    },
+    "golden": {
+      "masters": {
+        "scene-golden.jpg": "c134080d8fb9ab0a3b20a3a6aefcd73f6e6fb7a94108c409bf079a2991c50035",
+        "scene-golden-glass.jpg": "86de4a3c74532d34b61e7e487604d4b67d90650fe063954c74bd627c20b92cb5",
+        "scene-golden-fg.webp": "434b0b260d78769e51f5254dbbdb488e4eb03d27ea65c074cbf13acb1f672b02"
+      },
+      "files": {
+        "bg.webp": 105214,
+        "glass.webp": 3986,
+        "cut.webp": 79438
+      },
+      "cut_first_row": 364
+    },
+    "dawn": {
+      "masters": {
+        "scene-dawn.jpg": "2ae089d4d1af213c1ce3434c06fd3e75947f9656eb43138347b5549216ca5dc3",
+        "scene-dawn-glass.jpg": "862e9df16e41ac95e6a9f8bda40dd0de3a514c5ceb9a21e1a9fb248d39dc1471",
+        "scene-dawn-fg.webp": "3e2a8a6371199ef749c9842c91378d7c54dc47a67e2590334a5d7ff1a0288ae6"
+      },
+      "files": {
+        "bg.webp": 98098,
+        "glass.webp": 3356,
+        "cut.webp": 68390
+      },
+      "cut_first_row": 479
+    },
+    "water": {
+      "masters": {
+        "scene-water.jpg": "087b639e30b3aa1ced9a6d357c1ae56bd8ad1042559e0234657eccb00a95472a",
+        "scene-water-glass.jpg": "57237dc604bd43dcab060b9a68ab8e8101401d34a194ecdc17579b2980c99918"
+      },
+      "files": {
+        "bg.webp": 237398,
+        "glass.webp": 6506
+      }
+    }
+  },
+  "total_bytes": 999120
+}

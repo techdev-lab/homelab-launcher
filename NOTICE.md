@@ -16,14 +16,45 @@ The five fixes of batch F (`docs/BATCH_F_FIXES.md`: the leaked focus listener, g
 
 The ideas of the *side dock*, the *wallpaper dim* and *Arabic digits for the clock* were inspired by the public README of [sukoon-tv](https://github.com/MultiX0/sukoon-tv) by MultiX0. It states no licence, so only the ideas were taken: its README was read, no code or image from it is in this project, and the implementation is ours.
 
+## Scenes look (couch-tv)
+
+The *Scenes* home look (`docs/BATCH_S_SCENES.md`) is inspired by the home screen of [couch-tv](https://github.com/Seagey/couch-tv) by Seagey, MIT License. What was taken: the five scene pictures (`scene-night`, `scene-fog`, `scene-golden`, `scene-dawn`, `scene-water`, each with its cut-out and blurred copy), from commit `31b8f26f445aa023ff1df3cda660740a30a8a8a5`. Their `CREDITS.md` says of them: "Use them however you like." They were made for couch-tv from text only, with no source photo; their copyright status beyond that line is not verified here. The originals are kept byte for byte in `scenes/master/` (SHA-256 of each in `scenes/manifest.json`); the APK carries re-encoded WebP copies made by `scenes/to-scenes.py`. What was not taken: any code, CSS, text or font. The drawing code is written here, from reading what the screen shows. The Classic photos of couch-tv (Creative Commons share-alike) are not used. The name *Scenes* is descriptive and does not imply that its author maintains or endorses this project.
+
+The couch-tv licence, as published:
+
+```
+MIT License
+
+Copyright (c) 2026 Seagey
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
 ## Fonts
 
-The fonts are not covered by the MIT License in [LICENSE](LICENSE). Outfit is copyright The Outfit Project Authors and IBM Plex Sans Arabic is copyright IBM Corp., both under the SIL Open Font License 1.1.
+The fonts are not covered by the MIT License in [LICENSE](LICENSE). Outfit is copyright The Outfit Project Authors, Antonio (the clock digits of the Scenes look) is copyright The Antonio Project Authors and IBM Plex Sans Arabic is copyright IBM Corp., all under the SIL Open Font License 1.1.
 
 | Font | Files | License | Source |
 |---|---|---|---|
 | Outfit | `launcher/app/src/main/res/font/outfit*.ttf` | SIL OFL 1.1 (`launcher/FONT-LICENSE-OFL.txt`) | Bundled by upstream |
 | IBM Plex Sans Arabic | `launcher/app/src/main/res/font/plex_arabic.ttf` (Regular), `plex_arabic_light.ttf` (Light), `plex_arabic_medium.ttf` (Medium) | SIL OFL 1.1 (`launcher/FONT-LICENSE-IBMPLEXSANSARABIC-OFL.txt`) | [google/fonts](https://github.com/google/fonts) at commit `9862abc066c9b83bf84c3e8ed1fc2d8d48f9bbf0`, files `ofl/ibmplexsansarabic/IBMPlexSansArabic-{Regular,Light,Medium}.ttf`, SHA-256 Regular `6F611412270A132BBAC838DA9259D4C68569B4175F3B3B8FA3FA36A30B56DAB9`, Light `0AF9D1EFFBB36FF74D13C64F752C771ECB9162A451CF151C5425F4D00D4DAA7C`, Medium `B8363AB9F733DFA4F8E96B8B2102C24B5CF4110FB96D1D3D9A9412F6FB49CF74` |
+| Antonio (digits and colon only, weight 300) | `launcher/app/src/main/res/font/antonio_digits.ttf` | SIL OFL 1.1 (`launcher/FONT-LICENSE-ANTONIO-OFL.txt`), copyright The Antonio Project Authors | [google/fonts](https://github.com/google/fonts) at commit `95f4904fc8bcf26d3420fe315560c96417c6dec7`, file `ofl/antonio/Antonio[wght].ttf` (74,104 bytes), SHA-256 `9E95A2258ECDF3E45C72C5BBEA1C4CD350E8F7BEBC87C9DBA53B29B1890B8903`; subset made by `scenes/make-clock-font.py` (2,900 bytes, SHA-256 `FD9A72BD993566F8BE20549C588D1A77735B50D78E88E84C3DF0D8377F9CD22B`) |
 
 Readex Pro (used for the cards up to 2.8) was removed in 2.9.
 

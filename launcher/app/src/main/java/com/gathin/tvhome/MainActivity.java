@@ -17,6 +17,7 @@ import android.graphics.Paint;
 import android.graphics.RadialGradient;
 import android.graphics.Rect;
 import android.graphics.Shader;
+import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -160,6 +161,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private int wallIndex = -1;
     /** Optional time-of-day backdrop (config.xml, sky_intensity); 0 keeps it hidden. */
     private SkyView sky;
+    /** The home look and the Scenes look in force (HomeLook, SceneList); sceneView is null outside the Scenes look. */
+    private String homeLook = HomeLook.CLASSIC;
+    private SceneView sceneView;
+    private List<String> sceneIds = Collections.emptyList();
+    private int sceneSeconds = SceneRotation.DEFAULT_SECONDS;
+    private boolean sceneSun;
+    private final Runnable sceneTick = this::updateScene;
     private String vpnApp;
     private SpringAnimation springX, springY;
     private float glassTargetX, glassTargetY;
@@ -345,20 +353,25 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         sourcePanelAction = cfg.sourcePanelAction;
 
         root = findViewById(R.id.root);
-        root.setBackgroundColor(cfg.backgroundColor);
+        homeLook = cfg.homeLook;
+        root.setBackgroundColor(HomeLook.OLED.equals(homeLook) ? HomeLook.OLED_BACKGROUND : cfg.backgroundColor);
         wallpaperDim = cfg.wallpaperDim;
-        wallpapers = cfg.wallpapers;
+        // The Scenes and OLED looks have no wallpaper picture and no veil (docs/BATCH_S_SCENES.md).
+        wallpapers = HomeLook.usesWallpaper(homeLook) ? cfg.wallpapers : Collections.<File>emptyList();
         wallpaperMinutes = cfg.wallpaperMinutes;
-        if (!wallpapers.isEmpty()) updateWallpaperRotation();
-        else if (cfg.wallpaper != null) showWallpaper(cfg.wallpaper);
+        if (HomeLook.usesWallpaper(homeLook)) {
+            if (!wallpapers.isEmpty()) updateWallpaperRotation();
+            else if (cfg.wallpaper != null) showWallpaper(cfg.wallpaper);
+        }
         sky = findViewById(R.id.sky);
-        sky.setIntensity(cfg.skyIntensity);
+        sky.setIntensity(HomeLook.usesSky(homeLook) ? cfg.skyIntensity : 0);
         glass = findViewById(R.id.glass);
         if (festive) glass.setAccent(festival.accentColor());
         ambient = findViewById(R.id.ambient);
         // The glow is one bitmap, so its alpha can be applied while drawing it. Otherwise every frame of
         // a fade renders it into a full-screen offscreen buffer first.
         ambient.forceHasOverlappingRendering(false);
+        if (!HomeLook.usesSky(homeLook)) ambient.setVisibility(View.GONE);
         heroName = findViewById(R.id.heroName);
         greeting = findViewById(R.id.greeting);
         greetingColor = greeting.getCurrentTextColor();
@@ -381,8 +394,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         dockStyle = cfg.dockStyle;
         tileCorners = cfg.tileCorners;
         clockStyle = cfg.clockStyle;
-        if (ClockStyle.capsule(clockStyle)) glassClock();
+        if (ClockStyle.capsule(clockStyle) && !HomeLook.replacesHeaderClock(homeLook)) glassClock();
         digits = cfg.digits;
+        startSceneLook(cfg);
         // The header's numbers: the clock, the Gregorian and Hijri dates. The strip cards do the same in cardText.
         // Latin too: the clock and the date take the system locale, which gives Arabic-Indic digits on the Arabic screen.
         for (int id : new int[]{R.id.clock, R.id.date, R.id.hijriDate, R.id.shamsiDate}) {
@@ -632,6 +646,54 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     }
 
+    // ---- Scenes look (docs/BATCH_S_SCENES.md) -------------------------------------------------------
+
+    /** Adds the scene view behind everything and hides the small header clock; only in the Scenes look. */
+    private void startSceneLook(Config cfg) {
+        if (!HomeLook.replacesHeaderClock(homeLook)) return;
+        sceneIds = cfg.scenes;
+        sceneSeconds = cfg.sceneSeconds;
+        sceneSun = cfg.sceneFollowSun;
+        Typeface face = DigitStyle.arabic(cfg.digits) ? getResources().getFont(R.font.plex_arabic_light)
+                : getResources().getFont(R.font.antonio_digits);
+        sceneView = new SceneView(this, face, cfg.smallMemory, cfg.animations, cfg.reducedMotion, cfg.digits,
+                cfg.sceneScrim);
+        root.addView(sceneView, 0, new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+        // The big clock replaces the small one; the header keeps its height so nothing below it moves.
+        findViewById(R.id.clock).setVisibility(View.INVISIBLE);
+        findViewById(R.id.ampm).setVisibility(View.INVISIBLE);
+    }
+
+    /** Shows the scene for now and plans the next change; the clock text is pushed at least once a minute. */
+    private void updateScene() {
+        handler.removeCallbacks(sceneTick);
+        if (sceneView == null || sceneIds.isEmpty()) return;
+        long now = System.currentTimeMillis();
+        sceneView.setClock(now, android.text.format.DateFormat.is24HourFormat(this));
+        long untilMinute = MINUTE_MS - now % MINUTE_MS;
+        long wait = untilMinute;
+        String id;
+        if (sceneSun) {
+            id = sunScene(now);
+        } else {
+            id = sceneIds.get(SceneRotation.indexAt(now, sceneSeconds, sceneIds.size()));
+            if (sceneIds.size() > 1) wait = Math.min(wait, SceneRotation.msToNext(now, sceneSeconds));
+        }
+        sceneView.show(id);
+        handler.postDelayed(sceneTick, Math.max(1, wait));
+    }
+
+    /** Follow the sun: the prayer place from config.json when it is valid, else the clock (SceneSun). */
+    private String sunScene(long now) {
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(now);
+        double hours = c.get(Calendar.HOUR_OF_DAY) + c.get(Calendar.MINUTE) / 60.0 + c.get(Calendar.SECOND) / 3600.0;
+        double tz = TimeZone.getDefault().getOffset(now) / 3_600_000.0;
+        return SceneSun.pick(interestsCfg.prayerLat, interestsCfg.prayerLng, c.get(Calendar.YEAR),
+                c.get(Calendar.MONTH) + 1, c.get(Calendar.DAY_OF_MONTH), tz, hours, sceneIds);
+    }
+
     /** Rotating wallpapers: shows the picture for the current time slot, once a minute and on return to Home. */
     private void updateWallpaperRotation() {
         if (wallpapers.isEmpty()) return;
@@ -685,6 +747,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         updateInputsButton();
         sky.update();
         updateWallpaperRotation();
+        updateScene();
         handler.postDelayed(minuteTick, MINUTE_MS);
         startClockPush();
         feedActive = true;
@@ -765,6 +828,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         heroName.animate().cancel();
         ambient.animate().cancel();
         handler.removeCallbacks(minuteTick);
+        handler.removeCallbacks(sceneTick);
         stopClockPush();
         feedActive = false;
         handler.removeCallbacks(feedTick);
@@ -779,6 +843,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     protected void onStop() {
         super.onStop();
         unregisterReceiver(packageReceiver);
+        if (sceneView != null) sceneView.releaseBitmaps();   // nothing of ours holds a scene while another app is in front
         rebuildOnResume = true;
     }
 
@@ -786,6 +851,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     protected void onDestroy() {
         super.onDestroy();
         if (feedThread != null) feedThread.shutdownNow();
+        if (sceneView != null) sceneView.destroy();
         ViewTreeObserver focusObserver = getWindow().getDecorView().getViewTreeObserver();
         if (focusObserver.isAlive()) focusObserver.removeOnGlobalFocusChangeListener(focusListener);
         ConnectivityManager cm = connectivity();

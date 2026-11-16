@@ -86,6 +86,18 @@ tasks.register('syncWallpaperAssets', Sync) {
 android.sourceSets.main.assets.srcDir(wallpaperAssets)
 tasks.named('preBuild').configure { dependsOn 'syncWallpaperAssets' }
 
+// The Scenes look (docs/BATCH_S_SCENES.md): only the re-encoded .webp files go in, read straight from the APK assets.
+// The byte-for-byte source pictures in scenes/master/ and the manifest stay in the repository.
+def sceneAssets = layout.buildDirectory.dir('generated/sceneAssets')
+tasks.register('syncSceneAssets', Sync) {
+    from(rootProject.file('../scenes')) {
+        include 'night/*.webp', 'fog/*.webp', 'golden/*.webp', 'dawn/*.webp', 'water/*.webp'
+    }
+    into sceneAssets.map { it.dir('scenes') }
+}
+android.sourceSets.main.assets.srcDir(sceneAssets)
+tasks.named('preBuild').configure { dependsOn 'syncSceneAssets' }
+
 dependencies {
     implementation 'androidx.recyclerview:recyclerview:1.3.2'
     implementation 'androidx.dynamicanimation:dynamicanimation:1.1.0'
