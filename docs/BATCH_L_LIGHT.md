@@ -197,3 +197,13 @@ two columns compare like with like. Both are far under the 4.2 MB cap of the lig
 - That the memory line shows the right class on each TV (D1-a); under D1-b also that the fade really goes and Lively brings it back.
 - Picture quality of the three WebP sets on a TV; decode and rotation of WebP assets on API 26 to 34.
 - Cold start and the settings-loop memory test after the batch (device phase, typed CONFIRM).
+
+## 9. Progress (2026-11-16)
+| Item | State | Evidence |
+|---|---|---|
+| L1 small-memory gate (D1-a) | done, committed | `SmallMemoryTest`; 328 unit tests per flavor, 0 failures |
+| L2 R8 full mode and shrinking | done: already in effect, no build change | section 6 table |
+| L2b WebP wallpapers | done, committed; picture quality on a TV not verified | 3,181,869 B to 598,374 B |
+| L3 size and memory table | done (footer, changelog EN and AR); memory rows say "not measured" | |
+| Device phase (totalMem, cold start, memory loop, upgrade copy, picture check) | not started | needs a TV and a typed CONFIRM |
+| Push and PR | not started, waits for Ahmad's word | |
