@@ -118,7 +118,8 @@
                 </LinearLayout>
 
                 <View
-                    android:layout_width="1dp"
+                    android:id="@+id/headerDivider"
+                        android:layout_width="1dp"
                     android:layout_height="26dp"
                     android:layout_gravity="bottom"
                     android:layout_marginStart="16dp"

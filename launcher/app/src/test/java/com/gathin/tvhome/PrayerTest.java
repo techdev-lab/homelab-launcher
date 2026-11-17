@@ -94,4 +94,34 @@ public class PrayerTest {
         assertEquals("0:47", Prayer.countdown(16.567, 17.35));
         assertEquals("0:00", Prayer.countdown(18, 17));
     }
+
+    private static double at(int h, int m, int s) {
+        return h + m / 60.0 + s / 3600.0;
+    }
+
+    @Test
+    public void countdownIsTheDifferenceOfTheTwoTimesOnTheScreen() {
+        // The case seen on a TV: Maghrib 16:53 (really 16:53:10), clock 16:28. The old rule said 0:26.
+        assertEquals("0:25", Prayer.countdown(at(16, 28, 41), at(16, 53, 10)));
+        assertEquals("0:25", Prayer.countdown(at(16, 28, 0), at(16, 53, 10)));
+        assertEquals("0:25", Prayer.countdown(at(16, 28, 59), at(16, 53, 10)));
+        // Fajr 4:38 shown, clock 22:36 and 22:49: 6:02 and 5:49.
+        assertEquals("6:02", Prayer.countdown(at(22, 36, 20), at(28, 38, 25)));
+        assertEquals("5:49", Prayer.countdown(at(22, 49, 5), at(28, 38, 25)));
+    }
+
+    @Test
+    public void countdownUsesTheTargetAsItIsRounded() {
+        // 16:53:40 is shown as 16:54, so from 16:53 it is one minute away.
+        assertEquals("0:01", Prayer.countdown(at(16, 53, 5), at(16, 53, 40)));
+        // 16:53:10 is shown as 16:53, so from 16:53 it is now.
+        assertEquals("0:00", Prayer.countdown(at(16, 53, 5), at(16, 53, 10)));
+    }
+
+    @Test
+    public void countdownNeverGoesBelowZeroOrOverMidnightWrongly() {
+        assertEquals("0:00", Prayer.countdown(at(16, 54, 30), at(16, 53, 10)));
+        assertEquals("0:00", Prayer.countdown(at(16, 53, 0), at(16, 53, 0)));
+        assertEquals("1:00", Prayer.countdown(at(23, 0, 0), at(24, 0, 0)));
+    }
 }

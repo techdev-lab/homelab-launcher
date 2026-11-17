@@ -156,10 +156,16 @@ final class Prayer {
         return tomorrowHours + (tzToday - tzTomorrow);
     }
 
-    /** "0:47" from now to {@code target}, both in hours of the same day. */
+    /**
+     * "0:47" from now to {@code target}, both in hours of the same day. It counts the way the screen shows the two ends:
+     * the target is rounded to the nearest minute, as {@link #clock} prints it, and now is cut to the whole minute, as
+     * the clock reads. So the countdown is always the difference of the two times on the screen. (Before, it rounded
+     * the exact difference up, and showed one minute more than that whenever the target had seconds.)
+     */
     static String countdown(double nowHours, double target) {
-        int mins = (int) Math.ceil((target - nowHours) * 60 - 1e-9);
-        if (mins < 0) mins = 0;
+        long targetMinute = Math.round(target * 60);
+        long nowMinute = (long) Math.floor(nowHours * 60 + 1e-9);
+        int mins = (int) Math.max(0, targetMinute - nowMinute);
         return mins / 60 + ":" + (mins % 60 < 10 ? "0" : "") + mins % 60;
     }
 

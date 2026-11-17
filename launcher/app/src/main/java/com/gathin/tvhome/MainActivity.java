@@ -133,21 +133,30 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     /** Language, Hijri date and the interests strip from config.json (see Interests). */
     private Interests.Settings interestsCfg = Interests.Settings.NONE;
     private LinearLayout interestsStrip;
-    /** Latest online data, replaced whole by the feed thread and read on the main thread. */
-    private volatile List<Interests.Match> matches = Collections.emptyList();
-    private volatile List<Interests.Headline> headlines = Collections.emptyList();
+    /**
+     * Latest online data, replaced whole by the feed thread and read on the main thread. Static: a settings change
+     * rebuilds Home (recreate()), and a new Home must show the last data at once instead of empty cards until the
+     * next fetch ends. It holds no Activity or View, only plain data. Dropped when the language changes (names and
+     * headlines are fetched in the screen's language).
+     */
+    private static volatile List<Interests.Match> matches = Collections.emptyList();
+    private static volatile List<Interests.Headline> headlines = Collections.emptyList();
     /** Online build: the last weather fetch, or null (card hidden). */
-    private volatile Interests.Weather weather;
+    private static volatile Interests.Weather weather;
+    /** When each of the three was last fetched with data (FeedKeep keeps it through one empty fetch, for an hour). */
+    private static volatile long matchesAtMs, headlinesAtMs, weatherAtMs;
+    /** The language the static data above was fetched in; null before the first Home. */
+    private static Boolean cachedArabic;
     private int headlineIndex;
     private int matchIndex;
     /** Favourite clubs' fixtures (favorite_teams), the card that shows them and which club it is on. */
-    private volatile List<Interests.Match> clubMatches = Collections.emptyList();
+    private static volatile List<Interests.Match> clubMatches = Collections.emptyList();
     private View clubCard;
     private int clubIndex;
     /** Club schedules are large and change slowly: fetched every 12 hours, live scores in between. */
     private static final long CLUB_SCHEDULE_MS = 12 * 60 * MINUTE_MS;
-    private long clubScheduleMs;
-    private List<String> clubScheduleIds = Collections.emptyList();
+    private static long clubScheduleMs;
+    private static List<String> clubScheduleIds = Collections.emptyList();
     private ExecutorService feedThread;
     /** Resting backgrounds of the header pills and strip cards, re-tinted with the ambient colour (Glass). */
     private final List<GradientDrawable> glassPills = new ArrayList<>();
@@ -394,6 +403,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         hijriDate = findViewById(R.id.hijriDate);
         if (interestsCfg.hijriDate) hijriDate.setVisibility(View.VISIBLE);
         interestsStrip = findViewById(R.id.interests);
+        dropFeedDataIfLanguageChanged();
         appKeys = cfg.appKeys;
         vpnApp = cfg.vpnApp;
         textSize = cfg.textSize;
@@ -512,7 +522,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
 
         btnInputs = findViewById(R.id.btnInputs);
         View btnSettings = findViewById(R.id.btnSettings);
-        for (View pill : new View[]{btnInputs, btnWifi, btnSettings}) pill.setBackground(glassPill());
+        boolean framedPills = HomeLook.framesHeaderPills(homeLook);
+        for (View pill : new View[]{btnInputs, btnWifi, btnSettings}) pill.setBackground(glassPill(framedPills));
         tintGlass(ambientColor);
         btnInputs.setOnClickListener(v -> showInputs());
         btnWifi.setOnClickListener(v -> openNetworkPill());
@@ -669,6 +680,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         // The big clock replaces the small one; the header keeps its height so nothing below it moves.
         findViewById(R.id.clock).setVisibility(View.INVISIBLE);
         findViewById(R.id.ampm).setVisibility(View.INVISIBLE);
+        // The thin line between the small clock and the date has nothing to divide any more.
+        findViewById(R.id.headerDivider).setVisibility(View.INVISIBLE);
+        // The date lines can pass over the top of the big digits (on the Arabic screen the date sits where the last
+        // digits are); a soft dark edge keeps them readable over the picture and the digits.
+        float edge = 6 * density;
+        for (int id : new int[]{R.id.date, R.id.hijriDate, R.id.shamsiDate, R.id.greeting}) {
+            ((TextView) findViewById(id)).setShadowLayer(edge, 0, 0, 0xCC000000);
+        }
     }
 
     /** Shows the scene for now and plans the next change; the clock text is pushed at least once a minute. */
@@ -1118,15 +1137,19 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         tintGlass(color);
     }
 
-    /** Header pill: warm-white when focused, tinted glass at rest (the drawable is kept for tintGlass). */
-    private Drawable glassPill() {
+    /**
+     * Header pill: warm-white when focused, tinted glass at rest (the drawable is kept for tintGlass). With {@code framed}
+     * false (the Scenes look) the resting pill is transparent, with no fill and no edge, and tintGlass never colours it;
+     * the focus fill stays so the remote still shows where it is.
+     */
+    private Drawable glassPill(boolean framed) {
         float r = 21 * density;
         GradientDrawable focused = new GradientDrawable();
         focused.setColor(getColor(R.color.theme_focus));
         focused.setCornerRadius(r);
         GradientDrawable rest = new GradientDrawable();
         rest.setCornerRadius(r);
-        glassPills.add(rest);
+        if (framed) glassPills.add(rest);
         StateListDrawable s = new StateListDrawable();
         s.addState(new int[]{android.R.attr.state_focused}, focused);
         s.addState(new int[]{}, rest);
@@ -1555,6 +1578,21 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         return "ar".equals(getResources().getConfiguration().getLocales().get(0).getLanguage());
     }
 
+    /** The static feed data is in one language (team names, headlines); a language change drops it and starts fresh. */
+    private void dropFeedDataIfLanguageChanged() {
+        boolean ar = arabic();
+        if (cachedArabic != null && cachedArabic != ar) {
+            matches = Collections.emptyList();
+            headlines = Collections.emptyList();
+            weather = null;
+            matchesAtMs = headlinesAtMs = weatherAtMs = 0;
+            clubMatches = Collections.emptyList();
+            clubScheduleMs = 0;
+            clubScheduleIds = Collections.emptyList();
+        }
+        cachedArabic = ar;
+    }
+
     /** Online build: fetch off the main thread, then redraw. One fetch at a time; a failure hides that card. */
     private void fetchFeeds() {
         if (feedThread == null) feedThread = Executors.newSingleThreadExecutor();
@@ -1574,10 +1612,28 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                 }
                 clubMatches = Feeds.refreshLive(c, now);
             }
-            // Did any card get data? If not (no network yet at boot), the next fetch comes sooner (FeedRetry).
+            // Did any card get data? If not (no network yet at boot), the next fetch comes sooner (FeedRetry). Judged on
+            // what this fetch returned, before FeedKeep puts the earlier data back for the cards.
             boolean have = !m.isEmpty() || !h.isEmpty() || w != null || !clubMatches.isEmpty();
             feedFailures = have ? 0 : Math.min(feedFailures + 1, 100);
             feedHadData = have;
+            // One failed call must not wipe a card: an empty result keeps the earlier data for up to an hour.
+            long fetchedAt = System.currentTimeMillis();
+            if (FeedKeep.keepPrevious(s.wantsMatches(), m.isEmpty(), !matches.isEmpty(), matchesAtMs, fetchedAt)) {
+                m = matches;
+            } else if (!m.isEmpty()) {
+                matchesAtMs = fetchedAt;
+            }
+            if (FeedKeep.keepPrevious(!feeds.isEmpty(), h.isEmpty(), !headlines.isEmpty(), headlinesAtMs, fetchedAt)) {
+                h = headlines;
+            } else if (!h.isEmpty()) {
+                headlinesAtMs = fetchedAt;
+            }
+            if (FeedKeep.keepPrevious(s.wantsWeather(), w == null, weather != null, weatherAtMs, fetchedAt)) {
+                w = weather;
+            } else if (w != null) {
+                weatherAtMs = fetchedAt;
+            }
             matches = m;
             headlines = h;
             weather = w;
@@ -1686,7 +1742,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (r > 0) rowLp.topMargin = (int) (12 * density);
             interestsStrip.addView(line, rowLp);
         }
-        interestsStrip.setVisibility(cards.isEmpty() ? View.GONE : View.VISIBLE);
+        // Scenes: the strip keeps its place (so the dock stays put) but is not drawn and takes no focus; the cards would
+        // cover the big clock (docs/BATCH_S_SCENES.md, section 13).
+        interestsStrip.setVisibility(cards.isEmpty() ? View.GONE
+                : HomeLook.showsCards(homeLook) ? View.VISIBLE : View.INVISIBLE);
         reserveHeroBand(!cards.isEmpty());
         // The strip is rebuilt every minute: a card that had focus hands it to the card now in its place.
         if (focusedCard >= 0) {
