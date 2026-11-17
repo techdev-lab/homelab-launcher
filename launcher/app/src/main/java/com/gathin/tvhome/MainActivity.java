@@ -202,6 +202,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private DockDecoration dockDecoration;
     /** Rebuild the tiles on resume: Home was fully hidden by an app, or Home was pressed. Not after a side panel such as Wi-Fi settings. */
     private boolean rebuildOnResume = true;
+    /** The settings revision this Home was built with (SettingsRevision); onResume rebuilds when it has moved on. */
+    private long settingsRevision;
+    /** Set once recreate() has been asked for, so two triggers in one resume cannot ask twice. */
+    private boolean recreating;
     /** The Inputs dropdown while it is open, so onPause can close it. */
     private PopupWindow openPopup;
 
@@ -334,6 +338,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Read before Config.load: a change saved from here on makes onResume rebuild this screen once.
+        settingsRevision = SettingsRevision.read(getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE));
         setContentView(R.layout.activity_main);
         density = getResources().getDisplayMetrics().density;
         // config.xml, overlaid by config.json from a pushed theme (see Config and tools/theme.sh).
@@ -734,9 +740,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onResume() {
         super.onResume();
+        // A setting saved while Home was behind the settings screen. The activity result covers only the Back key:
+        // the Home key closes the settings with RESULT_CANCELED, and most settings are read only while Home is built.
+        if (SettingsRevision.changed(settingsRevision, SettingsRevision.read(
+                getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE)))) {
+            recreateHome();
+            return;
+        }
         // A festival that started or ended while Home was in the background: rebuild with or without it.
         if (festive != festival.active(LocalDate.now())) {
-            recreate();
+            recreateHome();
             return;
         }
         if (rebuildOnResume) reloadApps(true);
@@ -768,7 +781,14 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == LAUNCHER_SETTINGS_REQUEST && resultCode == RESULT_OK) recreate();
+        if (requestCode == LAUNCHER_SETTINGS_REQUEST && resultCode == RESULT_OK) recreateHome();
+    }
+
+    /** recreate(), but only once per instance: the Back key and the settings revision can both ask in one resume. */
+    private void recreateHome() {
+        if (recreating) return;
+        recreating = true;
+        recreate();
     }
 
     /** Rebuilds the tiles, then puts focus back where it was. */

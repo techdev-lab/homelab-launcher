@@ -45,6 +45,7 @@ public final class HiddenAppsActivity extends Activity {
         findViewById(R.id.hiddenReset).setOnClickListener(v -> {
             choices.edit().remove(Config.HIDDEN_APPS_KEY).apply();
             hidden = new ArrayList<>(Config.load(this).hiddenApps);
+            SettingsRevision.bump(choices);
             setResult(RESULT_OK);
             refresh();
         });
@@ -92,6 +93,7 @@ public final class HiddenAppsActivity extends Activity {
         hidden = HiddenApps.toggle(hidden, pkg);
         // An empty string is kept on purpose: "nothing hidden" chosen on the TV also overrides the theme's list.
         choices.edit().putString(Config.HIDDEN_APPS_KEY, HiddenApps.toCsv(hidden)).apply();
+        SettingsRevision.bump(choices);
         setResult(RESULT_OK);
         refresh();
     }

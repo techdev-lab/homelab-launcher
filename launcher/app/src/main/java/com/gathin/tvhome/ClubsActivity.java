@@ -51,6 +51,7 @@ public final class ClubsActivity extends Activity {
             choices.edit().remove(Config.FAVORITE_TEAMS_KEY).apply();
             picked.clear();
             picked.addAll(Config.load(this).interests.favoriteTeams);
+            SettingsRevision.bump(choices);
             setResult(RESULT_OK);
             refresh();
         });
@@ -101,6 +102,7 @@ public final class ClubsActivity extends Activity {
         }
         // An empty string is kept on purpose: "no clubs" chosen on the TV also overrides the theme's list.
         choices.edit().putString(Config.FAVORITE_TEAMS_KEY, String.join(",", picked)).apply();
+        SettingsRevision.bump(choices);
         setResult(RESULT_OK);
         refresh();
     }

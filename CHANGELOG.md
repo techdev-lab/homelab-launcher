@@ -4,6 +4,9 @@
 
 From 3.0.0 the `versionCode` is 5 (every earlier build had 4) and it rises by one with each release, so a store or an update checker sees an update. 3.0.0 installs over 2.9.0 and earlier with `adb install -r`; going back to 2.9.0 or older needs an uninstall first, which removes `config.json` from the TV, so copy it before.
 
+## Unreleased
+- **Launcher settings now apply when you leave them with the Home button.** Apps per row, text size, dock, corners, digits, looks and cards used to show only after Back; after Home they showed after a restart. Every screen that saves a choice now bumps a counter (`settings_rev`) in the same preferences, and Home rebuilds itself once when it comes back to the front and the counter has moved. A missing or damaged counter reads as 0 and cannot cause a loop. JVM tests in `SettingsRevisionTest`; see `docs/CONFIG.md`.
+
 ## 3.1.0 (2026-11-16)
 Batch L, "lighter on small TVs". No new permission, service or dependency. Design note: `docs/BATCH_L_LIGHT.md`.
 - **The APK is about two thirds smaller**: the 22 bundled wallpapers are lossy WebP (quality 80) instead of JPEG, same pixel size, none dropped. `wallpapers/to-webp.py` makes them from the JPEG masters, which stay in the repository; the quality is one number per folder (`--quality serene=90` for a run), so a folder that shows banding on a TV can be raised. Pictures you push to `files/wallpapers/` can now be `.webp` as well as `.jpg`, `.jpeg` and `.png`; yours are never touched by the upgrade. The built-in copies on the TV are replaced once (the stamp now also names the picture format). Picture quality on a TV is not verified yet.

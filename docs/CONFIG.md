@@ -130,6 +130,19 @@ one card for the four Arab leagues. Still not available (no free source checked 
 | Text size, dock position, dock style, tile corners, clock style, digits, wallpaper dim, remote buttons, prayer method and Asr, prayer alert, Hijri date, hidden apps | `text_size`, `dock_position`, `dock_style`, `tile_corners`, `clock_style`, `digits`, `wallpaper_dim`, `key_filter`, `prayer_method`, `asr_method`, `prayer_alert_minutes`, `hijri_offset_days`, `hidden_apps` | **A theme push does not clear them**; change them on the same screen (hidden apps: *Use the theme's list*) |
 | Home look, scenes, seconds per scene, follow the sun, top shade | `home_look`, `scenes`, `scene_seconds`, `scene_follow_sun`, `scene_scrim` | **A theme push does not clear them**; change them on the same screen |
 
+### When a change shows on Home
+
+Most of these are read only while Home is built (apps per row, text size, dock, corners, digits, looks, cards). A change you
+make in *Launcher settings* is applied as soon as you are back on Home, **whether you leave with Back or with the Home
+button**. Every screen that saves a choice also adds one to a counter, `settings_rev`, kept in the same private preferences
+as the choices. Home remembers the value it was built with and, when it comes back to the front and the value has moved,
+rebuilds itself once. A missing, damaged or reset counter reads as 0 and never causes a loop: the rebuilt Home reads the
+stored value, so the next comparison is equal.
+
+Builds before this change applied the choices only after Back. After the Home button the old layout stayed until the TV was
+restarted, because Android closes the settings with a cancelled result when Home is pressed and the result was the only
+trigger. The counter is not a setting and is not in `config.json`; you never need to edit it.
+
 ## Wallpapers
 
 Two generated sets, no photos and no third-party images. Both are copied into the APK at build time
