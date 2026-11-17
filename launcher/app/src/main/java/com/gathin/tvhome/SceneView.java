@@ -118,6 +118,9 @@ final class SceneView extends View {
             post(() -> {
                 if (released || ticket != wanted || layer == null || !layer.ready()) {
                     releaseLayer(layer);
+                    // A decode that failed (out of memory, a bad file) must not mark the scene as shown: the next
+                    // show() of the same id tries again, instead of leaving the screen without a scene for hours.
+                    if (!released && ticket == wanted) shownId = null;
                     return;
                 }
                 if (fadeNow) {

@@ -34,6 +34,19 @@ final class HomeLook {
         return usesWallpaper(look);
     }
 
+    /**
+     * Whether the strip cards (prayer, football, weather, news) are drawn. Not in Scenes: the strip fills the height the
+     * big clock uses, so the cards would cover the digits (docs/BATCH_S_SCENES.md, section 13).
+     */
+    static boolean showsCards(String look) {
+        return !SCENES.equals(look);
+    }
+
+    /** Whether the header pills (Wi-Fi, Settings, Inputs) have a glass fill and edge at rest. Not in Scenes. */
+    static boolean framesHeaderPills(String look) {
+        return !SCENES.equals(look);
+    }
+
     /** Whether the small header clock is replaced by the big scene clock. */
     static boolean replacesHeaderClock(String look) {
         return SCENES.equals(look);

@@ -974,6 +974,7 @@ public final class LauncherSettingsActivity extends Activity {
         if (tag.equals(language)) return;
         language = tag;
         choices.edit().putString(Config.LANGUAGE_KEY, tag).apply();
+        SettingsRevision.bump(choices);
         setResult(RESULT_OK);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             LocaleManager manager = getSystemService(LocaleManager.class);
@@ -1013,6 +1014,8 @@ public final class LauncherSettingsActivity extends Activity {
     }
 
     private void changed() {
+        // Home also rebuilds from this counter, because leaving with the Home key loses the result below.
+        SettingsRevision.bump(choices);
         setResult(RESULT_OK);
         refresh();
     }

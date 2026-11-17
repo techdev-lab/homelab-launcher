@@ -314,3 +314,30 @@ cut if the TV check shows the mirrored clock looks wrong.
 | Checks | 382 unit tests per flavor, 0 failures; lint 0 errors; script tests 24 passed; hygiene OK | local run, 2026-11-16 |
 | APK | offline 2,320,457 B, online 2,328,293 B | section 4.2 |
 | TV check, push and PR | not started | needs a TV; push waits for the maintainer's word |
+
+## 13. Amendment after the first TV check (unreleased)
+
+First look at the Scenes look on a Chromecast with Google TV 4K (2026-11-17, four columns): the scene and the big clock
+draw, but the three strip cards (prayer, football, weather) sit exactly over the digits, because the strip fills the
+height the clock uses; and the header pills (Wi-Fi, Settings) keep their glass capsules, which look heavy on a picture
+while the date and the greeting float with no frame. Section 8 had listed legibility behind the header and the first tile
+row, but not the strip between them.
+
+Change, Scenes look only (Classic and OLED are unchanged):
+
+- **The strip cards are not shown.** The strip keeps its place but is `INVISIBLE`, so the dock stays where it is, the
+  digits are free, and an invisible view takes no focus: Up from the dock goes to the header. Rule: `HomeLook.showsCards`
+  (pure, tested). No new setting and no new `config.json` key. The cards are still built and fetched as before; their
+  data is just not drawn.
+- **The header pills have no frame at rest.** No fill and no edge, so the icon and the word float like the date. A focused
+  pill keeps its warm-white fill, so the remote still shows where it is. Rule: `HomeLook.framesHeaderPills` (pure,
+  tested). The pills' tint under Glass is skipped for these drawables.
+- **Smaller fixes from the same TV check:** the thin divider next to the date is hidden with the small clock; the date lines get a soft dark edge (`setShadowLayer`), because on the Arabic screen the second date line passes over the last digits (a mitigation, the lines still overlap); a scene whose decode failed is tried again on the next `show()` (before, `shownId` was set before the decode, so the same scene was never retried).
+- **Unchanged on purpose:** when every card is switched off the strip is `GONE` as before, so the dock rises under the
+  header and the digits sit behind the dock row; the date line still draws over the top of the digits (section 8).
+
+Decision: the maintainer asked for the cards to be removed (2026-11-17). A floating one-line prayer text under the clock is
+left as a later option, not built.
+
+NOT TESTED without a device: how this looks on the TV (digits against the scene, the frameless pills on a bright scene),
+and the focus order with the strip invisible.

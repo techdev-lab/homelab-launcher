@@ -109,7 +109,7 @@ one card for the four Arab leagues. Still not available (no free source checked 
 | `background_color` | `"#0B0B0C"` | Behind everything. |
 | `animations`, `reduced_motion` | `true` / `false` | Turn effects down on slow TVs. |
 | `advanced_effects` | `true` / `false` | The *Lively* motion choice: lifted tiles, icon zoom, smooth colour transitions. Default `false`. A TV with about 2 GB of memory or less (or one Android marks as low-RAM) counts as small and always starts with it off unless this key or the TV's own choice says otherwise; the TV's choice wins, then this key, then the default. *Launcher settings > Motion* shows the memory class the launcher read, for example `Memory: small (1938 MiB)`. |
-| `home_look` | `classic`, `scenes`, `oled` | The look of the whole home screen. `classic` is the home as it has always been (`wallpaper_mode` decides the picture). `scenes` draws a full-screen scene with a large clock behind the tiles (inspired by couch-tv, see [NOTICE.md](../NOTICE.md)); it uses no wallpaper, sky or veil. `oled` is plain black `#000000`. Default `classic`. The TV's choice (*Launcher settings > Home look*) wins. |
+| `home_look` | `classic`, `scenes`, `oled` | The look of the whole home screen. `classic` is the home as it has always been (`wallpaper_mode` decides the picture). `scenes` draws a full-screen scene with a large clock behind the tiles (inspired by couch-tv, see [NOTICE.md](../NOTICE.md)); it uses no wallpaper, sky or veil, does not draw the strip cards (they would cover the clock) and has no frame around the Wi-Fi and Settings pills at rest. `oled` is plain black `#000000`. Default `classic`. The TV's choice (*Launcher settings > Home look*) wins. |
 | `scenes` | any of `"night"`, `"fog"`, `"golden"`, `"dawn"`, `"water"` | The scenes the Scenes look shows, always in that order. Unknown names are ignored; an empty list means `night` alone. Default: all five. The TV's choice wins. |
 | `scene_seconds` | `5` to `600` (default `20`) | Seconds each scene stays. A value outside the range is clamped. The TV offers 10, 20, 30, 60 and 120. |
 | `scene_follow_sun` | `true` / `false` (default `false`) | Picks the scene from the time of day instead of rotating: dawn from Fajr to 45 minutes after sunrise, then the day scene (`water`, or `fog` if `water` is off), then `golden` from Asr to 15 minutes after Maghrib, then `night`. It uses the place in `prayer_lat` and `prayer_lng`; without a valid place it uses the clock (05-08 dawn, 08-16 day, 16-19 golden, else night). No permission is needed. |
@@ -129,6 +129,19 @@ one card for the four Arab leagues. Still not available (no free source checked 
 | Favourite clubs | `favorite_teams` | *Clear* on the clubs screen |
 | Text size, dock position, dock style, tile corners, clock style, digits, wallpaper dim, remote buttons, prayer method and Asr, prayer alert, Hijri date, hidden apps | `text_size`, `dock_position`, `dock_style`, `tile_corners`, `clock_style`, `digits`, `wallpaper_dim`, `key_filter`, `prayer_method`, `asr_method`, `prayer_alert_minutes`, `hijri_offset_days`, `hidden_apps` | **A theme push does not clear them**; change them on the same screen (hidden apps: *Use the theme's list*) |
 | Home look, scenes, seconds per scene, follow the sun, top shade | `home_look`, `scenes`, `scene_seconds`, `scene_follow_sun`, `scene_scrim` | **A theme push does not clear them**; change them on the same screen |
+
+### When a change shows on Home
+
+Most of these are read only while Home is built (apps per row, text size, dock, corners, digits, looks, cards). A change you
+make in *Launcher settings* is applied as soon as you are back on Home, **whether you leave with Back or with the Home
+button**. Every screen that saves a choice also adds one to a counter, `settings_rev`, kept in the same private preferences
+as the choices. Home remembers the value it was built with and, when it comes back to the front and the value has moved,
+rebuilds itself once. A missing, damaged or reset counter reads as 0 and never causes a loop: the rebuilt Home reads the
+stored value, so the next comparison is equal.
+
+Builds before this change applied the choices only after Back. After the Home button the old layout stayed until the TV was
+restarted, because Android closes the settings with a cancelled result when Home is pressed and the result was the only
+trigger. The counter is not a setting and is not in `config.json`; you never need to edit it.
 
 ## Wallpapers
 
