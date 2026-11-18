@@ -4,6 +4,9 @@
 
 From 3.0.0 the `versionCode` is 5 (every earlier build had 4) and it rises by one with each release, so a store or an update checker sees an update. 3.0.0 installs over 2.9.0 and earlier with `adb install -r`; going back to 2.9.0 or older needs an uninstall first, which removes `config.json` from the TV, so copy it before.
 
+## Unreleased
+- **The Netflix button opens Shahid in the Saudi example themes.** `config/examples/riyadh.json` and `offline-madinah.json` map key 191 (the Netflix button of the Chromecast with Google TV remote) to Shahid and keep 190 for YouTube; `docs/CONFIG.md` explains `app_keys` with this example, and the README has a What's new in 3.1 section. No code change: `app_keys` was already there. Checked on a Chromecast with Google TV 4K.
+
 ## 3.1.1 (2026-11-18)
 Fixes after the first check of 3.1.0 on a TV. No new permission, service or dependency.
 - **Launcher settings now apply when you leave them with the Home button.** Apps per row, text size, dock, corners, digits, looks and cards used to show only after Back; after Home they showed after a restart. Every screen that saves a choice now bumps a counter (`settings_rev`) in the same preferences, and Home rebuilds itself once when it comes back to the front and the counter has moved. A missing or damaged counter reads as 0 and cannot cause a loop. JVM tests in `SettingsRevisionTest`; see `docs/CONFIG.md`. Checked on a Chromecast with Google TV 4K: 20 of 20 changes applied, 10 of them leaving with the Home button.

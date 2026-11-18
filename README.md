@@ -50,6 +50,13 @@ It is written for Muslim and Arabic-speaking households first, but it is not tie
 
 A fresh install starts on **Serene**. Got a Google TV for the children? Pick **Kids**, switch off the football cards, and it is ready.
 
+### What's new in 3.1
+
+- **The Netflix button opens Shahid.** On the Chromecast with Google TV remote the Netflix button (key 191) opens **Shahid** in the Riyadh and Madinah example themes: a Saudi household with prayer times and local football does not need Netflix on a button. One line in `config.json` (`app_keys`) maps it to any other app, and the YouTube button keeps opening YouTube. See [Configuration](docs/CONFIG.md).
+- **A Scenes look and an OLED look** (both off by default): a full-screen scene with a large clock, or plain black.
+- **Lighter on small TVs:** the wallpapers are WebP (the APK is about 40% smaller than 3.0.2) and a TV with about 2 GB of memory or less starts with the heavy effects off.
+- **Launcher settings apply when you leave them with the Home button**, and the prayer countdown now matches the times on the card (3.1.1).
+
 ### What's new in 3.0
 
 The biggest release since the fork. Every new option defaults to the 2.9 look, so an upgrade changes nothing until you pick.
@@ -232,6 +239,13 @@ MIT License, see [LICENSE](LICENSE).
 | **لون سادة** | اللي ما يبي صورة | أسود، كحلي، فيروزي، أخضر، عنابي، رمادي |
 
 التثبيت الجديد يبدأ على **سكينة**. **عندك جوجل تي في للأطفال؟** اختر خلفيات **أطفال**، وأطفئ بطاقات الكورة من الإعدادات، وصار جاهز لهم.
+
+### الجديد في 3.1
+
+- **زر نتفليكس يفتح شاهد.** في ريموت Chromecast with Google TV زر نتفليكس (الكود 191) يفتح **شاهد** في ثيمات الرياض والمدينة الجاهزة: البيت السعودي اللي عنده مواقيت الصلاة والمباريات المحلية ما يحتاج نتفليكس على زر. وسطر واحد في `config.json` (`app_keys`) يربطه بأي تطبيق ثاني، وزر اليوتيوب يبقى يفتح يوتيوب. شوف [الإعدادات](docs/CONFIG.ar.md).
+- **مظهر مشاهد ومظهر OLED** (الاثنين مطفيين افتراضياً): مشهد بملء الشاشة مع ساعة كبيرة، أو أسود بحت.
+- **أخف على التلفزيونات الصغيرة:** الخلفيات صارت WebP (الـAPK أصغر من 3.0.2 بحوالي 40%)، والتلفزيون اللي ذاكرته حوالي 2 جيجا أو أقل يبدأ والتأثيرات الثقيلة مطفية.
+- **إعدادات المشغّل تنطبق لما تطلع منها بزر Home**، وعدّاد الصلاة صار يطابق الأوقات اللي على البطاقة (3.1.1).
 
 ### الجديد في 3.0
 

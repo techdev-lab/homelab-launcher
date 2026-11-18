@@ -6,6 +6,10 @@
     "org.jellyfin.androidtv"
   ],
   "hidden_apps": [],
+  "app_keys": {
+    "190": "com.google.android.youtube.tv",
+    "191": "net.mbc.shahidTV"
+  },
   "live_tv_package": "",
   "vpn_app": "",
   "background_color": "#0B0B0C",
