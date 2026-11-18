@@ -1,0 +1,1 @@
+New in 3.1.1: launcher settings now apply when you leave them with the Home button, the Scenes look no longer hides its big clock behind the cards, the prayer countdown matches the times on the card, and the cards stay after a settings change. Details: CHANGELOG.md.

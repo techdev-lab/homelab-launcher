@@ -145,7 +145,7 @@ trigger. The counter is not a setting and is not in `config.json`; you never nee
 
 ## Wallpapers
 
-Two generated sets, no photos and no third-party images. Both are copied into the APK at build time
+Three generated sets, no photos and no third-party images. All three are copied into the APK at build time
 (`syncWallpaperAssets` in `launcher/app/build.gradle`), so `"wallpaper_mode": "homelab"`, `"serene"` or `"kids"` needs no push:
 
 | Folder | Pictures | Made by | For |

@@ -1,6 +1,6 @@
 # How it was built (and what went wrong)
 
-Four days, two Chromecasts with Google TV 4K, one boot loop. Written down so the next person skips the painful parts.
+Five days, two Chromecasts with Google TV 4K, one boot loop. Written down so the next person skips the painful parts.
 
 ## Day 1: clean up, then a launcher
 
@@ -48,7 +48,7 @@ The project went to GitHub, and then the **published** copy was tested the way a
 
 ## Day 5: your clubs, two looks, and a real download
 
-People do not follow a league, they follow a club. So the strip gained a **favourite clubs** card: pick up to ten
+People do not follow a league; they follow a club. So the strip gained a **favourite clubs** card: pick up to ten
 clubs with the remote, and the card shows each one's next or live match, whatever the competition (a Saudi club in
 the AFC Champions League Elite, an English one in the Carabao Cup), one club every five seconds. ESPN's
 all-competition team schedule made that one request per club; it is large, so it is fetched twice a day, and only a

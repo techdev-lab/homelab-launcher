@@ -32,7 +32,7 @@ read on 2026-10-31; neither page carries a date, so the rules are read again whe
   maintainer's own TV and show a city name and third-party apps, and they will change again with batch 5. They are
   redone once, at the end, from the demo config with a neutral city, and then added here.
 - No claim in these files goes beyond what the code does: the offline build has no INTERNET permission, the
-  accessibility services only see key events and stay off until enabled, there is no analytics.
+  accessibility services only see key events and stay off until enabled; there is no analytics.
 - Which APK a store picks (`online` or `offline`) is decided when the request is filed, with the maintainer.
 
 ## 2. `SECURITY.md`

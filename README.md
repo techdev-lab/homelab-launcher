@@ -58,7 +58,7 @@ The biggest release since the fork. Every new option defaults to the 2.9 look, s
 - **A dock at the side:** put your favourite apps in a column at the end of the reading side, on the **right** on the English screen and on the **left** on the Arabic one, with the other apps beside it. The bottom row of 2.9 is still the default.
 - **More looks, all on the TV:** floating-glass or flat dock, soft or normal corners, a glass clock, **Arabic-Indic digits** on either language, and how dark the wallpaper veil is.
 - **Hide apps** from the grid, **ignore a remote button** pressed by accident, and matches and weather that come back soon after a start with no network.
-- **A calmer settings screen, and a switch for TVs that stumble on held keys:** the Launcher settings are four glass sections with previews, and *Remote buttons* (On or Off) lets a TV where holding Volume changed the volume only one step per press repeat normally again.
+- **A calmer settings screen, and a switch for TVs that stumble on held keys:** the Launcher settings are four glass sections with previews, and *Remote buttons* (On or Off) lets a TV that changes the volume only one step per press when Volume is held repeat normally again.
 - **Arabic for everything on GitHub:** the install guide, configuration guide, security notes, changelog and release notes now come in Arabic too, and so does the store listing.
 
 ### 2.9
@@ -189,7 +189,7 @@ No analytics, no accounts, no crash reporting, no remote configuration. The full
 
 ### Status and limits
 
-- Tested on **Chromecast with Google TV 4K** (`sabrina`, Android 14), **Xiaomi Mi TV MOOR2** (Android 11) and **TCL Smart TV Pro G08** (Android 14), see [Tested devices](docs/TESTED_DEVICES.md). The HD model (`boreal`) should behave the same but was not tested. Other Android TV devices: the app runs, the Home switch steps differ.
+- Tested on **Chromecast with Google TV 4K** (`sabrina`, Android 14), **Xiaomi Mi TV MOOR2** (Android 11) and **TCL Smart TV Pro G08** (Android 14), see [Tested devices](docs/TESTED_DEVICES.md). The HD model (`boreal`) should behave the same but was not tested. Other Android TV devices: the app runs, but the Home switch steps differ.
 - Prayer times: **14 methods** (Umm al-Qura by default, Egyptian, Gulf, Dubai, Qatar, Kuwait, Jordan, Morocco, Algeria, Tunisia, Turkey, MWL, ISNA, Karachi) and standard or Hanafi Asr, picked on the TV or in the config, each tested against api.aladhan.com. A method can still differ by a few minutes from a printed national calendar; `prayer_adjust` shifts each time.
 - Football data comes from ESPN's public scoreboard (Saudi Pro League, the big European leagues, the AFC and CAF Champions Leagues, the Gulf Cup) and, for the **Egyptian, UAE, Qatari and Moroccan leagues**, from TheSportsDB's free API: next kick-off only, no live scores. Kuwait, Jordan, Tunisia and Algeria are still missing.
 - Arabic team names cover the Saudi league, the five big European leagues, the UEFA and AFC Champions League clubs (156 teams). Unknown teams show in English. Adding a league is a JSON edit: see [CONTRIBUTING.md](CONTRIBUTING.md).
