@@ -81,7 +81,7 @@ jobs:
           persist-credentials: false
       # Offline audits only, so the result is the same as running zizmor on a laptop. Every `uses:` must be pinned to a
       # commit SHA (.github/zizmor.yml). The zizmor version is pinned here instead of following "latest".
-      - uses: zizmorcore/zizmor-action@45d7276c9ca790aabd705e31ca99c6185c3e76dd # v0.8.1
+      - uses: zizmorcore/zizmor-action@1b4550e929643b8b26a62303c6bd64814271a4f1 # v0.9.2
         with:
           version: 1.31.1
           online-audits: false
