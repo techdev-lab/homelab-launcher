@@ -5,7 +5,7 @@
 ## What the app can do
 
 - **offline build:** no INTERNET permission. It cannot reach the network.
-- **online build:** HTTPS requests to the ESPN scoreboard, Open-Meteo, and RSS feeds you configure. 8-second timeouts, a 512 KB response cap, no redirects followed.
+- **online build:** HTTPS requests to the ESPN scoreboard, TheSportsDB, Open-Meteo, and RSS feeds you configure — 8-second timeouts, a 768 KB response cap, no redirects followed — plus one release check per tap on *Check for updates* in Launcher settings: an HTTPS GET to `api.github.com` only (one fixed host), 6-second timeouts, a 64 KB response cap, no redirects followed. Nothing is downloaded or installed by itself; the check only reads a version tag and opens the releases page in your browser.
 - No location lookup: the place for prayer times and weather is typed into `config.json`, and no code in the app calls a location API. The manifest does declare `ACCESS_FINE_LOCATION`, because Android 10 and later only let an app read the Wi-Fi network name (shown in the Wi-Fi pill) with it.
 - `HomeKeyService` and `InputKeyService` are accessibility services limited to key events (`canRequestFilterKeyEvents`, no `canRetrieveWindowContent`). They do not read window content, and every key they do not handle passes through untouched. Both are opt-in: they stay off until you enable them.
 - No analytics, accounts, crash reporting or remote configuration.

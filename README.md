@@ -107,7 +107,7 @@ Install it like any sideloaded app: `adb install HomeLab-Launcher-<version>.apk`
 | **Ramadan** | In Ramadan only: a card with the time left to the iftar (Fajr to Maghrib) or to the end of suhoor, the day's two times and the day of Ramadan. A visual alert at each prayer time, without sound. |
 | **Football cards** | One card per league group, side by side, e.g. the Saudi Pro League and "the big European leagues". A live match first, otherwise the next kick-off within 7 days. The **Egyptian, UAE, Qatari and Moroccan leagues** work too (next kick-off, no live score). Matches of your favourite clubs carry a gold star. |
 | **Wallpapers** | Three built-in sets, **HomeLab**, **Serene** and **Kids**, changing every few minutes, or a plain colour; picked on the TV. Your own pictures still work through the config. |
-| **Settings on the TV** | Hold OK on the Settings button: language, apps per row, wallpapers and their dim, which cards show, text size, dock position, dock and clock look, digits, prayer method and Asr, prayer alert, Hijri date, favourite clubs, hidden apps, motion. No computer needed. |
+| **Settings on the TV** | Hold OK on the Settings button: language, apps per row, wallpapers and their dim, which cards show, text size, dock position, dock and clock look, digits, prayer method and Asr, prayer alert, Hijri date, favourite clubs, hidden apps, motion, and a *Check for updates* that asks GitHub for a newer release (online build; nothing installs by itself). No computer needed. |
 | **Favourite clubs** | Pick up to 10 clubs with the remote (Al Hilal, Al Nassr, Man City...). One card shows each club's live or next two matches in any competition, league, cup or continental, one every 5 seconds, and every match of your clubs gets a gold star. |
 | **Weather** | Current conditions for the same city (Open-Meteo, free, no key). |
 | **Your dock** | The apps of your choice (YouTube, Netflix, Shahid, Jellyfin, an IPTV player, anything) in a row at the bottom or in a column at the side, the rest in a grid. |
@@ -179,7 +179,7 @@ docs/               install guide, config reference, design notes, the build sto
 
 | Permission or component | Build | What it is for |
 |---|---|---|
-| `INTERNET` | online only | Football (ESPN public scoreboard, and TheSportsDB's free API for the Egyptian, UAE, Qatari and Moroccan leagues), weather (Open-Meteo) and the RSS feeds you configure. HTTPS only, 8-second timeouts, a 768 KB response cap, redirects not followed. |
+| `INTERNET` | online only | Football (ESPN public scoreboard, and TheSportsDB's free API for the Egyptian, UAE, Qatari and Moroccan leagues), weather (Open-Meteo), the RSS feeds you configure, and *Check for updates* in Launcher settings (one HTTPS GET to `api.github.com`, only when you tap it). HTTPS only, short timeouts, capped responses, redirects not followed. Nothing installs by itself. |
 | `ACCESS_NETWORK_STATE`, `ACCESS_WIFI_STATE` | both | The Wi-Fi pill. |
 | `ACCESS_FINE_LOCATION` | both | Android 10 and later only let an app read the Wi-Fi network name with it. No code in the app calls a location API; the city for prayer times and weather is typed into the config. |
 | Accessibility services (`HomeKeyService`, `InputKeyService`) | both, opt-in | Make the remote's Home and Input buttons work after the stock launcher is disabled. They see key events only, not window content, and stay off until you enable them. |
@@ -290,7 +290,7 @@ MIT License, see [LICENSE](LICENSE).
 | **رمضان** | في رمضان فقط: بطاقة فيها الوقت الباقي للإفطار (من الفجر للمغرب) أو لنهاية السحور، ووقتا اليوم، ويوم رمضان. وتنبيه على الشاشة عند كل صلاة بدون صوت. |
 | **بطاقات الكورة** | بطاقة لكل مجموعة دوريات جنب بعض، مثلاً: الدوري السعودي، والدوريات الأوروبية الكبرى. المباشر أولاً، وإلا أقرب مباراة خلال 7 أيام. و**الدوري المصري والإماراتي والقطري والمغربي** صارت تشتغل (المباراة الجاية، بدون نتيجة مباشرة). ومباريات أنديتك المفضلة عليها نجمة ذهبية. |
 | **الخلفيات** | ثلاث مجموعات داخل التطبيق، **هوم لاب** و**سكينة** و**أطفال**، تتبدّل كل كم دقيقة، أو لون سادة؛ تختارها من التلفزيون. صورك الخاصة تشتغل من ملف الإعدادات. |
-| **الإعدادات من التلفزيون** | ضغطة مطوّلة على زر الإعدادات: اللغة، عدد التطبيقات في الصف، الخلفيات وتعتيمها، أي البطاقات تظهر، حجم النص، مكان الرصيف وشكله وشكل الساعة، الأرقام، طريقة حساب الصلاة والعصر، تنبيه الصلاة، التاريخ الهجري، الأندية المفضلة، التطبيقات المخفية، الحركة. بدون كمبيوتر. |
+| **الإعدادات من التلفزيون** | ضغطة مطوّلة على زر الإعدادات: اللغة، عدد التطبيقات في الصف، الخلفيات وتعتيمها، أي البطاقات تظهر، حجم النص، مكان الرصيف وشكله وشكل الساعة، الأرقام، طريقة حساب الصلاة والعصر، تنبيه الصلاة، التاريخ الهجري، الأندية المفضلة، التطبيقات المخفية، الحركة، و«افحص التحديثات» اللي يسأل GitHub عن إصدار أحدث (نسخة الإنترنت؛ وما ينثبّت شيء من تلقاء نفسه). بدون كمبيوتر. |
 | **أنديتك المفضلة** | تختار حتى 10 أندية بالريموت (الهلال، النصر، مانشستر سيتي…). بطاقة وحدة تعرض مباراتين لكل نادٍ (المباشرة أو الجاية) في أي بطولة: الدوري أو الكأس أو النخبة الآسيوية أو أبطال أوروبا، مباراة كل 5 ثواني، وكل مباراة لأنديتك عليها نجمة ذهبية. |
 | **الطقس** | لنفس المدينة (Open-Meteo، مجاني وبدون مفتاح). |
 | **رصيف تطبيقاتك** | التطبيقات اللي تختارها (يوتيوب، نتفليكس، شاهد، جيليفين، برنامج IPTV، أي شي) في صف تحت أو في عمود على الجنب، والباقي في شبكة. |

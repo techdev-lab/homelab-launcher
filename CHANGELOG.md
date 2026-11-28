@@ -4,6 +4,10 @@
 
 From 3.0.0 the `versionCode` is 5 (every earlier build had 4) and it rises by one with each release, so a store or an update checker sees an update. 3.0.0 installs over 2.9.0 and earlier with `adb install -r`; going back to 2.9.0 or older needs an uninstall first, which removes `config.json` from the TV, so copy it before.
 
+## 3.1.2 (2026-11-28)
+One addition since 3.1.1. No new permission beyond `INTERNET` (online build only), no new service or dependency.
+- **Check for updates** in *Launcher settings* (footer). The online build asks GitHub (`api.github.com`, one fixed host, HTTPS only, 6-second timeouts, a 64 KB response cap, redirects not followed) for the newest full release and compares it with the running version; a tap while a check runs does nothing, and a check that takes over 15 s is dropped as timed out. The offline build has no network, so its chip only opens the releases page in the browser. Nothing downloads or installs by itself — you still install with adb as usual. New classes: `ReleaseInfo` (pure-Java tag parsing and ordering, JVM-tested in `ReleaseInfoTest`), `ReleaseCheck` (online/offline flavor pair, like `Feeds`). Documented in `SECURITY.md` and the README feature and permission tables.
+
 ## 3.1.1 (2026-11-18)
 Fixes after the first check of 3.1.0 on a TV. No new permission, service or dependency.
 - **Launcher settings now apply when you leave them with the Home button.** Apps per row, text size, dock, corners, digits, looks and cards used to show only after Back; after Home they showed after a restart. Every screen that saves a choice now bumps a counter (`settings_rev`) in the same preferences, and Home rebuilds itself once when it comes back to the front and the counter has moved. A missing or damaged counter reads as 0 and cannot cause a loop. JVM tests in `SettingsRevisionTest`; see `docs/CONFIG.md`. Checked on a Chromecast with Google TV 4K: 20 of 20 changes applied, 10 of them leaving with the Home button.

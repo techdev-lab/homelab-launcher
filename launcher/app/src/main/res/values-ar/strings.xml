@@ -232,5 +232,14 @@
     <string name="plain_colour_hint">لون داكن سادة بدل صورة الخلفية.</string>
     <string name="asr_label">العصر</string>
     <string name="tv_settings_hint">يفتح إعدادات التلفاز نفسه.</string>
+    <string name="check_updates">افحص التحديثات</string>
+    <string name="check_updates_hint">نسخة الإنترنت تسأل GitHub عن إصدار أحدث؛ نسخة بلا إنترنت تفتح صفحة الإصدارات في المتصفح. لا شيء يُثبَّت من تلقاء نفسه.</string>
+    <string name="update_checking">جارٍ الفحص…</string>
+    <string name="update_found">تحديث %1$s متاح</string>
+    <string name="update_found_toast">صدر الإصدار %1$s. يفتح المتصفح صفحة الإصدار، وثبّته بأداة adb كالمعتاد.</string>
+    <string name="update_current">هذا هو أحدث إصدار</string>
+    <string name="update_none">تعذّر الوصول إلى GitHub. أعد المحاولة لاحقًا.</string>
+    <string name="update_timeout">استغرق الفحص وقتًا طويلًا. أعد المحاولة لاحقًا.</string>
+    <string name="update_offline_info">هذه النسخة بلا إنترنت. يفتح المتصفح صفحة الإصدارات.</string>
     <string name="settings_press_again">اضغط مرة ثانية للانتقال إلى «%1$s»</string>
 </resources>
