@@ -8,6 +8,7 @@ import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -17,6 +18,8 @@ import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.StateListDrawable;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.os.LocaleList;
 import android.os.SystemClock;
 import android.provider.Settings;
@@ -146,6 +149,14 @@ public final class LauncherSettingsActivity extends Activity {
     private final Runnable restoreHint = this::putHintBack;
     private FrameLayout sectionHost;
     private TextView explainLine;
+    /** The "Check for updates" chip (online build only) and the state of its running check. */
+    private TextView updateChoice;
+    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+    private boolean updateChecking;
+    private long updateStartedAt;
+    /** Id of the current check: a reply or timeout that carries an older id is ignored. */
+    private int updateRequest;
+    private Runnable updateTimeout;
 
     @Override
     protected void attachBaseContext(Context base) {
@@ -602,7 +613,10 @@ public final class LauncherSettingsActivity extends Activity {
             open(new Intent(Settings.ACTION_HOME_SETTINGS));
         });
         TextView tvSettings = chip(getString(R.string.tv_settings), v -> open(new Intent(Settings.ACTION_SETTINGS)));
-        for (TextView b : new TextView[]{followThemeChoice, defaultHome, tvSettings}) {
+        // Check for updates: the online build asks GitHub off the main thread (ReleaseCheck); the offline build has no
+        // network, so the chip only tells where the releases live. Same answer shape on both builds.
+        updateChoice = chip(getString(R.string.check_updates), v -> checkUpdates());
+        for (TextView b : new TextView[]{followThemeChoice, defaultHome, tvSettings, updateChoice}) {
             b.setTextSize(14);
             b.setMaxLines(2);
             footerViews.add(b);
@@ -610,7 +624,77 @@ public final class LauncherSettingsActivity extends Activity {
         hints.put(followThemeChoice, getString(R.string.follow_theme_hint));
         hints.put(defaultHome, getString(R.string.home_settings_help));
         hints.put(tvSettings, getString(R.string.tv_settings_hint));
+        hints.put(updateChoice, getString(R.string.check_updates_hint));
         fill((LinearLayout) findViewById(R.id.footerRow), footerViews, ViewGroup.LayoutParams.WRAP_CONTENT, CHIP_GAP_DP);
+    }
+
+    /**
+     * The footer's update check. Reads GitHub on a worker thread and answers back on the main one; a check that takes
+     * about 15 s is dropped as timed out, so a TV without the network never sits on "Checking" forever. Only one check
+     * runs at a time; tapping again while it runs does nothing.
+     */
+    private void checkUpdates() {
+        if (updateChecking) return;
+        if (!ReleaseCheck.available()) {
+            Toast.makeText(this, R.string.update_offline_info, Toast.LENGTH_LONG).show();
+            open(new Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/techdev-lab/homelab-launcher/releases")));
+            return;
+        }
+        updateChecking = true;
+        final int request = ++updateRequest;
+        updateStartedAt = SystemClock.uptimeMillis();
+        updateChoice.setText(R.string.update_checking);
+        final String current = BuildConfig.VERSION_NAME;
+        new Thread(() -> {
+            final String tag = ReleaseCheck.latestTag();
+            mainHandler.post(() -> {
+                if (!updateChecking || request != updateRequest) return;   // left the screen, timed out or stale
+                updateChecking = false;
+                if (tag == null) {
+                    updateChoice.setText(R.string.check_updates);
+                    Toast.makeText(this, R.string.update_none, Toast.LENGTH_LONG).show();
+                    return;
+                }
+                if (ReleaseInfo.isNewer(tag, current)) {
+                    updateChoice.setText(getString(R.string.update_found, tag));
+                    Toast.makeText(this, getString(R.string.update_found_toast, tag), Toast.LENGTH_LONG).show();
+                    open(new Intent(Intent.ACTION_VIEW,
+                            Uri.parse("https://github.com/techdev-lab/homelab-launcher/releases/latest")));
+                } else {
+                    updateChoice.setText(R.string.check_updates);
+                    Toast.makeText(this, R.string.update_current, Toast.LENGTH_LONG).show();
+                }
+            });
+        }, "TvHome.Release").start();
+        updateTimeout = () -> {
+            if (updateChecking && request == updateRequest
+                    && SystemClock.uptimeMillis() - updateStartedAt >= 15_000L) {
+                updateChecking = false;
+                updateChoice.setText(R.string.check_updates);
+                Toast.makeText(this, R.string.update_timeout, Toast.LENGTH_LONG).show();
+            }
+        };
+        mainHandler.postDelayed(updateTimeout, 16_000L);
+    }
+
+    @Override
+    protected void onStop() {
+        // Leaving the screen abandons a running check: nothing may open or toast later.
+        if (updateChecking) {
+            updateChecking = false;
+            updateRequest++;
+            updateChoice.setText(R.string.check_updates);
+            mainHandler.removeCallbacks(updateTimeout);
+        }
+        super.onStop();
+    }
+
+    @Override
+    protected void onDestroy() {
+        // A check still running posts nothing back after the screen is gone, and its timeout callback is dropped.
+        updateChecking = false;
+        mainHandler.removeCallbacksAndMessages(null);
+        super.onDestroy();
     }
 
     // ---- navigation ------------------------------------------------------------------------------
