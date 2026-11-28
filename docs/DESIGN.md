@@ -22,7 +22,7 @@ One Java Android app (`launcher/`, package `com.gathin.tvhome`, minSdk 26, targe
 | Flavor | INTERNET | What the network is used for |
 |---|---|---|
 | `offline` | no (absent from the merged manifest) | nothing; prayer times, Hijri date and the UI work offline |
-| `online` | yes | ESPN public scoreboard (football), Open-Meteo (weather), optional RSS |
+| `online` | yes | ESPN public scoreboard (football), Open-Meteo (weather), optional RSS, and an update check to `api.github.com` only when you tap it |
 
 `versionCode` stayed at 4 from 2.3 to 2.9 on purpose: the APKs are not debuggable, and Android refuses a downgrade of `versionCode` without `install -d`, so keeping it constant kept every older build an `install -r` away. From 3.0.0 it is 5 and rises by one with each release, because a store decides that an update exists from it; the cost is in `docs/DISTRIBUTION.md`.
 
@@ -35,7 +35,7 @@ One Java Android app (`launcher/`, package `com.gathin.tvhome`, minSdk 26, targe
 | Prayer times | `Prayer.java` | Umm al-Qura method, praytimes.org formulas, checked in `PrayerTest` to within 2 minutes of an independent source. |
 | Hijri date | `Hijri.java` | Platform ICU `IslamicCalendar` (Umm al-Qura). |
 | Strip logic | `Interests.java` | Pure Java (unit tested): which match a card shows, card groups, league fetch list, ESPN day strings. |
-| Network | `src/online/.../Feeds.java` | Scoreboard day by day for up to 7 days (ESPN rejects a date range), weather, RSS. HTTPS only, 8 s timeouts, 512 KB cap, no redirects. The offline flavor has a stub. |
+| Network | `src/online/.../Feeds.java` | Scoreboard day by day for up to 7 days (ESPN rejects a date range), weather, RSS. HTTPS only, 8 s timeouts, 768 KB cap, no redirects. The on-tap update check to `api.github.com` is in `ReleaseCheck.java`. The offline flavor has a stub. |
 | Arabic names | `NamesAr.java`, `assets/names_ar.json` | Apps by package, leagues by ESPN code, teams by ESPN team id. Used only on the Arabic screen. |
 | Look and layout options | `DockStyle`, `TileShape`, `ClockStyle`, `DigitStyle`, `WallpaperDim`, `DockPosition`, `SideNav`, `StripSize` | Pure Java, unit tested. The TV's choice wins over `config.json`, then the default; an unknown value counts as unset. `AppAdapter.Slice` gives the side dock its own list over the same tiles. |
 | Ramadan and prayer | `RamadanCountdown`, `PrayerAlert`, `HijriShift` | Pure Java, unit tested: the iftar and suhoor card, the on-screen alert at a prayer time, the Hijri date adjustment. |
