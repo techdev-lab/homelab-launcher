@@ -1,22 +1,2 @@
-# Gradle and Android build output
-launcher/.gradle/
-launcher/build/
-launcher/app/build/
-launcher/local.properties
-*.apk
-*.aab
-*.ap_
-*.dex
-
-# IDE
-.idea/
-*.iml
-.vscode/
-
-# Secrets and device data
-*.keystore
-*.jks
-adbkey
-adbkey.pub
-*.conf
-.env
+__pycache__/
+*.pyc
