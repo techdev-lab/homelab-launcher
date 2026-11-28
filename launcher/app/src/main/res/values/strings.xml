@@ -239,5 +239,14 @@
     <string name="plain_colour_hint">A plain dark colour instead of a wallpaper picture.</string>
     <string name="asr_label">Asr</string>
     <string name="tv_settings_hint">Opens the settings of the TV itself.</string>
+    <string name="check_updates">Check for updates</string>
+    <string name="check_updates_hint">The online build asks GitHub for a newer release; the offline one opens the releases page in the browser. Nothing installs by itself.</string>
+    <string name="update_checking">Checking…</string>
+    <string name="update_found">Update %1$s available</string>
+    <string name="update_found_toast">Version %1$s is out. The browser opens the release page; install it with adb as usual.</string>
+    <string name="update_current">This is the newest release</string>
+    <string name="update_none">Could not reach GitHub. Try again later.</string>
+    <string name="update_timeout">The check took too long. Try again later.</string>
+    <string name="update_offline_info">This build has no network. The browser opens the releases page.</string>
     <string name="settings_press_again">Press again to open %1$s</string>
 </resources>
